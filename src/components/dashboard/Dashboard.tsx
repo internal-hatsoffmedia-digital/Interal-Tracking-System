@@ -1,72 +1,100 @@
+import { useState } from "react";
 import ActiveProjects from "../../components/dashboard/ActiveProjects";
 import AttentionTasks from "../../components/dashboard/AttentionTasks";
-import DashboardHeader from "../../components/dashboard/DashboardHeader";
+import ClientAccountRadar from "../../components/dashboard/ClientAccountRadar";
+import ExecutiveBriefing from "../../components/dashboard/ExecutiveBriefing";
 import ProductionAlert from "../../components/dashboard/ProductionAlert";
+import ProductionFunnel from "../../components/dashboard/ProductionFunnel";
 import ProductionOverview from "../../components/dashboard/ProductionOverview";
 import ProjectHealth from "../../components/dashboard/ProjectHealth";
 import StatsCards from "../../components/dashboard/StatsCards";
 import TeamWorkload from "../../components/dashboard/TeamWorkload";
 
 function Dashboard() {
+  const [viewMode, setViewMode] = useState<"executive" | "operations">("executive");
+
   return (
     <div className="min-h-full w-full">
-      <div className="space-y-6">
+      <div className="space-y-7">
 
         {/* ==================================================
-            DASHBOARD HEADER
+            EXECUTIVE BRIEFING HERO BANNER
         ================================================== */}
-
-        <DashboardHeader />
-
-        {/* ==================================================
-            KPI / SUMMARY CARDS
-        ================================================== */}
-
-        <section aria-label="Dashboard summary">
-          <StatsCards />
+        <section aria-label="Executive Briefing">
+          <ExecutiveBriefing
+            viewMode={viewMode}
+            onToggleViewMode={setViewMode}
+          />
         </section>
 
-        {/* ==================================================
-            PRODUCTION OVERVIEW
-        ================================================== */}
+        {viewMode === "executive" ? (
+          /* ==================================================
+              CEO / EXECUTIVE COMMAND CENTER VIEW
+          ================================================== */
+          <>
+            {/* AGENCY VELOCITY THROUGHPUT PIPELINE */}
+            <section aria-label="Agency Velocity Pipeline">
+              <ProductionFunnel />
+            </section>
 
-        <section
-          aria-label="Production overview"
-          className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]"
-        >
-          <ProductionOverview />
+            {/* VIP CLIENT ACCOUNT RADAR */}
+            <section aria-label="Client Account Radar">
+              <ClientAccountRadar />
+            </section>
 
-          <ProjectHealth />
-        </section>
+            {/* ACTIVE INITIATIVES & WORKLOAD BALANCE */}
+            <section
+              aria-label="Projects and team workload"
+              className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]"
+            >
+              <ActiveProjects />
+              <TeamWorkload />
+            </section>
 
-        {/* ==================================================
-            ACTIVE PROJECTS + TEAM WORKLOAD
-        ================================================== */}
+            {/* CRITICAL ATTENTION MATRIX */}
+            <section aria-label="Tasks requiring attention">
+              <AttentionTasks />
+            </section>
+          </>
+        ) : (
+          /* ==================================================
+              OPERATIONS & DETAILED STUDIO FLOW VIEW
+          ================================================== */
+          <>
+            {/* KPI / SUMMARY CARDS */}
+            <section aria-label="Dashboard summary">
+              <StatsCards />
+            </section>
 
-        <section
-          aria-label="Projects and team workload"
-          className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]"
-        >
-          <ActiveProjects />
+            {/* PRODUCTION OVERVIEW + PROJECT HEALTH */}
+            <section
+              aria-label="Production overview"
+              className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]"
+            >
+              <ProductionOverview />
+              <ProjectHealth />
+            </section>
 
-          <TeamWorkload />
-        </section>
+            {/* ACTIVE PROJECTS + TEAM WORKLOAD */}
+            <section
+              aria-label="Projects and team workload"
+              className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]"
+            >
+              <ActiveProjects />
+              <TeamWorkload />
+            </section>
 
-        {/* ==================================================
-            TASKS NEEDING ATTENTION
-        ================================================== */}
+            {/* TASKS NEEDING ATTENTION */}
+            <section aria-label="Tasks requiring attention">
+              <AttentionTasks />
+            </section>
 
-        <section aria-label="Tasks requiring attention">
-          <AttentionTasks />
-        </section>
-
-        {/* ==================================================
-            PRODUCTION ALERTS
-        ================================================== */}
-
-        <section aria-label="Production alerts">
-          <ProductionAlert />
-        </section>
+            {/* PRODUCTION ALERTS */}
+            <section aria-label="Production alerts">
+              <ProductionAlert />
+            </section>
+          </>
+        )}
 
       </div>
     </div>
