@@ -4,9 +4,7 @@ import {
   CheckCircle2,
   Clock3,
   Target,
-  TrendingDown,
   TrendingUp,
-  User,
   XCircle,
 } from "lucide-react";
 

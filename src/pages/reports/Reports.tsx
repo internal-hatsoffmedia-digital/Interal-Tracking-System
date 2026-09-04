@@ -16,7 +16,6 @@ import {
   RefreshCw,
   Target,
   Users,
-  XCircle,
 } from "lucide-react";
 
 import { supabase } from "../../lib/supabase";

@@ -1,14 +1,11 @@
 import {
   CalendarDays,
-  CheckCircle2,
   Clock3,
   Edit3,
   ExternalLink,
   FileText,
   MoreHorizontal,
-  PauseCircle,
   PlayCircle,
-  UserRound,
 } from "lucide-react";
 
 import type { TaskWithRelations } from "../../types/task";
