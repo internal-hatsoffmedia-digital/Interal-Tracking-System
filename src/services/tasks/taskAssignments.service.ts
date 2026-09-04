@@ -673,3 +673,22 @@ export async function rejectTaskAssignment(
     },
   );
 }
+
+/* =========================================================
+   DELETE / UNASSIGN
+========================================================= */
+
+export async function deleteTaskAssignment(
+  id: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("task_assignments")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(
+      `Unable to unassign task: ${error.message}`,
+    );
+  }
+}

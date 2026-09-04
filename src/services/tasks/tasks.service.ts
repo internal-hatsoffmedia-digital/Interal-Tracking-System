@@ -24,6 +24,24 @@ interface ProjectRelation {
   series_title: string | null;
 }
 
+interface EmployeeRelation {
+  id: string;
+  full_name: string;
+  employee_code: string;
+  email: string;
+  job_title: string | null;
+  team_id: string | null;
+}
+
+interface AssignmentRelation {
+  id: string;
+  task_id: string;
+  employee_id: string;
+  status: string;
+  notes: string | null;
+  assigned_at: string;
+}
+
 
 /* =========================================================
    LOAD ACTIVE RELATIONS
@@ -33,6 +51,8 @@ async function getTaskRelations() {
   const [
     clientsResult,
     projectsResult,
+    assignmentsResult,
+    employeesResult,
   ] = await Promise.all([
     supabase
       .from("clients")
@@ -53,6 +73,21 @@ async function getTaskRelations() {
       .order("name", {
         ascending: true,
       }),
+
+    supabase
+      .from("task_assignments")
+      .select(
+        "id, task_id, employee_id, status, notes, assigned_at",
+      )
+      .order("assigned_at", {
+        ascending: false,
+      }),
+
+    supabase
+      .from("employees")
+      .select(
+        "id, full_name, employee_code, email, job_title, team_id",
+      ),
   ]);
 
 
@@ -78,6 +113,14 @@ async function getTaskRelations() {
     projects:
       (projectsResult.data ??
         []) as ProjectRelation[],
+
+    assignments:
+      (assignmentsResult.data ??
+        []) as AssignmentRelation[],
+
+    employees:
+      (employeesResult.data ??
+        []) as EmployeeRelation[],
   };
 }
 
@@ -90,25 +133,62 @@ function attachRelations(
   tasks: Task[],
   clients: ClientRelation[],
   projects: ProjectRelation[],
+  assignments: AssignmentRelation[] = [],
+  employees: EmployeeRelation[] = [],
 ): TaskWithRelations[] {
   return tasks.map(
-    (task) => ({
-      ...task,
+    (task) => {
+      const taskAssignment =
+        assignments.find(
+          (assignment) =>
+            assignment.task_id ===
+            task.id,
+        );
 
-      client:
-        clients.find(
-          (client) =>
-            client.id ===
-            task.client_id,
-        ) ?? null,
+      const assignedEmployee =
+        taskAssignment
+          ? employees.find(
+              (employee) =>
+                employee.id ===
+                taskAssignment.employee_id,
+            ) ?? null
+          : null;
 
-      project:
-        projects.find(
-          (project) =>
-            project.id ===
-            task.project_id,
-        ) ?? null,
-    }),
+      return {
+        ...task,
+
+        client:
+          clients.find(
+            (client) =>
+              client.id ===
+              task.client_id,
+          ) ?? null,
+
+        project:
+          projects.find(
+            (project) =>
+              project.id ===
+              task.project_id,
+          ) ?? null,
+
+        assignment:
+          taskAssignment
+            ? {
+                id: taskAssignment.id,
+                status:
+                  taskAssignment.status,
+                notes:
+                  taskAssignment.notes,
+                assigned_at:
+                  taskAssignment.assigned_at,
+                employee_id:
+                  taskAssignment.employee_id,
+                employee:
+                  assignedEmployee,
+              }
+            : null,
+      };
+    },
   );
 }
 
@@ -150,6 +230,8 @@ export async function getTasks(): Promise<
   const {
     clients,
     projects,
+    assignments,
+    employees,
   } =
     await getTaskRelations();
 
@@ -158,6 +240,8 @@ export async function getTasks(): Promise<
     tasks,
     clients,
     projects,
+    assignments,
+    employees,
   );
 }
 
@@ -194,6 +278,8 @@ export async function getTaskById(
   const {
     clients,
     projects,
+    assignments,
+    employees,
   } =
     await getTaskRelations();
 
@@ -203,6 +289,8 @@ export async function getTaskById(
       [data as Task],
       clients,
       projects,
+      assignments,
+      employees,
     )[0] ?? null
   );
 }
@@ -246,6 +334,8 @@ export async function getTasksByProject(
   const {
     clients,
     projects,
+    assignments,
+    employees,
   } =
     await getTaskRelations();
 
@@ -254,6 +344,8 @@ export async function getTasksByProject(
     tasks,
     clients,
     projects,
+    assignments,
+    employees,
   );
 }
 
@@ -296,6 +388,8 @@ export async function getTasksByClient(
   const {
     clients,
     projects,
+    assignments,
+    employees,
   } =
     await getTaskRelations();
 
@@ -304,6 +398,8 @@ export async function getTasksByClient(
     tasks,
     clients,
     projects,
+    assignments,
+    employees,
   );
 }
 

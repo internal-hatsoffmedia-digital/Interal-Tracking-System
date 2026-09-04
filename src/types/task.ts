@@ -44,6 +44,22 @@ export interface TaskWithRelations
     name: string;
     short_name: string | null;
   } | null;
+
+  assignment?: {
+    id: string;
+    status: string;
+    notes: string | null;
+    assigned_at: string;
+    employee_id: string;
+    employee?: {
+      id: string;
+      full_name: string;
+      employee_code: string;
+      email: string;
+      job_title: string | null;
+      team_id: string | null;
+    } | null;
+  } | null;
 }
 
 

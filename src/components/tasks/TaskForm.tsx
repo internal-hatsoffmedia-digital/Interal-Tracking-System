@@ -36,6 +36,8 @@ interface TaskFormProps {
 
   task?: TaskWithRelations | null;
 
+  defaultStatus?: string;
+
   loading: boolean;
 
   error: string;
@@ -167,6 +169,7 @@ function SectionHeader({
 function TaskForm({
   open,
   task,
+  defaultStatus,
   loading,
   error,
   clients,
@@ -375,15 +378,13 @@ function TaskForm({
         task.delay_reason ?? "",
       );
 
-      /*
-       * Assignment is handled separately.
-       * When editing a task, the assignment
-       * can be managed from Task Assignments.
-       */
+      setAssignedEmployeeId(
+        task.assignment?.employee_id ?? "",
+      );
 
-      setAssignedEmployeeId("");
-
-      setAssignmentNotes("");
+      setAssignmentNotes(
+        task.assignment?.notes ?? "",
+      );
     } else {
       setClientId("");
 
@@ -409,7 +410,8 @@ function TaskForm({
       );
 
       setStatus(
-        statusOptions[0]?.value ??
+        defaultStatus ||
+          statusOptions[0]?.value ||
           "",
       );
 
