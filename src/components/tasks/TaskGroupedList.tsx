@@ -69,6 +69,14 @@ const STATUS_THEMES: Record<string, StatusTheme> = {
     badgeText: "text-white",
     dotBg: "bg-blue-500",
   },
+  internal_review: {
+    border: "border-fuchsia-200",
+    bg: "bg-fuchsia-50/30",
+    text: "text-fuchsia-700",
+    badgeBg: "bg-fuchsia-600",
+    badgeText: "text-white",
+    dotBg: "bg-fuchsia-500",
+  },
   sent_for_internal_review: {
     border: "border-fuchsia-200",
     bg: "bg-fuchsia-50/30",
@@ -77,6 +85,14 @@ const STATUS_THEMES: Record<string, StatusTheme> = {
     badgeText: "text-white",
     dotBg: "bg-fuchsia-500",
   },
+  client_review: {
+    border: "border-amber-200",
+    bg: "bg-amber-50/30",
+    text: "text-amber-700",
+    badgeBg: "bg-amber-500",
+    badgeText: "text-white",
+    dotBg: "bg-amber-500",
+  },
   sent_for_client_review: {
     border: "border-amber-200",
     bg: "bg-amber-50/30",
@@ -84,6 +100,14 @@ const STATUS_THEMES: Record<string, StatusTheme> = {
     badgeBg: "bg-amber-500",
     badgeText: "text-white",
     dotBg: "bg-amber-500",
+  },
+  approved_delivered: {
+    border: "border-emerald-200",
+    bg: "bg-emerald-50/30",
+    text: "text-emerald-700",
+    badgeBg: "bg-emerald-600",
+    badgeText: "text-white",
+    dotBg: "bg-emerald-500",
   },
   approved_and_delivered: {
     border: "border-emerald-200",
@@ -211,9 +235,20 @@ export default function TaskGroupedList({
       tasks: TaskWithRelations[];
     }[] = [];
 
+    const normalizeStatusKey = (s: string) => {
+      if (s === "sent_for_internal_review") return "internal_review";
+      if (s === "sent_for_client_review") return "client_review";
+      if (s === "approved_and_delivered") return "approved_delivered";
+      return s;
+    };
+
     // Order according to statusOptions
     statusOptions.forEach((option) => {
-      const statusTasks = tasks.filter((task) => task.status === option.value);
+      const statusTasks = tasks.filter(
+        (task) =>
+          task.status === option.value ||
+          normalizeStatusKey(task.status) === option.value
+      );
       groups.push({
         statusKey: option.value,
         label: option.label,
@@ -224,7 +259,11 @@ export default function TaskGroupedList({
 
     // Check for any tasks with unrecognized status
     const knownStatuses = new Set(statusOptions.map((o) => o.value));
-    const otherTasks = tasks.filter((task) => !knownStatuses.has(task.status));
+    const otherTasks = tasks.filter(
+      (task) =>
+        !knownStatuses.has(task.status) &&
+        !knownStatuses.has(normalizeStatusKey(task.status))
+    );
     if (otherTasks.length > 0) {
       groups.push({
         statusKey: "other",

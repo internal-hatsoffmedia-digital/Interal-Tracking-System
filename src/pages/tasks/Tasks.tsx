@@ -199,15 +199,15 @@ function Tasks() {
         label: "Editing in Progress",
       },
       {
-        value: "sent_for_internal_review",
+        value: "internal_review",
         label: "Sent for Internal Review",
       },
       {
-        value: "sent_for_client_review",
+        value: "client_review",
         label: "Sent for Client Review",
       },
       {
-        value: "approved_and_delivered",
+        value: "approved_delivered",
         label: "Approved & Delivered",
       },
       {
@@ -384,12 +384,22 @@ function Tasks() {
             return false;
           }
 
-          if (
-            statusFilter &&
-            task.status !==
-              statusFilter
-          ) {
-            return false;
+          if (statusFilter) {
+            const normalizedStatus =
+              task.status === "sent_for_internal_review"
+                ? "internal_review"
+                : task.status === "sent_for_client_review"
+                ? "client_review"
+                : task.status === "approved_and_delivered"
+                ? "approved_delivered"
+                : task.status;
+
+            if (
+              task.status !== statusFilter &&
+              normalizedStatus !== statusFilter
+            ) {
+              return false;
+            }
           }
 
           if (
@@ -442,6 +452,8 @@ function Tasks() {
       tasks.forEach(
         (task) => {
           if (
+            task.status ===
+            "approved_delivered" ||
             task.status ===
             "approved_and_delivered"
           ) {
@@ -716,18 +728,24 @@ function Tasks() {
     > = {
       not_started:
         "raw_footage_received",
+      in_queue:
+        "raw_footage_received",
 
       raw_footage_received:
         "editing_in_progress",
 
       editing_in_progress:
-        "sent_for_internal_review",
+        "internal_review",
 
+      internal_review:
+        "client_review",
       sent_for_internal_review:
-        "sent_for_client_review",
+        "client_review",
 
+      client_review:
+        "approved_delivered",
       sent_for_client_review:
-        "approved_and_delivered",
+        "approved_delivered",
     };
 
     return (

@@ -54,6 +54,13 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+function normalizeStatusKey(s: string) {
+  if (s === "sent_for_internal_review") return "internal_review";
+  if (s === "sent_for_client_review") return "client_review";
+  if (s === "approved_and_delivered") return "approved_delivered";
+  return s;
+}
+
 export default function TaskKanbanBoard({
   tasks,
   loading,
@@ -87,7 +94,11 @@ export default function TaskKanbanBoard({
   return (
     <div className="flex gap-4 overflow-x-auto pb-6 select-none">
       {statusOptions.map((status) => {
-        const columnTasks = tasks.filter((t) => t.status === status.value);
+        const columnTasks = tasks.filter(
+          (t) =>
+            t.status === status.value ||
+            normalizeStatusKey(t.status) === status.value
+        );
 
         return (
           <div
@@ -139,7 +150,7 @@ export default function TaskKanbanBoard({
                         </span>
                         <div className="flex items-center gap-1">
                           <select
-                            value={task.status}
+                            value={normalizeStatusKey(task.status)}
                             onChange={(e) => onStatusChange(task, e.target.value)}
                             className="text-[10px] bg-slate-100 text-slate-600 rounded px-1.5 py-0.5 border-0 outline-none cursor-pointer hover:bg-slate-200"
                             title="Move to stage"

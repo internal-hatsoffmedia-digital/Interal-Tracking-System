@@ -62,6 +62,7 @@ function isCompletedStatus(status: string | null | undefined) {
 
   return [
     "completed",
+    "approved_delivered",
     "approved_and_delivered",
     "delivered",
     "completed_and_closed",
@@ -196,6 +197,7 @@ function getStatusLabel(status: string | null) {
     in_review: "Internal Review",
     sent_for_client_review: "Client Review",
     client_review: "Client Review",
+    approved_delivered: "Completed",
     approved_and_delivered: "Completed",
     completed: "Completed",
     delivered: "Delivered",

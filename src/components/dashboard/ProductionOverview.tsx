@@ -163,6 +163,7 @@ function isCompleted(
     normalizeStatus(status);
 
   return [
+    "approved_delivered",
     "approved_and_delivered",
     "completed",
     "delivered",

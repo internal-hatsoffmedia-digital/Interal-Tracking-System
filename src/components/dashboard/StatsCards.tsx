@@ -138,6 +138,7 @@ function isOverdue(
 
   const completedStatuses = [
     "completed",
+    "approved_delivered",
     "approved_and_delivered",
     "delivered",
     "closed",

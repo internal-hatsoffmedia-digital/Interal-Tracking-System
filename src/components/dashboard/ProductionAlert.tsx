@@ -29,6 +29,7 @@ function isCompletedStatus(status: string | null | undefined) {
 
   return [
     "completed",
+    "approved_delivered",
     "approved_and_delivered",
     "delivered",
     "completed_and_closed",

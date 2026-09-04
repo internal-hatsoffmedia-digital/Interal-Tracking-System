@@ -93,12 +93,15 @@ function getStatusClasses(
   switch (
     String(status).toLowerCase()
   ) {
+    case "approved_delivered":
     case "approved_and_delivered":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
 
+    case "client_review":
     case "sent_for_client_review":
       return "border-violet-200 bg-violet-50 text-violet-700";
 
+    case "internal_review":
     case "sent_for_internal_review":
       return "border-blue-200 bg-blue-50 text-blue-700";
 
@@ -338,7 +341,11 @@ function Planner() {
             task.status ===
               "editing_in_progress" ||
             task.status ===
+              "internal_review" ||
+            task.status ===
               "sent_for_internal_review" ||
+            task.status ===
+              "client_review" ||
             task.status ===
               "sent_for_client_review"
           ) {
@@ -658,15 +665,15 @@ function Planner() {
               Editing in Progress
             </option>
 
-            <option value="sent_for_internal_review">
+            <option value="internal_review">
               Sent for Internal Review
             </option>
 
-            <option value="sent_for_client_review">
+            <option value="client_review">
               Sent for Client Review
             </option>
 
-            <option value="approved_and_delivered">
+            <option value="approved_delivered">
               Approved & Delivered
             </option>
 

@@ -198,6 +198,7 @@ function isCompleted(
 ) {
   return [
     "completed",
+    "approved_delivered",
     "approved_and_delivered",
     "approved_&_delivered",
     "delivered",
@@ -2763,6 +2764,7 @@ function StatusBadge({
       "green",
       "on_track",
       "completed",
+      "approved_delivered",
       "approved_and_delivered",
       "delivered",
     ].includes(status)

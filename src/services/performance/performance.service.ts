@@ -110,6 +110,8 @@ function isCompletedStatus(
 
   return (
     normalized ===
+      "approved_delivered" ||
+    normalized ===
       "approved_and_delivered" ||
     normalized ===
       "completed"
