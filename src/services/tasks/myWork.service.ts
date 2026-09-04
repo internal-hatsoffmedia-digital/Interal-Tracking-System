@@ -419,12 +419,6 @@ export async function updateMyWorkStatus(
   assignmentId: string,
   status: string,
 ): Promise<void> {
-  /*
-   * Do not guess or introduce enum values here.
-   * The UI should only send values supported
-   * by the database.
-   */
-
   const updates: Record<
     string,
     unknown
@@ -451,6 +445,18 @@ export async function updateMyWorkStatus(
       now;
   }
 
+  // 1. Fetch assignment to get task_id
+  const { data: assignmentData, error: fetchErr } = await supabase
+    .from("task_assignments")
+    .select("id, task_id")
+    .eq("id", assignmentId)
+    .maybeSingle();
+
+  if (fetchErr) {
+    console.error("Failed to fetch assignment details:", fetchErr);
+  }
+
+  // 2. Update assignment status
   const {
     error,
   } =
@@ -468,5 +474,74 @@ export async function updateMyWorkStatus(
     throw new Error(
       `Unable to update task status: ${error.message}`,
     );
+  }
+
+  // 3. Reflect status onto parent task so coordinator & admin dashboards update
+  if (assignmentData?.task_id) {
+    let parentTaskStatus: string | null = null;
+
+    if (status === "in_progress") {
+      parentTaskStatus = "editing_in_progress";
+    } else if (status === "completed") {
+      // Moves to Internal Review for the Project Coordinator & Admin to review and approve!
+      parentTaskStatus = "internal_review";
+    }
+
+    if (parentTaskStatus) {
+      const { data: updatedTask, error: taskUpdateErr } = await supabase
+        .from("tasks")
+        .update({
+          status: parentTaskStatus,
+          updated_at: now,
+        })
+        .eq("id", assignmentData.task_id)
+        .select("id, project_id, status")
+        .maybeSingle();
+
+      if (taskUpdateErr) {
+        console.error("Failed to update parent task status:", taskUpdateErr);
+      }
+
+      // If task has an associated project, refresh project assets progress
+      if (updatedTask?.project_id) {
+        try {
+          const { data: projectTasks } = await supabase
+            .from("tasks")
+            .select("id, status")
+            .eq("project_id", updatedTask.project_id);
+
+          if (projectTasks && projectTasks.length > 0) {
+            const completedCount = projectTasks.filter(
+              (t) =>
+                t.status === "approved_delivered" ||
+                t.status === "approved_and_delivered" ||
+                t.status === "completed"
+            ).length;
+
+            const { data: projectRow } = await supabase
+              .from("projects")
+              .select("total_assets_required")
+              .eq("id", updatedTask.project_id)
+              .maybeSingle();
+
+            const total = Number(
+              projectRow?.total_assets_required ?? projectTasks.length
+            );
+            const pending = Math.max(0, total - completedCount);
+
+            await supabase
+              .from("projects")
+              .update({
+                completed_assets: completedCount,
+                pending_assets: pending,
+                updated_at: now,
+              })
+              .eq("id", updatedTask.project_id);
+          }
+        } catch (projErr) {
+          console.error("Failed to update project progress:", projErr);
+        }
+      }
+    }
   }
 }

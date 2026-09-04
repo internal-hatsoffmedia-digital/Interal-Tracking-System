@@ -102,6 +102,24 @@ export default function ClientAccountRadar() {
     }
 
     loadClientData();
+
+    const channel = supabase
+      .channel("client-radar-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks" },
+        () => {
+          loadClientData();
+        }
+      )
+      .subscribe();
+
+    const pollInterval = setInterval(loadClientData, 15000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   const handleCopyClientStatus = (c: ClientPortfolioCard) => {

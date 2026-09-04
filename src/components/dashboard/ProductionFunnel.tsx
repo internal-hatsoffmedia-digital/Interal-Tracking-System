@@ -149,6 +149,31 @@ export default function ProductionFunnel() {
     }
 
     loadFunnelData();
+
+    const channel = supabase
+      .channel("production-funnel-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks" },
+        () => {
+          loadFunnelData();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "task_assignments" },
+        () => {
+          loadFunnelData();
+        }
+      )
+      .subscribe();
+
+    const pollInterval = setInterval(loadFunnelData, 15000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   return (

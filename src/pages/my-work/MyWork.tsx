@@ -350,10 +350,15 @@ function MyWork() {
         const readableStatus =
           formatLabel(status);
 
+        const confirmMessage =
+          status === "completed"
+            ? `Mark "${currentItem.task_title}" as Complete and submit to your Project Coordinator for review?`
+            : status === "in_progress"
+            ? `Start working on "${currentItem.task_title}"?`
+            : `Change "${currentItem.task_title}" to ${readableStatus}?`;
+
         const confirmed =
-          window.confirm(
-            `Change "${currentItem.task_title}" to ${readableStatus}?`,
-          );
+          window.confirm(confirmMessage);
 
         if (!confirmed) {
           return;

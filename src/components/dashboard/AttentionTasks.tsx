@@ -462,6 +462,33 @@ function AttentionTasks() {
 
   useEffect(() => {
     void loadAttentionTasks();
+
+    const channel = supabase
+      .channel("attention-tasks-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks" },
+        () => {
+          void loadAttentionTasks();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "task_assignments" },
+        () => {
+          void loadAttentionTasks();
+        }
+      )
+      .subscribe();
+
+    const pollInterval = setInterval(() => {
+      void loadAttentionTasks();
+    }, 15000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   const summary = useMemo(() => {
