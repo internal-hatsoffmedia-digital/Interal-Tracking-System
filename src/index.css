@@ -1,17 +1,67 @@
 @import "tailwindcss";
 
-:root {
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+@theme {
+  /* Font Family System */
+  --font-heading: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-  color: #0f172a;
-  background: #f8fafc;
+  /* Brand Accent (Signature Gold / Yellow) */
+  --color-primary: #ffcc00;
+  --color-primary-hover: #e5b700;
+  --color-primary-light: #fff7d6;
+  --color-soft-gold: rgba(255, 204, 0, 0.06);
+
+  /* Neutrals & Backgrounds */
+  --color-background: #ffffff;
+  --color-subtle: #fafafa;
+  --color-secondary-neutral: #f4f4f5;
+  --color-border-subtle: #e5e7eb;
+
+  /* Typography & Text Colors */
+  --color-foreground: #111111;
+  --color-body: #525252;
+  --color-muted: #6b7280;
+  --color-muted-alt: #71717a;
+
+  /* Shadows */
+  --shadow-gold: 0 15px 40px rgba(255, 204, 0, 0.28);
+}
+
+:root {
+  /* ==========================================================
+     FONT FAMILY SYSTEM
+     ========================================================== */
+  --font-heading: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* ==========================================================
+     COLOR PALETTE
+     ========================================================== */
+  /* 1. Brand Accent (Signature Gold / Yellow) */
+  --primary: #ffcc00;
+  --primary-hover: #e5b700;
+  --primary-light: #fff7d6;
+  --soft-gold: rgba(255, 204, 0, 0.06);
+  --gold-border: rgba(255, 204, 0, 0.35);
+  --gold-shadow: 0 15px 40px rgba(255, 204, 0, 0.28);
+
+  /* 2. Neutrals & Backgrounds */
+  --background: #ffffff;
+  --background-subtle: #fafafa;
+  --background-secondary: #f4f4f5;
+  --border: #e5e7eb;
+  --card-border: rgba(17, 17, 17, 0.06);
+
+  /* 3. Typography & Text Colors */
+  --foreground: #111111;
+  --body: #525252;
+  --muted: #6b7280;
+  --muted-alt: #71717a;
+
+  /* Base Settings */
+  font-family: var(--font-sans);
+  color: var(--foreground);
+  background: var(--background-subtle);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -28,16 +78,102 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--background-subtle);
+  color: var(--body);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings: Plus Jakarta Sans with refined letter spacing */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.04em;
 }
 
 button,
 input,
 textarea,
 select {
-  font: inherit;
+  font-family: inherit;
 }
 
 button {
   cursor: pointer;
+}
+
+/* ==========================================================
+   UTILITIES & SURFACE STYLES
+   ========================================================== */
+
+.font-heading {
+  font-family: var(--font-heading) !important;
+}
+
+.font-sans {
+  font-family: var(--font-sans) !important;
+}
+
+/* Brand Accent Classes */
+.bg-primary-brand {
+  background-color: #ffcc00 !important;
+}
+
+.bg-soft-gold {
+  background-color: rgba(255, 204, 0, 0.06) !important;
+}
+
+.gold-border {
+  border-color: rgba(255, 204, 0, 0.35) !important;
+}
+
+.shadow-gold {
+  box-shadow: 0 15px 40px rgba(255, 204, 0, 0.28) !important;
+}
+
+.card-border {
+  border-color: rgba(17, 17, 17, 0.06) !important;
+}
+
+/* Gradients & Glass Surfaces */
+.gold-gradient,
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #ffcc00, #ffd633, #ffe680) !important;
+}
+
+.dark-heading-gradient {
+  background: linear-gradient(135deg, #111111, #555555);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-surface {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+/* Custom Selection */
+::selection {
+  background: #ffcc00;
+  color: #111111;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f4f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ffcc00;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e5b700;
 }

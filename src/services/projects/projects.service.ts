@@ -16,7 +16,6 @@ async function getProjectRelations() {
     supabase
       .from("clients")
       .select("id, name, short_name")
-      .eq("is_active", true)
       .order("name", {
         ascending: true,
       }),
@@ -24,7 +23,6 @@ async function getProjectRelations() {
     supabase
       .from("employees")
       .select("id, full_name, employee_code")
-      .eq("is_active", true)
       .order("full_name", {
         ascending: true,
       }),

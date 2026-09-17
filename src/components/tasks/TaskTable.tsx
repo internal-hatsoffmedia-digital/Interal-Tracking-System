@@ -4,7 +4,7 @@ import {
   Edit3,
   ExternalLink,
   FileText,
-  MoreHorizontal,
+
   PlayCircle,
 } from "lucide-react";
 
@@ -443,7 +443,7 @@ function TaskCard({
               strokeWidth={1.8}
             />
 
-            Update status
+            Task actions
 
           </button>
 
@@ -805,13 +805,10 @@ function TaskTable({
                                 )
                               }
                               className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-                              title="Update status"
+                              title="Task actions: hold, remove or restore"
                             >
 
-                              <MoreHorizontal
-                                size={15}
-                                strokeWidth={1.8}
-                              />
+                              <span className="text-xs font-medium">Actions</span>
 
                             </button>
                           )}

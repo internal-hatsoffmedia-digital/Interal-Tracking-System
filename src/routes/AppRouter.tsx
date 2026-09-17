@@ -1,25 +1,29 @@
+import {lazy,Suspense} from 'react';
+import PageErrorBoundary from '../components/layouts/PageErrorBoundary';
+const ResetPassword=lazy(()=>import('../pages/auth/ResetPassword'));
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import AppShell from "../components/layouts/AppShell";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
-import Performance from "../pages/performance/Performance";
-import Dashboard from "../components/dashboard/Dashboard";
-import Planner from "../pages/planner/Planner";
-import Projects from "../pages/projects/Projects";
-import Tasks from "../pages/tasks/Tasks";
-import TaskAssignments from "../pages/tasks/TaskAssignments";
-import MyWork from "../pages/my-work/MyWork";
-import Landing from "../pages/landing/Landing";
-import Login from "../pages/auth/Login";
-import Timesheet from "../pages/timesheet/Timesheet";
-import Teams from "../pages/teams/Teams";
-import Employees from "../pages/employees/Employees";
-import Clients from "../pages/clients/Clients";
-import Reports from "../pages/reports/Reports";
-import Settings from "../pages/settings/Settings";
+const Performance=lazy(()=>import('../pages/performance/Performance'));
+const Dashboard=lazy(()=>import('../components/dashboard/Dashboard'));
+const Planner=lazy(()=>import('../pages/planner/Planner'));
+const Projects=lazy(()=>import('../pages/projects/Projects'));
+const Tasks=lazy(()=>import('../pages/tasks/Tasks'));
+const TaskAssignments=lazy(()=>import('../pages/tasks/TaskAssignments'));
+const MyWork=lazy(()=>import('../pages/my-work/MyWork'));
+const Landing=lazy(()=>import('../pages/landing/Landing'));
+const Login=lazy(()=>import('../pages/auth/Login'));
+const Timesheet=lazy(()=>import('../pages/timesheet/Timesheet'));
+const Teams=lazy(()=>import('../pages/teams/Teams'));
+const Employees=lazy(()=>import('../pages/employees/Employees'));
+const Clients=lazy(()=>import('../pages/clients/Clients'));
+const Reports=lazy(()=>import('../pages/reports/Reports'));
+const Settings=lazy(()=>import('../pages/settings/Settings'));
+const SalesWorkspace=lazy(()=>import('../pages/sales/SalesWorkspace'));
 function AppRouter() {
   return (
-    <Routes>
+    <PageErrorBoundary><Suspense fallback={<div role="status" className="flex min-h-screen items-center justify-center text-sm">Loading page…</div>}><Routes>
       {/* =================================================
           PUBLIC ROUTES
       ================================================== */}
@@ -27,6 +31,7 @@ function AppRouter() {
       <Route path="/" element={<Landing />} />
 
       <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* =================================================
           PROTECTED APPLICATION
@@ -75,6 +80,7 @@ function AppRouter() {
           <Route path="/performance" element={<Performance />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/sales" element={<SalesWorkspace />} />
 
           {/* =================================================
               TASK ASSIGNMENTS
@@ -89,7 +95,7 @@ function AppRouter() {
       ================================================== */}
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    </Routes></Suspense></PageErrorBoundary>
   );
 }
 

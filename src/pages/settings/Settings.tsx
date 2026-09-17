@@ -1,3 +1,4 @@
+import AdminAccessManagement from "../../components/admin/AdminAccessManagement";
 import {
   Activity,
   Bell,
@@ -732,6 +733,7 @@ export default function Settings() {
             MAIN LAYOUT
         ==================================================== */}
 
+        <AdminAccessManagement />
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
 
           {/* ==================================================

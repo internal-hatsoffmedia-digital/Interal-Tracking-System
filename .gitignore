@@ -8,6 +8,14 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.env
+.env.*
+!.env.example
+*.zip
+docs/account-invitation-roster.md
+docs/live-backend-review-*.md
+test-artifacts
+tmp/pdfs/
 dist
 dist-ssr
 *.local

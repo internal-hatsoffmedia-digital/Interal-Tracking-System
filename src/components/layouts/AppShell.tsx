@@ -1,20 +1,30 @@
-import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
 function AppShell() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash === "#attention") {
+      document.getElementById("attention")?.scrollIntoView({ block: "start" });
+    }
+  }, [location]);
+
   return (
-    <div className="min-h-screen w-full bg-slate-50">
+    <div className="workspace-shell future-shell min-h-screen w-full bg-slate-50">
       {/* Desktop sidebar / mobile drawer */}
+      <a className="future-skip-link" href="#main-content">Skip to content</a>
       <Sidebar />
 
       {/* Main application area */}
-      <div className="flex min-h-screen min-w-0 flex-col lg:ml-64">
+      <div className="future-main flex min-h-screen min-w-0 flex-col">
         <Topbar />
 
-        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+        <main id="main-content" className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
+          <div className="future-content">
             <Outlet />
           </div>
         </main>

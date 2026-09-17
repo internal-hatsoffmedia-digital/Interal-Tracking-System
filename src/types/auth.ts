@@ -1,5 +1,7 @@
 export type UserRole =
   | "admin"
+  | "director"
+  | "associate_lead"
   | "project_coordinator"
   | "team_lead"
   | "employee";

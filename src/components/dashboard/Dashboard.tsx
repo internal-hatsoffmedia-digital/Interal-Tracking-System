@@ -1,104 +1,26 @@
-import { useState } from "react";
-import ActiveProjects from "../../components/dashboard/ActiveProjects";
-import AttentionTasks from "../../components/dashboard/AttentionTasks";
-import ClientAccountRadar from "../../components/dashboard/ClientAccountRadar";
-import ExecutiveBriefing from "../../components/dashboard/ExecutiveBriefing";
-import ProductionAlert from "../../components/dashboard/ProductionAlert";
-import ProductionFunnel from "../../components/dashboard/ProductionFunnel";
-import ProductionOverview from "../../components/dashboard/ProductionOverview";
-import ProjectHealth from "../../components/dashboard/ProjectHealth";
-import StatsCards from "../../components/dashboard/StatsCards";
-import TeamWorkload from "../../components/dashboard/TeamWorkload";
-
-function Dashboard() {
-  const [viewMode, setViewMode] = useState<"executive" | "operations">("executive");
-
-  return (
-    <div className="min-h-full w-full">
-      <div className="space-y-7">
-
-        {/* ==================================================
-            EXECUTIVE BRIEFING HERO BANNER
-        ================================================== */}
-        <section aria-label="Executive Briefing">
-          <ExecutiveBriefing
-            viewMode={viewMode}
-            onToggleViewMode={setViewMode}
-          />
-        </section>
-
-        {viewMode === "executive" ? (
-          /* ==================================================
-              CEO / EXECUTIVE COMMAND CENTER VIEW
-          ================================================== */
-          <>
-            {/* AGENCY VELOCITY THROUGHPUT PIPELINE */}
-            <section aria-label="Agency Velocity Pipeline">
-              <ProductionFunnel />
-            </section>
-
-            {/* VIP CLIENT ACCOUNT RADAR */}
-            <section aria-label="Client Account Radar">
-              <ClientAccountRadar />
-            </section>
-
-            {/* ACTIVE INITIATIVES & WORKLOAD BALANCE */}
-            <section
-              aria-label="Projects and team workload"
-              className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]"
-            >
-              <ActiveProjects />
-              <TeamWorkload />
-            </section>
-
-            {/* CRITICAL ATTENTION MATRIX */}
-            <section aria-label="Tasks requiring attention">
-              <AttentionTasks />
-            </section>
-          </>
-        ) : (
-          /* ==================================================
-              OPERATIONS & DETAILED STUDIO FLOW VIEW
-          ================================================== */
-          <>
-            {/* KPI / SUMMARY CARDS */}
-            <section aria-label="Dashboard summary">
-              <StatsCards />
-            </section>
-
-            {/* PRODUCTION OVERVIEW + PROJECT HEALTH */}
-            <section
-              aria-label="Production overview"
-              className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]"
-            >
-              <ProductionOverview />
-              <ProjectHealth />
-            </section>
-
-            {/* ACTIVE PROJECTS + TEAM WORKLOAD */}
-            <section
-              aria-label="Projects and team workload"
-              className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]"
-            >
-              <ActiveProjects />
-              <TeamWorkload />
-            </section>
-
-            {/* TASKS NEEDING ATTENTION */}
-            <section aria-label="Tasks requiring attention">
-              <AttentionTasks />
-            </section>
-
-            {/* PRODUCTION ALERTS */}
-            <section aria-label="Production alerts">
-              <ProductionAlert />
-            </section>
-          </>
-        )}
-
-      </div>
-    </div>
-  );
+import {useState} from 'react';
+import {useLocation,useNavigate} from 'react-router-dom';
+import {LayoutGrid,FolderKanban,ChartNoAxesCombined,ArrowUpRight} from 'lucide-react';
+import Announcements from './Announcements';
+import ActiveProjects from './ActiveProjects';
+import AttentionTasks from './AttentionTasks';
+import ClientAccountRadar from './ClientAccountRadar';
+import ExecutiveBriefing from './ExecutiveBriefing';
+import ProductionAlert from './ProductionAlert';
+import ProductionFunnel from './ProductionFunnel';
+import ProductionOverview from './ProductionOverview';
+import ProjectHealth from './ProjectHealth';
+import StatsCards from './StatsCards';
+import TeamWorkload from './TeamWorkload';
+export default function Dashboard(){
+ const [mode,setMode]=useState<'executive'|'operations'>('executive');const [view,setView]=useState('today');const location=useLocation();const navigate=useNavigate();
+ const active=location.hash==='#attention'?'today':view;
+ const tabs=[{id:'today',label:'Today',icon:LayoutGrid},{id:'projects',label:'Projects & people',icon:FolderKanban},{id:'insights',label:'Studio insights',icon:ChartNoAxesCombined}];
+ return <div className="future-dashboard"><ExecutiveBriefing viewMode={mode} onToggleViewMode={setMode}/>
+ <div className="future-dashboard-navigation"><div className="future-section-title"><span className="future-eyebrow">MAKE SPACE FOR GREAT WORK</span><h2>Your workspace <ArrowUpRight size={20}/></h2></div><div className="future-dashboard-tabs" aria-label="Dashboard views">{tabs.map(t=><button key={t.id} aria-pressed={active===t.id} onClick={()=>{if(location.hash)navigate(location.pathname,{replace:true});setView(t.id);}}><t.icon size={16}/>{t.label}</button>)}</div></div>
+ <div className="future-dashboard-panel" key={active}>
+ {active==='today'&&<><Announcements/>{mode==='executive'?<section aria-label="Agency Velocity Pipeline"><ProductionFunnel/></section>:<section aria-label="Dashboard summary"><StatsCards/></section>}<section id="attention" className="scroll-mt-24" aria-label="Tasks requiring attention"><AttentionTasks/></section>{mode==='operations'&&<ProductionAlert/>}</>}
+ {active==='projects'&&<><div className="future-two-column"><section aria-label="Active projects"><ActiveProjects/></section><section aria-label="Team workload"><TeamWorkload/></section></div><section aria-label="Project health"><ProjectHealth/></section></>}
+ {active==='insights'&&<><section aria-label="Client Account Radar"><ClientAccountRadar/></section><section aria-label="Production overview"><ProductionOverview/></section><section aria-label="Production alerts"><ProductionAlert/></section></>}
+ </div></div>;
 }
-
-export default Dashboard;

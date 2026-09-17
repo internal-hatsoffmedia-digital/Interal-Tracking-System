@@ -110,13 +110,20 @@ function Landing() {
       {/* Navigation */}
       <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-          <Link to="/" className="group">
-            <div className="text-lg font-bold tracking-tight">
-              HATSOFF
-            </div>
+          <Link to="/" className="group flex items-center gap-3 transition hover:opacity-90">
+            <img
+              src="/hatsoff-brand.svg"
+              alt="Hatsoff Media"
+              className="h-10 w-auto object-contain"
+            />
+            <div>
+              <div className="text-base font-black tracking-tight text-slate-950 leading-none">
+                HATSOFF
+              </div>
 
-            <div className="text-[9px] font-semibold uppercase tracking-[0.28em] text-slate-400">
-              Internal Force
+              <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.25em] text-[#ffcc00]">
+                Internal Force
+              </div>
             </div>
           </Link>
 
@@ -730,13 +737,20 @@ function Landing() {
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <div>
-            <div className="text-sm font-bold text-slate-950">
-              HATSOFF
-            </div>
+          <div className="flex items-center gap-3">
+            <img
+              src="/hatsoff-brand.svg"
+              alt="Hatsoff Media"
+              className="h-9 w-auto object-contain"
+            />
+            <div>
+              <div className="text-sm font-black text-slate-950 leading-none">
+                HATSOFF
+              </div>
 
-            <div className="text-[8px] font-semibold uppercase tracking-[0.25em] text-slate-400">
-              Internal Force
+              <div className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.25em] text-[#ffcc00]">
+                Internal Force
+              </div>
             </div>
           </div>
 

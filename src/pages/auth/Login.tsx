@@ -8,11 +8,14 @@ import {
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { signIn } from "../../services/auth/auth.service";
+import { signIn, resetPassword } from "../../services/auth/auth.service";
 
 function Login() {
   const navigate = useNavigate();
 
+  const [recoveryMessage,setRecoveryMessage]=useState('');
+  const [recovering,setRecovering]=useState(false);
+  async function requestRecovery(){setErrorMessage('');setRecoveryMessage('');if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){setErrorMessage('Enter your work email first.');return;}setRecovering(true);try{await resetPassword(email.trim());setRecoveryMessage('If this account exists, a password reset link has been sent. Check your email.');}catch(e){setErrorMessage(e instanceof Error?e.message:'Unable to request password recovery.');}finally{setRecovering(false);}}
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,15 +49,15 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="brand-login min-h-screen bg-slate-50">
       <div className="grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
 
         {/* Left Panel */}
         <div className="relative hidden overflow-hidden bg-slate-950 lg:flex">
           <div className="absolute inset-0">
-            <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-blue-600/20 blur-3xl" />
+            <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-[#ffcc00]/20 blur-3xl" />
 
-            <div className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-indigo-500/10 blur-3xl" />
+            <div className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-[#ffcc00]/10 blur-3xl" />
 
             <div
               className="absolute inset-0 opacity-[0.06]"
@@ -69,13 +72,20 @@ function Login() {
           <div className="relative z-10 flex w-full flex-col justify-between p-12 xl:p-16">
 
             {/* Logo */}
-            <Link to="/" className="w-fit">
-              <div className="text-xl font-bold tracking-tight text-white">
-                HATSOFF
-              </div>
+            <Link to="/" className="w-fit flex items-center gap-3.5 transition hover:opacity-95">
+              <img
+                src="/hatsoff-brand.svg"
+                alt="Hatsoff Media"
+                className="h-12 w-auto object-contain"
+              />
+              <div>
+                <div className="text-xl font-black tracking-tight text-white leading-none">
+                  HATSOFF
+                </div>
 
-              <div className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.3em] text-slate-500">
-                Internal Force
+                <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.25em] text-[#FFCC00]">
+                  Internal Force
+                </div>
               </div>
             </Link>
 
@@ -84,7 +94,7 @@ function Login() {
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-xs font-medium text-slate-300">
                 <ShieldCheck
                   size={14}
-                  className="text-blue-400"
+                  className="text-[#ffcc00]"
                 />
 
                 Secure Internal Workspace
@@ -97,7 +107,7 @@ function Login() {
                 Your team.
                 <br />
 
-                <span className="text-blue-400">
+                <span className="text-[#ffcc00]">
                   One force.
                 </span>
               </h1>
@@ -151,23 +161,28 @@ function Login() {
         <div className="flex min-h-screen items-center justify-center bg-white px-6 py-12 sm:px-10">
           <div className="w-full max-w-md">
 
-            {/* Mobile Logo */}
-            <div className="mb-12 lg:hidden">
-              <Link to="/">
-                <div className="text-xl font-bold tracking-tight text-slate-950">
-                  HATSOFF
-                </div>
+            {/* Header with Logo */}
+            <div className="mb-6">
+              <div className="mb-4 flex items-center justify-between">
+                <Link to="/" className="inline-flex items-center gap-3">
+                  <img
+                    src="/hatsoff-brand.svg"
+                    alt="Hatsoff Media"
+                    className="h-12 w-auto object-contain"
+                  />
+                  <div>
+                    <div className="text-lg font-black tracking-tight text-slate-950 leading-none">
+                      HATSOFF
+                    </div>
+                    <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.22em] text-[#ffcc00]">
+                      Internal Force
+                    </div>
+                  </div>
+                </Link>
 
-                <div className="text-[9px] font-semibold uppercase tracking-[0.3em] text-slate-400">
-                  Internal Force
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                  <LockKeyhole size={18} />
                 </div>
-              </Link>
-            </div>
-
-            {/* Heading */}
-            <div>
-              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-950 text-white">
-                <LockKeyhole size={19} />
               </div>
 
               <h2 className="text-3xl font-semibold tracking-tight text-slate-950">
@@ -200,10 +215,10 @@ function Login() {
                   onChange={(event) =>
                     setEmail(event.target.value)
                   }
-                  placeholder="you@hatsoffmedia.com"
+                  placeholder="you@hatsoffmedia.in"
                   autoComplete="email"
                   required
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || recovering}
                   className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-950 focus:ring-4 focus:ring-slate-950/5 disabled:cursor-not-allowed disabled:bg-slate-50"
                 />
               </div>
@@ -221,6 +236,8 @@ function Login() {
                   <button
                     type="button"
                     disabled={isSubmitting}
+                    onClick={()=>void requestRecovery()}
+                    aria-busy={recovering}
                     className="text-xs font-medium text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Forgot password?
@@ -281,6 +298,7 @@ function Login() {
                 </label>
               </div>
 
+              {recoveryMessage && <p role="status">{recoveryMessage}</p>}
               {/* Error */}
               {errorMessage && (
                 <div

@@ -449,9 +449,7 @@ function ProjectForm({
           total - completed,
         ),
 
-      lead_employee_id:
-        form.lead_employee_id ||
-        null,
+      ...(isEditing ? {} : { lead_employee_id: form.lead_employee_id || null }),
 
       start_date:
         form.start_date ||
@@ -952,7 +950,7 @@ function ProjectForm({
                     htmlFor="project-lead"
                     className="mb-1.5 block text-xs font-medium text-slate-600"
                   >
-                    Lead Artist
+                    {isEditing ? 'Legacy lead (managed in Assignments & shared access)' : 'Initial Project Coordinator'}
                   </label>
 
                   <div className="relative">
@@ -965,6 +963,7 @@ function ProjectForm({
 
                     <select
                       id="project-lead"
+                      aria-describedby={!isEditing && employees.length === 0 ? 'project-coordinator-setup' : undefined}
                       value={
                         form.lead_employee_id
                       }
@@ -974,7 +973,7 @@ function ProjectForm({
                           event.target.value,
                         )
                       }
-                      disabled={loading}
+                      disabled={loading || isEditing}
                       className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50"
                     >
 
@@ -1002,7 +1001,11 @@ function ProjectForm({
                         ),
                       )}
 
-                    </select>
+                    </select>                    {!isEditing && employees.length === 0 && (
+                      <p id="project-coordinator-setup" role="status" className="mt-2 text-sm text-amber-800">
+                        No eligible project coordinators are available. In Settings → Access Management, verify an active Project Coordinator profile and team, then link that profile to its employee record in Employees. Reopen this form after updating the mapping.
+                      </p>
+                    )}
 
                   </div>
 

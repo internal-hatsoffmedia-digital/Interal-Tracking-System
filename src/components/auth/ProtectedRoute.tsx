@@ -1,8 +1,12 @@
+import {useState} from 'react';
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 function ProtectedRoute() {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, refreshProfile, signOut } = useAuth();
+ const [busy,setBusy]=useState(false),[error,setError]=useState('');
+ async function recover(action:()=>Promise<void>){setBusy(true);setError('');try{await action();}catch{setError('Unable to complete this action. Please retry.');}finally{setBusy(false);}}
+ const recoveryActions=<div className="mt-5"><div className="flex justify-center gap-3"><button disabled={busy} className="rounded-full border px-4 py-2" onClick={()=>void recover(refreshProfile)}>Retry profile</button><button disabled={busy} className="rounded-full bg-[#ffcc00] px-4 py-2 text-black" onClick={()=>void recover(signOut)}>Sign out</button></div>{error&&<p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}</div>;
   const location = useLocation();
 
   // Wait until Supabase finishes checking the session
@@ -47,6 +51,7 @@ function ProtectedRoute() {
             Your account is authenticated, but your internal
             profile has not been configured yet.
           </p>
+        {recoveryActions}
         </div>
       </div>
     );
@@ -69,6 +74,7 @@ function ProtectedRoute() {
             Your internal account is currently inactive.
             Please contact your administrator.
           </p>
+        {recoveryActions}
         </div>
       </div>
     );

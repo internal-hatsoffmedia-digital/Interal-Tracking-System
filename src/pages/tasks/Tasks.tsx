@@ -1,3 +1,5 @@
+import TaskActions from "../../components/tasks/TaskActions";
+import {useAuth} from "../../context/AuthContext";
 import {
   CheckCircle2,
   Clock3,
@@ -65,6 +67,10 @@ interface SelectOption {
 ========================================================= */
 
 function Tasks() {
+  const {profile}=useAuth();
+  const canManage=["admin","associate_lead","project_coordinator"].includes(profile?.role ?? "");
+  const [actionTask,setActionTask]=useState<TaskWithRelations|null>(null);
+  const [showArchived,setShowArchived]=useState(false);
   /* =======================================================
      DATA
   ======================================================== */
@@ -354,6 +360,7 @@ function Tasks() {
 
       return tasks.filter(
         (task) => {
+          if (!!(task as TaskWithRelations & {archived_at?:string}).archived_at !== showArchived) return false;
           const matchesSearch =
             !searchTerm ||
             task.title
@@ -431,6 +438,7 @@ function Tasks() {
       );
     }, [
       tasks,
+      showArchived,
       search,
       statusFilter,
       priorityFilter,
@@ -719,103 +727,7 @@ function Tasks() {
      not taskId + status.
   ======================================================== */
 
-  const getNextTaskStatus = (
-    currentStatus: string,
-  ): string | null => {
-    const statusFlow: Record<
-      string,
-      string
-    > = {
-      not_started:
-        "raw_footage_received",
-      in_queue:
-        "raw_footage_received",
-
-      raw_footage_received:
-        "editing_in_progress",
-
-      editing_in_progress:
-        "internal_review",
-
-      internal_review:
-        "client_review",
-      sent_for_internal_review:
-        "client_review",
-
-      client_review:
-        "approved_delivered",
-      sent_for_client_review:
-        "approved_delivered",
-    };
-
-    return (
-      statusFlow[
-        currentStatus
-      ] ?? null
-    );
-  };
-
-  /* =======================================================
-     STATUS CHANGE
-     
-     IMPORTANT:
-     Matches TaskTable's current prop:
-     
-     (task: TaskWithRelations) => void
-  ======================================================== */
-
-  const handleStatusChange =
-    async (
-      task: TaskWithRelations,
-    ) => {
-      const nextStatus =
-        getNextTaskStatus(
-          task.status,
-        );
-
-      if (!nextStatus) {
-        return;
-      }
-
-      try {
-        setError("");
-
-        const updatedTask =
-          await updateTaskStatus(
-            task.id,
-            nextStatus,
-          );
-
-        setTasks(
-          (current) =>
-            current.map(
-              (currentTask) =>
-                currentTask.id ===
-                updatedTask.id
-                  ? {
-                      ...currentTask,
-                      ...updatedTask,
-                    }
-                  : currentTask,
-            ),
-        );
-      } catch (err) {
-        console.error(
-          "Unable to update task status:",
-          err,
-        );
-
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to update task status.",
-        );
-      }
-    };
-
-  /* =======================================================
-     DIRECT STATUS CHANGE (ClickUp style)
-  ======================================================== */
+  const handleStatusChange = (task:TaskWithRelations) => setActionTask(task);
 
   const handleDirectStatusChange = async (
     task: TaskWithRelations,
@@ -1016,6 +928,8 @@ function Tasks() {
 
   return (
     <div className="space-y-6">
+      <div className="mb-5 flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showArchived} onChange={e=>setShowArchived(e.target.checked)}/>Show archived tasks</label>{canManage && <select aria-label="Choose task actions" className="max-w-full rounded-lg border bg-white p-2 text-sm" value="" onChange={e=>setActionTask(tasks.find(t=>t.id===e.target.value) ?? null)}><option value="">Task actions — hold, remove or restore</option>{filteredTasks.map(t=><option value={t.id} key={t.id}>{t.title}</option>)}</select>}</div>
+      {actionTask && <TaskActions task={actionTask} onClose={()=>setActionTask(null)} onSaved={()=>loadData(true)}/>}
       {/* =================================================
           HEADER
       ================================================== */}
@@ -1334,7 +1248,7 @@ function Tasks() {
           tasks={filteredTasks}
           loading={loading}
           onEdit={handleEditTask}
-          onStatusChange={handleStatusChange}
+          onStatusChange={canManage?handleStatusChange:undefined}
         />
       )}
 

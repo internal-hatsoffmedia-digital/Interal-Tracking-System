@@ -1,0 +1,12 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {verifiedSalesMembers,salesChartWins} from '../src/lib/salesChartMetrics.ts';
+import {salesSummary} from '../src/lib/salesMetrics.ts';
+const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002';
+const members=verifiedSalesMembers(a,b);
+const lead={id:'x',ownerId:a,ownerName:'Renamed account',stage:'won',wonOn:'2026-09-03',createdOn:'2026-08-01',source:'Website',revenue:150};
+const leads=[lead,{...lead,id:'y',ownerId:b,revenue:250},{...lead,id:'z',ownerId:'outsider',ownerName:'Harish',revenue:900},{...lead,id:'old',wonOn:'2026-08-01'},{...lead,id:'open',stage:'proposal'}];
+test('account IDs survive renaming and exclude a matching display name',()=>assert.deepEqual(salesChartWins(leads,members,'2026-09').map(l=>l.id),['x','y']));
+test('member and conversion month filters',()=>{assert.deepEqual(salesChartWins(leads,members,'2026-09',b).map(l=>l.id),['y']);assert.equal(salesChartWins(leads,members,'2026-10').length,0);});
+test('configuration fails closed for missing malformed or duplicate IDs',()=>{assert.deepEqual(verifiedSalesMembers(),[]);assert.deepEqual(verifiedSalesMembers(a,a),[]);assert.deepEqual(verifiedSalesMembers('Harish',b),[]);});
+test('source sums equal booked sales and shared target calculation',()=>{const won=salesChartWins(leads,members,'2026-09');const data={leads:won,activities:[],monthlyTargets:{'2026-09':1000}};assert.equal(won.filter(l=>l.source==='Website').reduce((s,l)=>s+l.revenue,0),400);assert.equal(salesSummary(data,'2026-09').achievement,40);assert.equal(salesSummary({...data,monthlyTargets:{}},'2026-09').achievement,null);});
