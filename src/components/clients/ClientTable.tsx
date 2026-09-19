@@ -170,23 +170,27 @@ function ClientTable({
                 Client
               </th>
 
+              <th className="w-[180px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                Project Coordinator
+              </th>
+
               <th className="w-[130px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Short Name
               </th>
 
-              <th className="w-[200px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              <th className="w-[180px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Contact Person
               </th>
 
-              <th className="w-[220px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              <th className="w-[200px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Contact
               </th>
 
-              <th className="w-[130px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              <th className="w-[120px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Status
               </th>
 
-              <th className="w-[210px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+              <th className="w-[180px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Actions
               </th>
 
@@ -201,7 +205,7 @@ function ClientTable({
               <tr>
 
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="p-0"
                 >
                   <ClientTableSkeleton />
@@ -216,7 +220,7 @@ function ClientTable({
                 <tr>
 
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="p-0"
                   >
                     <EmptyClientState />
@@ -271,6 +275,24 @@ function ClientTable({
                         </div>
 
                       </div>
+
+                    </td>
+
+
+                    {/* PROJECT COORDINATOR */}
+
+                    <td className="px-5 py-5">
+
+                      {client.assigned_coordinator ? (
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                          <UserRound size={12} className="text-emerald-600" />
+                          {client.assigned_coordinator.full_name}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">
+                          Unassigned
+                        </span>
+                      )}
 
                     </td>
 

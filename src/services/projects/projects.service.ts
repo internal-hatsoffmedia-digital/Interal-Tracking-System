@@ -122,23 +122,32 @@ export async function getProjects(): Promise<
 export async function getActiveProjects(): Promise<
   ProjectWithRelations[]
 > {
-  const { data, error } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("is_active", true)
-    .order("name", {
-      ascending: true,
-    });
+  const { data: rpcData, error: rpcError } = await supabase.rpc(
+    "get_active_projects_for_tasks",
+  );
 
-  if (error) {
-    throw new Error(
-      `Unable to load active projects: ${error.message}`,
-    );
+  let rawProjects: Project[] = [];
+  if (!rpcError && rpcData) {
+    rawProjects = rpcData as Project[];
+  } else {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("is_active", true)
+      .order("name", {
+        ascending: true,
+      });
+
+    if (error) {
+      throw new Error(
+        `Unable to load active projects: ${error.message}`,
+      );
+    }
+
+    rawProjects = (data ?? []) as Project[];
   }
 
-  const projects = (data ?? []) as Project[];
-
-  if (projects.length === 0) {
+  if (rawProjects.length === 0) {
     return [];
   }
 
@@ -146,7 +155,7 @@ export async function getActiveProjects(): Promise<
     await getProjectRelations();
 
   return attachRelations(
-    projects,
+    rawProjects,
     clients,
     employees,
   );
@@ -233,6 +242,16 @@ export async function createProject(
     totalAssets - completedAssets,
   );
 
+  let creatorTeamId: string | null = null;
+  if (user?.id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("team_id")
+      .eq("id", user.id)
+      .maybeSingle();
+    creatorTeamId = profile?.team_id ?? null;
+  }
+
   const { data, error } = await supabase
     .from("projects")
     .insert({
@@ -274,6 +293,8 @@ export async function createProject(
       is_active: true,
 
       created_by: user?.id ?? null,
+
+      team_id: creatorTeamId,
     })
     .select("*")
     .single();

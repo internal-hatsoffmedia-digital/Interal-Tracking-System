@@ -1,5 +1,3 @@
-import TaskActions from "../../components/tasks/TaskActions";
-import {useAuth} from "../../context/AuthContext";
 import {
   CheckCircle2,
   Clock3,
@@ -19,11 +17,14 @@ import {
   useState,
 } from "react";
 
+import TaskActions from "../../components/tasks/TaskActions";
 import TaskFilters from "../../components/tasks/TaskFilters";
 import TaskForm from "../../components/tasks/TaskForm";
 import TaskTable from "../../components/tasks/TaskTable";
 import TaskGroupedList from "../../components/tasks/TaskGroupedList";
 import TaskKanbanBoard from "../../components/tasks/TaskKanbanBoard";
+
+import { useAuth } from "../../context/AuthContext";
 
 import { getActiveClients } from "../../services/clients/clients.service";
 import { getActiveEmployees } from "../../services/employees/employees.service";
@@ -67,160 +68,158 @@ interface SelectOption {
 ========================================================= */
 
 function Tasks() {
-  const {profile}=useAuth();
-  const canManage=["admin","associate_lead","project_coordinator"].includes(profile?.role ?? "");
-  const [actionTask,setActionTask]=useState<TaskWithRelations|null>(null);
-  const [showArchived,setShowArchived]=useState(false);
+  const { profile } = useAuth();
+  const canManage = ["admin", "associate_lead", "project_coordinator"].includes(profile?.role ?? "");
+  const [actionTask, setActionTask] = useState<TaskWithRelations | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+
   /* =======================================================
-     DATA
+     DATA STATE
   ======================================================== */
 
-  const [tasks, setTasks] =
-    useState<TaskWithRelations[]>([]);
-
-  const [clients, setClients] =
-    useState<Client[]>([]);
-
-  const [projects, setProjects] =
-    useState<ProjectWithRelations[]>([]);
-
-  const [employees, setEmployees] =
-    useState<EmployeeWithTeam[]>([]);
+  const [tasks, setTasks] = useState<TaskWithRelations[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [projects, setProjects] = useState<ProjectWithRelations[]>([]);
+  const [employees, setEmployees] = useState<EmployeeWithTeam[]>([]);
 
   /* =======================================================
      UI STATE
   ======================================================== */
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [refreshing, setRefreshing] =
-    useState(false);
-
-  const [formLoading, setFormLoading] =
-    useState(false);
-
-  const [formOpen, setFormOpen] =
-    useState(false);
-
-  const [editingTask, setEditingTask] =
-    useState<TaskWithRelations | null>(
-      null,
-    );
-
-  const [viewMode, setViewMode] =
-    useState<"list" | "board" | "table">("list");
-
-  const [defaultStatus, setDefaultStatus] =
-    useState("");
-
-  const [error, setError] =
-    useState("");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "board" | "table">("list");
+  const [defaultStatus, setDefaultStatus] = useState("");
+  const [error, setError] = useState("");
 
   /* =======================================================
      FILTER STATE
   ======================================================== */
 
-  const [search, setSearch] =
-    useState("");
-
-  const [statusFilter, setStatusFilter] =
-    useState("");
-
-  const [priorityFilter, setPriorityFilter] =
-    useState("");
-
-  const [categoryFilter, setCategoryFilter] =
-    useState("");
-
-  const [
-    revisionStatusFilter,
-    setRevisionStatusFilter,
-  ] = useState("");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [revisionStatusFilter, setRevisionStatusFilter] = useState("");
 
   /* =======================================================
      OPTIONS
   ======================================================== */
 
-  const categoryOptions: SelectOption[] =
-    [
-      {
-        value: "shorts_reels",
-        label: "Shorts / Reels",
-      },
-      {
-        value: "long_video",
-        label: "Long Video",
-      },
-      {
-        value: "smp",
-        label: "SMP",
-      },
-    ];
+  const categoryOptions: SelectOption[] = [
+    {
+      value: "shorts_reels",
+      label: "Shorts / Reels",
+    },
+    {
+      value: "long_video",
+      label: "Long Video",
+    },
+    {
+      value: "smp",
+      label: "Social Media Post (SMP)",
+    },
+    {
+      value: "graphic_design",
+      label: "Graphic Design & Creatives",
+    },
+    {
+      value: "social_media_handling",
+      label: "Social Media Handling",
+    },
+    {
+      value: "content_writing",
+      label: "Content Writing",
+    },
+    {
+      value: "reel_story_writing",
+      label: "Story Writer for Reels",
+    },
+    {
+      value: "ads_management",
+      label: "Ads Management",
+    },
+    {
+      value: "wordpress_development",
+      label: "WordPress Development",
+    },
+    {
+      value: "custom_coding",
+      label: "Custom Coding & Development",
+    },
+    {
+      value: "website_deployment",
+      label: "Website Deployment & Hosting",
+    },
+    {
+      value: "website_maintenance",
+      label: "Website Maintenance",
+    },
+  ];
 
-  const revisionStatusOptions: SelectOption[] =
-    [
-      {
-        value: "new_file",
-        label: "New File",
-      },
-      {
-        value: "internal_corrections",
-        label: "Internal Corrections",
-      },
-      {
-        value: "client_correction",
-        label: "Client Correction",
-      },
-    ];
+  const revisionStatusOptions: SelectOption[] = [
+    {
+      value: "new_file",
+      label: "New File",
+    },
+    {
+      value: "internal_corrections",
+      label: "Internal Corrections",
+    },
+    {
+      value: "client_correction",
+      label: "Client Correction",
+    },
+  ];
 
-  const priorityOptions: SelectOption[] =
-    [
-      {
-        value: "high",
-        label: "High",
-      },
-      {
-        value: "medium",
-        label: "Medium",
-      },
-      {
-        value: "low",
-        label: "Low",
-      },
-    ];
+  const priorityOptions: SelectOption[] = [
+    {
+      value: "high",
+      label: "High",
+    },
+    {
+      value: "medium",
+      label: "Medium",
+    },
+    {
+      value: "low",
+      label: "Low",
+    },
+  ];
 
-  const statusOptions: SelectOption[] =
-    [
-      {
-        value: "not_started",
-        label: "Not Started / In Queue",
-      },
-      {
-        value: "raw_footage_received",
-        label: "Raw Footage Received",
-      },
-      {
-        value: "editing_in_progress",
-        label: "Editing in Progress",
-      },
-      {
-        value: "internal_review",
-        label: "Sent for Internal Review",
-      },
-      {
-        value: "client_review",
-        label: "Sent for Client Review",
-      },
-      {
-        value: "approved_delivered",
-        label: "Approved & Delivered",
-      },
-      {
-        value: "on_hold",
-        label: "On Hold",
-      },
-    ];
+  const statusOptions: SelectOption[] = [
+    {
+      value: "not_started",
+      label: "Not Started / In Queue",
+    },
+    {
+      value: "raw_footage_received",
+      label: "Raw Footage Received",
+    },
+    {
+      value: "editing_in_progress",
+      label: "Editing in Progress",
+    },
+    {
+      value: "internal_review",
+      label: "Sent for Internal Review",
+    },
+    {
+      value: "client_review",
+      label: "Sent for Client Review",
+    },
+    {
+      value: "approved_delivered",
+      label: "Approved & Delivered",
+    },
+    {
+      value: "on_hold",
+      label: "On Hold",
+    },
+  ];
 
   /* =======================================================
      LOAD DATA
@@ -266,10 +265,6 @@ function Tasks() {
         } else {
           throw tasksResult.reason;
         }
-
-        /* -----------------------------------------------
-           CLIENTS
-        ------------------------------------------------ */
 
         if (
           clientsResult.status ===

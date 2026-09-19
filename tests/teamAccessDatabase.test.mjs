@@ -10,7 +10,7 @@ before(async()=>{
  await db.exec(`create policy fixture_tasks_write on tasks for all to authenticated using(true) with check(true);
  create policy fixture_workers_write on employees for all to authenticated using(true) with check(true);
  create policy fixture_assignment_write on task_assignments for all to authenticated using(true) with check(true);`);
- for(const name of ['202609050001_roles_and_statuses.sql','202609050002_project_access.sql','202609050003_sales_tracker.sql','202609050004_workspace_updates.sql','202609080005_coordinator_project_access.sql','202609080006_team_access_admin.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
+ for(const name of ['202609050001_roles_and_statuses.sql','202609050002_project_access.sql','202609050003_sales_tracker.sql','202609050004_workspace_updates.sql','202609080005_coordinator_project_access.sql','202609080006_team_access_admin.sql','202609180007_coordinator_team_leads.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
  await db.exec(`insert into auth.users select ('00000000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid from generate_series(1,14)n;
  insert into teams(id,name) values('${id(100)}','Project Coordinators'),('${id(101)}','Creative Clan'),('${id(102)}','Cut Masters'),('${id(103)}','Web Development'),('${id(104)}','Digital Ninjas');`);
  const people=[[1,'Admin','admin',100],[2,'Muskan','associate_lead',100],[3,'Ganesh','associate_lead',101],[4,'Sudeesh','associate_lead',102],[5,'Vijay','associate_lead',103],[6,'Janani','associate_lead',104],[7,'Lavanya','project_coordinator',100],[8,'Esther','project_coordinator',100],[9,'Director','director',100],[10,'Image editor','employee',101],[11,'Video editor','employee',102],[12,'Web developer','employee',103],[13,'Digital marketer','employee',104],[14,'Kamalesh','team_lead',100]];
@@ -27,6 +27,20 @@ before(async()=>{
  await db.exec(`insert into timesheets(employee_id,task_id,work_date,start_time) values('${id(210)}','${id(405)}',current_date,now()),('${id(211)}','${id(405)}',current_date,now());`);
 });
 after(()=>db.close());
+
+test('Flow Force team lead can discover coordinators and create an assigned project',async()=>{
+ assert.equal((await as(14,'select workspace_access_context() as access')).rows[0].access.can_manage_projects,true);
+ const people=(await as(14,'select * from project_people()')).rows;
+ assert.ok(people.some(p=>p.id===id(7)));
+ assert.ok(people.some(p=>p.id===id(8)));
+ const created=(await as(14,'insert into projects(name,client_id,lead_employee_id) values($1,$2,$3) returning id',['Lead-created project',id(50),id(208)])).rows[0];
+ assert.equal((await as(8,'select id from projects where id=$1',[created.id])).rows.length,1);
+ assert.equal((await as(7,'select id from projects where id=$1',[created.id])).rows.length,0);
+ await as(14,'select set_project_access($1,$2,$3)',[created.id,[id(7)],[]]);
+ assert.equal((await as(8,'select id from projects where id=$1',[created.id])).rows.length,0);
+ await db.exec('reset role');
+ await db.query('delete from projects where id=$1',[created.id]);
+});
 test('all five Associate Leads have the intended project/task scope',async()=>{
  assert.equal((await as(2,'select id from projects')).rows.length,2);
  assert.equal((await as(2,'select id from tasks')).rows.length,5);
@@ -56,6 +70,19 @@ test('production leads cannot create projects, reassign project owners, move tas
  await assert.rejects(as(3,'update tasks set project_id=$1 where id=$2',[id(302),id(401)]),/project managers/);
  await assert.rejects(as(3,'update employees set team_id=$1 where id=$2',[id(103),id(210)]),/administrators/);
  assert.equal((await as(3,'update tasks set title=$1 where id=$2 returning id',['Unauthorized',id(402)])).rows.length,0);
+});
+test('production team leads see their team workload without coordinator management rights',async()=>{
+ await db.exec("reset role;select set_config('request.jwt.claim.sub','',false)");
+ await db.query("update profiles set role='team_lead' where id=$1",[id(5)]);
+ try {
+  assert.equal((await as(5,'select workspace_access_context() as access')).rows[0].access.can_manage_projects,false);
+  assert.equal((await as(5,'select id from tasks')).rows.length,1);
+  assert.equal((await as(5,'select id from task_assignments')).rows.length,1);
+  await assert.rejects(as(5,'select set_project_access($1,$2,$3)',[id(301),[id(7)],[]]),/not authorized/);
+ } finally {
+  await db.exec("reset role;select set_config('request.jwt.claim.sub','',false)");
+  await db.query("update profiles set role='associate_lead' where id=$1",[id(5)]);
+ }
 });
 test('directory and access mutation are admin-only; self-demotion and stale writes fail',async()=>{
  await assert.rejects(as(3,'select admin_access_directory()'),/Administrator/);

@@ -22,6 +22,7 @@ import type {
 interface ClientFormProps {
   open: boolean;
   client?: Client | null;
+  coordinators?: { id: string; full_name: string; employee_code?: string }[];
   loading?: boolean;
   error?: string;
   onClose: () => void;
@@ -41,6 +42,7 @@ interface ClientFormState {
   email: string;
   phone: string;
   notes: string;
+  assigned_coordinator_id: string;
 }
 
 
@@ -51,12 +53,14 @@ const EMPTY_FORM: ClientFormState = {
   email: "",
   phone: "",
   notes: "",
+  assigned_coordinator_id: "",
 };
 
 
 function ClientForm({
   open,
   client = null,
+  coordinators = [],
   loading = false,
   error = "",
   onClose,
@@ -95,6 +99,8 @@ function ClientForm({
           client.phone ?? "",
         notes:
           client.notes ?? "",
+        assigned_coordinator_id:
+          client.assigned_coordinator_id ?? "",
       });
     } else {
       setForm({
@@ -261,6 +267,10 @@ function ClientForm({
 
       notes:
         form.notes.trim() ||
+        null,
+
+      assigned_coordinator_id:
+        form.assigned_coordinator_id ||
         null,
     };
 
@@ -547,6 +557,58 @@ function ClientForm({
                     />
 
                   </div>
+
+                </div>
+
+                {/* ASSIGNED PROJECT COORDINATOR */}
+
+                <div className="sm:col-span-2">
+
+                  <label
+                    htmlFor="client-coordinator"
+                    className="mb-1.5 block text-xs font-medium text-slate-600"
+                  >
+                    Assigned Project Coordinator
+                  </label>
+
+                  <div className="relative">
+
+                    <UserRound
+                      size={16}
+                      strokeWidth={1.8}
+                      className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+
+                    <select
+                      id="client-coordinator"
+                      value={form.assigned_coordinator_id}
+                      onChange={(event) =>
+                        updateField(
+                          "assigned_coordinator_id",
+                          event.target.value,
+                        )
+                      }
+                      disabled={loading}
+                      className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50"
+                    >
+
+                      <option value="">
+                        Select Project Coordinator (Unassigned)
+                      </option>
+
+                      {coordinators.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.full_name} {c.employee_code ? `(${c.employee_code})` : ""}
+                        </option>
+                      ))}
+
+                    </select>
+
+                  </div>
+
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    Projects created under this client will be automatically routed & visible to the assigned coordinator.
+                  </p>
 
                 </div>
 

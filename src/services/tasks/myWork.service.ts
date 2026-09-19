@@ -30,9 +30,22 @@ async function getCurrentEmployee() {
     );
   }
 
-  const {
+  // 1. Try RPC get_current_employee_profile (handles auto-linking & self-provisioning)
+  try {
+    const { data: rpcData, error: rpcErr } = await supabase.rpc(
+      "get_current_employee_profile"
+    );
+
+    if (!rpcErr && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
+      return rpcData[0];
+    }
+  } catch (e) {
+    console.warn("get_current_employee_profile RPC failed, falling back to direct table queries:", e);
+  }
+
+  // 2. Direct match by profile_id
+  let {
     data: employee,
-    error,
   } =
     await supabase
       .from("employees")
@@ -47,19 +60,45 @@ async function getCurrentEmployee() {
       )
       .maybeSingle();
 
-  if (error) {
-    throw new Error(
-      `Unable to load employee profile: ${error.message}`,
-    );
+  if (employee) {
+    return employee;
   }
 
-  if (!employee) {
-    throw new Error(
-      "No active employee record is linked to this account.",
-    );
+  // 3. Self-healing fallback: match by email or name if profile_id link is missing
+  if (user.email) {
+    const userEmail = user.email.trim().toLowerCase();
+    const userPrefix = userEmail.split("@")[0].replace(/[^a-zA-Z]/g, "");
+
+    const { data: allActiveEmployees } = await supabase
+      .from("employees")
+      .select("*")
+      .eq("is_active", true);
+
+    if (allActiveEmployees && allActiveEmployees.length > 0) {
+      const match = allActiveEmployees.find((e) => {
+        const empEmail = (e.email ?? "").trim().toLowerCase();
+        const empName = (e.full_name ?? "").trim().toLowerCase();
+        return (
+          (empEmail && empEmail === userEmail) ||
+          (userPrefix && userPrefix.length > 2 && empEmail.includes(userPrefix)) ||
+          (userPrefix && userPrefix.length > 2 && empName.includes(userPrefix))
+        );
+      });
+
+      if (match) {
+        employee = match;
+        void supabase
+          .from("employees")
+          .update({ profile_id: user.id })
+          .eq("id", match.id);
+        return employee;
+      }
+    }
   }
 
-  return employee;
+  throw new Error(
+    "No active employee record is linked to this account.",
+  );
 }
 
 /* =========================================================

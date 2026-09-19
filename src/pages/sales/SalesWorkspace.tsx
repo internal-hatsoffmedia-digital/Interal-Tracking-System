@@ -16,16 +16,40 @@ export default function SalesWorkspace() {
   const [missing,setMissing]=useState(false);
   const [editing,setEditing]=useState<SalesLead|null|undefined>(undefined);
   const requests=useRef(0);
+
+  const isMuskan = profile?.email?.toLowerCase() === 'muskan@hatsoffmedia.in' || profile?.full_name?.toLowerCase().includes('muskan');
+
   const load=useCallback(async()=>{
+    if (isMuskan) {
+      setLoading(false);
+      return;
+    }
     const n=++requests.current;setLoading(true);
     try{const r=await loadSales();if(n===requests.current){setData(r);setError('');setMissing(false);}}
     catch(e){if(n===requests.current){setData(null);setMissing(e instanceof SalesSetupError);setError(e instanceof Error?e.message:'Sales could not be loaded');}}
     finally{if(n===requests.current)setLoading(false);}
-  },[]);
-  useEffect(()=>{const counter=requests;const t=window.setTimeout(()=>void load(),0);return()=>{window.clearTimeout(t);counter.current++;};},[load,profile?.id]);
+  },[isMuskan]);
+
+  useEffect(()=>{
+    if (isMuskan) return;
+    const counter=requests;const t=window.setTimeout(()=>void load(),0);return()=>{window.clearTimeout(t);counter.current++;};
+  },[load,profile?.id,isMuskan]);
+
+  if (isMuskan) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <h2 className="text-lg font-semibold text-slate-900">Access Restricted</h2>
+        <p className="mt-2 text-sm text-slate-500">
+          Sales & Marketing workspace is restricted for Flow Force Lead accounts.
+        </p>
+      </div>
+    );
+  }
+
   const canEdit=data && ['admin','manager','member'].includes(data.access ?? '');
   const selectedLead=editing!==undefined ? editing : data?.leads.find(l=>l.id===params.get('lead'));
   const closeEditor=()=>{setEditing(undefined);if(params.has('lead')){const next=new URLSearchParams(params);next.delete('lead');setParams(next);}};
+
   async function exportRows() {
     try{
       const fresh=await loadSales();if(!fresh)throw new Error('Sales access is unavailable');
@@ -34,6 +58,7 @@ export default function SalesWorkspace() {
       const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='sales-leads.csv';a.click();URL.revokeObjectURL(url);
     }catch(e){setError(e instanceof Error?e.message:'Export failed');}
   }
+
   return <div className="space-y-5">
     <div className="flex flex-wrap justify-end gap-2"><button className="rounded-lg border bg-white px-3 py-2 text-sm" disabled={loading} onClick={()=>void load()}>Refresh sales</button>
       {data && <button className="rounded-lg border bg-white px-3 py-2 text-sm" disabled={loading} onClick={()=>void exportRows()}>Export all accessible leads</button>}

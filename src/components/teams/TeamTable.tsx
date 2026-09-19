@@ -98,6 +98,13 @@ function TeamTable({
                         {team.description}
                       </p>
                     )}
+
+                    {team.members && team.members.length > 0 && (
+                      <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-500">
+                        <span className="font-semibold text-slate-700">{team.members.length} {team.members.length === 1 ? 'member' : 'members'}:</span>
+                        <span className="truncate max-w-xs">{team.members.map(m => m.full_name).join(', ')}</span>
+                      </p>
+                    )}
                   </div>
                 </td>
 
@@ -108,11 +115,15 @@ function TeamTable({
                 </td>
 
                 <td className="px-6 py-4">
-                  <span className="text-sm text-slate-600">
-                    {team.team_lead_id
-                      ? "Assigned"
-                      : "Not assigned"}
-                  </span>
+                  {team.team_lead_name ? (
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg bg-indigo-50 border border-indigo-200/60 px-2.5 py-1 text-xs font-semibold text-indigo-800">
+                      {team.team_lead_name}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">
+                      Not assigned
+                    </span>
+                  )}
                 </td>
 
                 <td className="px-6 py-4">

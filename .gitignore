@@ -15,7 +15,7 @@ node_modules
 docs/account-invitation-roster.md
 docs/live-backend-review-*.md
 test-artifacts
-tmp/pdfs/
+tmp/
 dist
 dist-ssr
 *.local

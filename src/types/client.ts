@@ -6,6 +6,12 @@ export interface Client {
   email: string | null;
   phone: string | null;
   notes: string | null;
+  assigned_coordinator_id?: string | null;
+  assigned_coordinator?: {
+    id: string;
+    full_name: string;
+    email?: string | null;
+  } | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -17,6 +23,7 @@ export interface CreateClientInput {
   email?: string | null;
   phone?: string | null;
   notes?: string | null;
+  assigned_coordinator_id?: string | null;
 }
 export interface UpdateClientInput {
   name?: string;
@@ -25,5 +32,7 @@ export interface UpdateClientInput {
   email?: string | null;
   phone?: string | null;
   notes?: string | null;
+  assigned_coordinator_id?: string | null;
   is_active?: boolean;
 }
+

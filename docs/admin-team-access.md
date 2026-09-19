@@ -8,12 +8,12 @@ Select verified accounts and assign:
 
 | Account | Role | Team |
 |---|---|---|
-| Muskan | Associate Lead | Project Coordinators |
-| Ganesh | Associate Lead | Creative Clan |
-| Sudeesh | Associate Lead | Cut Masters |
-| Vijay | Associate Lead | Web Runners |
-| Janani | Associate Lead | Digital Ninjas |
-| Lavanya and Esther | Project Coordinator | Project Coordinators |
+| Muskan | Associate Lead | Project Coordinators (Flow Force) |
+| Ganesh | Associate Lead | Graphic Design Team (Creative Clan) |
+| Sudeesh | Associate Lead | Video Editing Team (Cut Masters) |
+| Vijay | Associate Lead | Website Development & Deployment |
+| Janani | Associate Lead | Digital Marketing |
+| Lavanya and Esther | Project Coordinator | Project Coordinators (Flow Force) |
 
 Create missing teams through Teams first. Login accounts must already exist in profiles; no accounts are matched or created by name. Saving aligns linked employee team IDs, which determine production task scope. Existing project teams and task assignments remain unchanged.
 

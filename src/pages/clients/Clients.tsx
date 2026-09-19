@@ -37,7 +37,12 @@ import type {
    CLIENTS PAGE
 ========================================================= */
 
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
+
 function Clients() {
+  const { profile } = useAuth();
+  const canCreateClient = ["admin", "director", "project_coordinator", "associate_lead", "team_lead"].includes(profile?.role ?? "");
 
   /* =======================================================
      DATA
@@ -45,6 +50,9 @@ function Clients() {
 
   const [clients, setClients] =
     useState<Client[]>([]);
+
+  const [coordinators, setCoordinators] =
+    useState<{ id: string; full_name: string; employee_code?: string }[]>([]);
 
 
   /* =======================================================
@@ -97,7 +105,7 @@ function Clients() {
 
 
   /* =======================================================
-     LOAD CLIENTS
+     LOAD CLIENTS & EMPLOYEES
   ======================================================== */
 
   const loadClients = useCallback(
@@ -106,10 +114,15 @@ function Clients() {
         setLoading(true);
         setErrorMessage("");
 
-        const data =
-          await getClients();
+        const [data, empResult] = await Promise.all([
+          getClients(),
+          supabase.from("employees").select("id, full_name, employee_code").order("full_name", { ascending: true })
+        ]);
 
         setClients(data);
+        if (empResult.data) {
+          setCoordinators(empResult.data as { id: string; full_name: string; employee_code?: string }[]);
+        }
       } catch (error) {
         console.error(
           "Failed to load clients:",
@@ -585,22 +598,24 @@ function Clients() {
             </button>
 
 
-            <button
-              type="button"
-              onClick={
-                handleAddClient
-              }
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
-            >
+            {canCreateClient && (
+              <button
+                type="button"
+                onClick={
+                  handleAddClient
+                }
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
+              >
 
-              <Plus
-                size={17}
-                strokeWidth={2}
-              />
+                <Plus
+                  size={17}
+                  strokeWidth={2}
+                />
 
-              Add Client
+                Add Client
 
-            </button>
+              </button>
+            )}
 
           </div>
 
@@ -879,6 +894,7 @@ function Clients() {
       <ClientForm
         open={isFormOpen}
         client={editingClient}
+        coordinators={coordinators}
         loading={saving}
         error=""
         onClose={
