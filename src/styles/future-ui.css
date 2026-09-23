@@ -134,3 +134,196 @@ html[data-theme=dark] .future-shell :is(.bg-slate-50,.bg-slate-100,[class*="bg-s
 .brand-login button[type=submit]{background:#ffcc00;color:#111111;box-shadow:0 8px 24px #ffcc0026}.brand-login button[type=submit]:hover{background:#e5b700}
 .brand-login :is(input:not([type=checkbox]),button){border-radius:var(--radius)}.brand-login input{accent-color:#ffcc00;border-color:#e5e7eb}.brand-login input:focus{border-color:#b38f00;box-shadow:0 0 0 3px #fff7d6}
 .brand-login .text-blue-600{color:#111111;text-decoration:underline;text-underline-offset:3px}.brand-login .bg-slate-100,.brand-login .bg-slate-50{background:#fff7d6}.brand-login button[type=submit] .animate-spin{border-color:#11111144;border-top-color:#111111}
+
+/* =========================================================
+   RADIUM BLACK THEME & FLOATING AMBIENT BALLS
+========================================================= */
+
+:root {
+  --radium-yellow: #fae800;
+  --radium-glow: rgba(250, 232, 0, 0.45);
+  --radium-soft: rgba(250, 232, 0, 0.12);
+  --radium-dark: #09090b;
+  --radium-surface: #121215;
+}
+
+html[data-theme=dark] {
+  --surface: #121215;
+  --canvas: #09090b;
+  --ink: #f4f4f5;
+  --line: #27272a;
+  --accent: #fae800;
+  --primary: #fae800;
+  --primary-light: #24221a;
+  --future-lime: #fae800;
+  --future-sidebar: #09090b;
+  color-scheme: dark;
+}
+
+/* Radium Ambient Floating Glowing Ball Feel */
+.radium-ambient-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0.85;
+}
+
+.radium-ball {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  filter: blur(60px);
+  mix-blend-mode: screen;
+}
+
+.radium-ball-1 {
+  top: -60px;
+  right: -40px;
+  width: 460px;
+  height: 460px;
+  background: radial-gradient(circle, rgba(250, 232, 0, 0.32) 0%, rgba(234, 179, 8, 0.14) 45%, transparent 70%);
+  animation: radium-float-1 18s ease-in-out infinite alternate, radium-pulse 8s ease-in-out infinite alternate;
+}
+
+.radium-ball-2 {
+  bottom: 5%;
+  left: -80px;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.28) 0%, rgba(202, 138, 4, 0.12) 50%, transparent 75%);
+  animation: radium-float-2 22s ease-in-out infinite alternate, radium-pulse 10s ease-in-out infinite alternate;
+}
+
+.radium-ball-3 {
+  top: 35%;
+  right: 20%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(250, 232, 0, 0.22) 0%, rgba(253, 224, 71, 0.08) 50%, transparent 75%);
+  animation: radium-float-3 16s ease-in-out infinite alternate;
+}
+
+.radium-ball-4 {
+  bottom: -50px;
+  right: -30px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(254, 240, 138, 0.25) 0%, rgba(234, 179, 8, 0.12) 45%, transparent 70%);
+  animation: radium-float-1 25s ease-in-out infinite reverse;
+}
+
+@keyframes radium-float-1 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-120px, 90px, 0) scale(1.15); }
+  100% { transform: translate3d(70px, 150px, 0) scale(0.95); }
+}
+
+@keyframes radium-float-2 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(140px, -100px, 0) scale(0.9); }
+  100% { transform: translate3d(-50px, -160px, 0) scale(1.1); }
+}
+
+@keyframes radium-float-3 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-150px, -70px, 0) scale(1.2); }
+  100% { transform: translate3d(90px, 100px, 0) scale(0.85); }
+}
+
+@keyframes radium-pulse {
+  0%, 100% { filter: blur(55px) brightness(1); opacity: 0.8; }
+  50% { filter: blur(70px) brightness(1.4); opacity: 1; }
+}
+
+/* Radium Yellow Glowing Active Navigation & Buttons */
+.future-nav-link.is-active {
+  background: #fae800 !important;
+  color: #09090b !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 25px rgba(250, 232, 0, 0.45), 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+}
+
+.future-nav-link.is-active svg {
+  color: #09090b !important;
+}
+
+.future-nav-link.is-active .nav-active-dot {
+  background: #09090b !important;
+}
+
+.brand-dot {
+  background: #fae800 !important;
+  box-shadow: 0 0 10px #fae800 !important;
+}
+
+.future-nav-link:hover:not(.is-active) {
+  background: rgba(250, 232, 0, 0.08) !important;
+  color: #fae800 !important;
+}
+
+.future-nav-link:hover:not(.is-active) svg {
+  color: #fae800 !important;
+}
+
+/* Radium Primary Buttons & Accent Elements */
+.future-primary,
+.btn-primary,
+button[type=submit] {
+  background: #fae800 !important;
+  color: #09090b !important;
+  font-weight: 700 !important;
+  border-color: #fae800 !important;
+  box-shadow: 0 0 20px rgba(250, 232, 0, 0.35) !important;
+  transition: all 0.2s ease !important;
+}
+
+.future-primary:hover,
+.btn-primary:hover,
+button[type=submit]:hover {
+  background: #ffe000 !important;
+  box-shadow: 0 0 28px rgba(250, 232, 0, 0.55) !important;
+  transform: translateY(-1px);
+}
+
+/* Mobile Responsiveness Polish */
+@media (max-width: 1023px) {
+  .future-sidebar {
+    background: #09090b !important;
+    border-right: 1px solid #27272a !important;
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.7) !important;
+  }
+  .future-nav-backdrop {
+    background: rgba(9, 9, 11, 0.85) !important;
+    backdrop-filter: blur(8px) !important;
+  }
+  .future-menu-button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 10px;
+    background: rgba(250, 232, 0, 0.1);
+    color: #fae800;
+    border: 1px solid rgba(250, 232, 0, 0.25);
+  }
+}
+
+@media (max-width: 640px) {
+  .future-content {
+    padding: 16px 12px 40px !important;
+  }
+  .future-topbar {
+    padding: 0 12px !important;
+    gap: 8px !important;
+  }
+  .future-briefing {
+    padding: 20px 16px !important;
+    border-radius: 18px !important;
+  }
+  .future-briefing h1 {
+    font-size: 28px !important;
+  }
+}
+

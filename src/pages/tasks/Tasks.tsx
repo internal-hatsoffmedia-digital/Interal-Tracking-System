@@ -576,6 +576,17 @@ function Tasks() {
               taskData as UpdateTaskInput,
             );
 
+          if (canManage && assignedEmployeeId) {
+            if (editingTask.assignment?.id) {
+              await updateTaskAssignment(editingTask.assignment.id, {
+                employee_id: assignedEmployeeId,
+                notes: assignmentNotes || null,
+              });
+            } else {
+              await createTaskAssignment({ task_id: editingTask.id, employee_id: assignedEmployeeId, notes: assignmentNotes || null });
+            }
+          }
+
           setTasks(
             (current) =>
               current.map(
@@ -590,6 +601,7 @@ function Tasks() {
               ),
           );
 
+          await loadData(true);
           setFormOpen(false);
           setEditingTask(null);
 

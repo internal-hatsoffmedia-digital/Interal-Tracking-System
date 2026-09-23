@@ -66,146 +66,42 @@ export async function getTeamMembers(): Promise<TeamMember[]> {
 export async function createTeamMember(
   input: CreateTeamMemberInput,
 ): Promise<TeamMember> {
-  const cleanEmail = input.email.trim().toLowerCase();
-  const cleanName = input.full_name.trim();
-  const cleanTeamId = input.team_id && input.team_id.trim() ? input.team_id : null;
-  const cleanJobTitle = input.job_title && input.job_title.trim() ? input.job_title.trim() : null;
-
-  let authUserId: string | null = null;
-
-  // 1. Attempt Supabase Edge Function create-team-member first
-  try {
-    const { data, error } = await supabase.functions.invoke("create-team-member", {
-      body: {
-        full_name: cleanName,
-        email: cleanEmail,
-        password: input.password,
-        role: input.role,
-        job_title: cleanJobTitle || undefined,
-        team_id: cleanTeamId || undefined,
-        is_active: input.is_active ?? true,
-      },
-    });
-
-    if (!error && data?.user?.id) {
-      authUserId = data.user.id;
-    }
-  } catch (e) {
-    console.warn("Edge function invocation failed, using direct Auth & DB provisioning:", e);
-  }
-
-  // 2. Direct Supabase Auth Provisioning Fallback
-  if (!authUserId) {
-    // Try signUp directly via Supabase client auth
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: cleanEmail,
+  const { data, error } = await supabase.functions.invoke("create-team-member", {
+    body: {
+      full_name: input.full_name.trim(),
+      email: input.email.trim(),
       password: input.password,
-      options: {
-        data: {
-          full_name: cleanName,
-          role: input.role,
-        },
-      },
-    });
-
-    if (signUpData?.user?.id) {
-      authUserId = signUpData.user.id;
-    } else if (signUpError) {
-      // If user already exists in auth.users, try resolving their UUID from profiles or admin_team_accounts
-      const { data: profileCheck } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", cleanEmail)
-        .maybeSingle();
-
-      if (profileCheck?.id) {
-        authUserId = profileCheck.id;
-      } else {
-        try {
-          const { data: adminAccounts } = await supabase.rpc("admin_team_accounts");
-          const matchedAcc = (adminAccounts ?? []).find(
-            (a: any) => a.email?.toLowerCase() === cleanEmail
-          );
-          if (matchedAcc?.id) {
-            authUserId = matchedAcc.id;
-          }
-        } catch (rpcErr) {
-          console.warn("admin_team_accounts fallback check failed:", rpcErr);
-        }
-      }
-
-      if (!authUserId) {
-        throw new Error(
-          `Unable to create account in Supabase Authentication: ${signUpError.message}`,
-        );
-      }
-    }
-  }
-
-  // 3. Upsert record into public.profiles
-  const { error: profileErr } = await supabase
-    .from("profiles")
-    .upsert({
-      id: authUserId,
-      full_name: cleanName,
-      email: cleanEmail,
       role: input.role,
-      team_id: cleanTeamId,
-      job_title: cleanJobTitle,
+      job_title: input.job_title?.trim() || undefined,
+      team_id: input.team_id || undefined,
       is_active: input.is_active ?? true,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "id" });
+    },
+  });
 
-  if (profileErr) {
-    console.error("Failed to upsert profile record:", profileErr);
+  if (error) {
+    console.error("Edge function invoke error:", error);
+    throw new Error(error.message || "Failed to create team member via server function.");
   }
 
-  // 4. Upsert record into public.employees
-  const empCode = `EMP-${authUserId.replace(/-/g, "").substring(0, 6).toUpperCase()}`;
-  const { error: empErr } = await supabase
-    .from("employees")
-    .upsert({
-      profile_id: authUserId,
-      employee_code: empCode,
-      full_name: cleanName,
-      email: cleanEmail,
-      team_id: cleanTeamId,
-      job_title: cleanJobTitle,
-      is_active: input.is_active ?? true,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "profile_id" });
-
-  if (empErr) {
-    console.warn("Employee upsert warning:", empErr);
-  }
-
-  // 5. Execute admin team assignment RPC if available
-  if (cleanTeamId) {
-    try {
-      await supabase.rpc("admin_assign_team_account", {
-        p_account: authUserId,
-        p_team: cleanTeamId,
-      });
-    } catch (e) {
-      console.warn("admin_assign_team_account RPC call warning:", e);
-    }
+  if (data?.error) {
+    throw new Error(data.error);
   }
 
   // Refetch created member details
   const members = await getTeamMembers();
-  const createdMember = members.find((m) => m.id === authUserId);
+  const createdMember = members.find((m) => m.id === data?.user?.id);
   if (createdMember) {
     return createdMember;
   }
 
   return {
-    id: authUserId,
-    full_name: cleanName,
-    email: cleanEmail,
-    employee_code: empCode,
+    id: data.user.id,
+    full_name: input.full_name,
+    email: input.email,
+    employee_code: "EMP-PENDING",
     role: input.role,
-    job_title: cleanJobTitle,
-    team_id: cleanTeamId,
+    job_title: input.job_title || null,
+    team_id: input.team_id || null,
     team_name: null,
     is_active: input.is_active ?? true,
     created_at: new Date().toISOString(),
