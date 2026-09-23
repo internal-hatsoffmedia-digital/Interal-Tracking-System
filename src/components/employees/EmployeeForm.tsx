@@ -206,7 +206,7 @@ function EmployeeForm({
   const validateForm = () => {
     const nextErrors: FormErrors = {};
 
-    if (!formData.profile_id) {
+    if (!isEditing && !formData.profile_id) {
       nextErrors.profile_id =
         "Please select a profile.";
     }
@@ -251,6 +251,7 @@ function EmployeeForm({
     event.preventDefault();
 
     if (!validateForm()) {
+      setSubmitError("Please correct the highlighted required fields above.");
       return;
     }
 
@@ -284,8 +285,8 @@ function EmployeeForm({
       );
 
       setSubmitError(
-        error instanceof Error
-          ? error.message
+        error && typeof error === "object" && "message" in error
+          ? String(error.message)
           : "Unable to save employee.",
       );
     } finally {
@@ -855,6 +856,8 @@ function EmployeeForm({
           {/* =================================================
               FOOTER
           ================================================== */}
+
+          {submitError && <p role="alert" className="shrink-0 border-t border-red-200 bg-red-50 px-6 py-3 text-sm text-red-700">{submitError}</p>}
 
           <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
 

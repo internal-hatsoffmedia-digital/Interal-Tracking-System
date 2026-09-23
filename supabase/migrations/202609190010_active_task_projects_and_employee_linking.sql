@@ -8,7 +8,7 @@ language sql stable security definer set search_path = '' as $$
   select * from public.projects
   where is_active = true
     and private.role_of(auth.uid()) in ('admin', 'director', 'project_coordinator', 'associate_lead', 'team_lead')
-  order by name ascending;
+  order by name asc;
 $$;
 
 grant execute on function public.get_active_projects_for_tasks() to authenticated;

@@ -1,3 +1,5 @@
+import AssignTeamAccount from "../../components/teams/AssignTeamAccount";
+import { useAuth } from "../../context/AuthContext";
 import { Plus, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -13,6 +15,7 @@ import {
 import type { Team } from "../../types/team";
 
 function Teams() {
+ const { profile } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -281,6 +284,7 @@ function Teams() {
           FILTERS
       ======================================= */}
 
+      {profile?.role === "admin" && <AssignTeamAccount teams={teams} onSaved={loadTeams} />}
       <TeamFilters
         search={search}
         status={status}

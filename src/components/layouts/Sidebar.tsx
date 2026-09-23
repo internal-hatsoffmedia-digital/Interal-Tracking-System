@@ -5,7 +5,7 @@ import {useAuth} from '../../context/AuthContext';
 
 const groups=[
  {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/teams',Users],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Timesheet','/timesheet',Timer],['Projects','/projects',FolderKanban]]},
- {name:'Studio',items:[['Clients','/clients',BriefcaseBusiness],['Teams','/teams',Users],['Employees','/employees',UserRound],['Performance','/performance',BarChart3],['Reports','/reports',BarChart3]]},
+ {name:'Studio',items:[['Clients','/clients',BriefcaseBusiness],['Teams','/teams',Users],['Employees','/employees',UserRound],['Team Members','/team-members',UserCheck],['Performance','/performance',BarChart3],['Reports','/reports',BarChart3]]},
  {name:'Sales & Marketing',items:[['Sales Tracker','/sales',Target]]},
 ] as const;
 

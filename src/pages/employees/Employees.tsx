@@ -1,3 +1,4 @@
+import AuthEmployeeForm from "../../components/employees/AuthEmployeeForm";
 import {
   Plus,
   RefreshCw,
@@ -754,6 +755,8 @@ function Employees() {
           FILTERS
       ====================================================== */}
 
+
+
       <EmployeeFilters
         search={search}
         teamId={teamId}
@@ -821,7 +824,15 @@ function Employees() {
           FORM
       ====================================================== */}
 
-      {isFormOpen && (
+      {isFormOpen && !editingEmployee && currentProfile?.role === "admin" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <section role="dialog" aria-modal="true" aria-label="Add employee from Authentication" className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-4">
+            <div className="mb-3 flex justify-end"><button type="button" autoFocus onClick={handleCloseForm} className="rounded-lg border px-3 py-2">Close</button></div>
+            <AuthEmployeeForm onSaved={async () => { await loadEmployees(); }} />
+          </section>
+        </div>
+      )}
+      {isFormOpen && editingEmployee && (
         <EmployeeForm
           employee={
             editingEmployee

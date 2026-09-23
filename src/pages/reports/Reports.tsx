@@ -1,16 +1,8 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
-  BarChart3,
-  CalendarDays,
-  CheckCircle2,
+  Briefcase,
   Clock3,
   FolderKanban,
   RefreshCw,
@@ -18,19 +10,26 @@ import {
   Users,
 } from "lucide-react";
 
+import ReportHeader from "../../components/reports/ReportHeader";
+import {
+  PerformanceSpectrum,
+  PriorityDistributionCards,
+  TaskStatusMeters,
+} from "../../components/reports/ReportCharts";
+import ReportOverviewKpis from "../../components/reports/ReportOverviewKpis";
+import {
+  EmployeeTaskTable,
+  EmptyReportState,
+  ProjectReportTable,
+  ReportCard,
+  WorkloadTable,
+} from "../../components/reports/ReportTables";
+import ReportTabNav, { type ReportTab } from "../../components/reports/ReportTabNav";
 import { supabase } from "../../lib/supabase";
 
 /* ============================================================
    TYPES
 ============================================================ */
-
-type ReportTab =
-  | "overview"
-  | "tasks"
-  | "timesheets"
-  | "projects"
-  | "performance"
-  | "workload";
 
 interface Employee {
   id: string;
@@ -88,71 +87,6 @@ interface Timesheet {
   performance: string;
 }
 
-interface TaskStatusRow {
-  label: string;
-  value: number;
-}
-
-interface EmployeeTaskRow {
-  employee_id: string;
-  employee_name: string;
-  employee_code: string;
-  total_tasks: number;
-  completed_tasks: number;
-  delayed_tasks: number;
-  estimated_hours: number;
-  actual_hours: number;
-  completion_rate: number;
-}
-
-interface ClientTaskRow {
-  client_id: string;
-  client_name: string;
-  total_tasks: number;
-  completed_tasks: number;
-  pending_tasks: number;
-}
-
-interface PriorityRow {
-  priority: string;
-  count: number;
-}
-
-interface EmployeeHoursRow {
-  employee_id: string;
-  employee_name: string;
-  employee_code: string;
-  hours: number;
-}
-
-interface ClientHoursRow {
-  client_id: string;
-  client_name: string;
-  hours: number;
-}
-
-interface ProjectHoursRow {
-  project_id: string;
-  project_name: string;
-  hours: number;
-}
-
-interface WorkloadRow {
-  employee_id: string;
-  employee_name: string;
-  employee_code: string;
-  active_tasks: number;
-  allocated_hours: number;
-  actual_hours: number;
-  utilization: number;
-}
-
-interface PerformanceSummary {
-  green: number;
-  orange: number;
-  red: number;
-}
-
 /* ============================================================
    HELPERS
 ============================================================ */
@@ -168,34 +102,7 @@ function formatHours(value: number) {
   return Number(value || 0).toFixed(1);
 }
 
-function formatDate(
-  value: string | null,
-) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(
-    `${value.split("T")[0]}T00:00:00`,
-  );
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleDateString(
-    "en-IN",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    },
-  );
-}
-
-function isCompleted(
-  status: string,
-) {
+function isCompleted(status: string) {
   return [
     "completed",
     "approved_delivered",
@@ -206,2631 +113,553 @@ function isCompleted(
   ].includes(normalize(status));
 }
 
-function isDelayed(
-  task: Task,
-) {
-  if (
-    !task.due_date ||
-    isCompleted(task.status)
-  ) {
+function isDelayed(task: Task) {
+  if (!task.due_date || isCompleted(task.status)) {
     return false;
   }
-
-  const due = new Date(
-    task.due_date,
-  );
-
+  const due = new Date(task.due_date);
   if (Number.isNaN(due.getTime())) {
     return false;
   }
-
   return due < new Date();
 }
 
-function getInitials(
-  name: string,
-) {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (parts.length === 0) {
-    return "?";
-  }
-
-  if (parts.length === 1) {
-    return parts[0]
-      .charAt(0)
-      .toUpperCase();
-  }
-
-  return (
-    parts[0].charAt(0) +
-    parts[parts.length - 1].charAt(0)
-  ).toUpperCase();
-}
-
-function prettifyStatus(
-  value: string,
-) {
+function prettifyStatus(value: string) {
   return value
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (char) =>
-      char.toUpperCase(),
-    );
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 /* ============================================================
-   PAGE
+   PAGE COMPONENT
 ============================================================ */
 
 export default function Reports() {
-  const [employees, setEmployees] =
-    useState<Employee[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [timesheets, setTimesheets] = useState<Timesheet[]>([]);
 
-  const [clients, setClients] =
-    useState<Client[]>([]);
-
-  const [projects, setProjects] =
-    useState<Project[]>([]);
-
-  const [tasks, setTasks] =
-    useState<Task[]>([]);
-
-  const [timesheets, setTimesheets] =
-    useState<Timesheet[]>([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-  const [activeTab, setActiveTab] =
-    useState<ReportTab>(
-      "overview",
-    );
-
-  const [startDate, setStartDate] =
-    useState("");
-
-  const [endDate, setEndDate] =
-    useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState<ReportTab>("overview");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   /* ==========================================================
-     LOAD DATA
+     LOAD DATA FROM SUPABASE
   ========================================================== */
 
-  const loadReports =
-    useCallback(async () => {
-      try {
-        setLoading(true);
-        setError("");
+  const loadReports = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-        const [
-          employeesResponse,
-          clientsResponse,
-          projectsResponse,
-          tasksResponse,
-          timesheetsResponse,
-        ] = await Promise.all([
-          supabase
-            .from("employees")
-            .select(
-              "id, full_name, employee_code, job_title, team_id, is_active",
-            )
-            .eq("is_active", true)
-            .order("full_name"),
+      const [
+        employeesRes,
+        clientsRes,
+        projectsRes,
+        tasksRes,
+        timesheetsRes,
+      ] = await Promise.all([
+        supabase
+          .from("employees")
+          .select("id, full_name, employee_code, job_title, team_id, is_active")
+          .eq("is_active", true)
+          .order("full_name"),
 
-          supabase
-            .from("clients")
-            .select(
-              "id, name, short_name, is_active",
-            )
-            .eq("is_active", true)
-            .order("name"),
+        supabase
+          .from("clients")
+          .select("id, name, short_name, is_active")
+          .eq("is_active", true)
+          .order("name"),
 
-          supabase
-            .from("projects")
-            .select(
-              "id, client_id, name, series_title, total_assets_required, completed_assets, pending_assets, lead_employee_id, start_date, target_deadline, status, health, invoice_status, is_active",
-            )
-            .order("created_at", {
-              ascending: false,
-            }),
+        supabase
+          .from("projects")
+          .select("id, client_id, name, series_title, total_assets_required, completed_assets, pending_assets, lead_employee_id, start_date, target_deadline, status, health, invoice_status, is_active")
+          .order("created_at", { ascending: false }),
 
-          supabase
-            .from("tasks")
-            .select(
-              "id, project_id, client_id, title, category, priority, status, planned_date, due_date, estimated_hours, actual_hours",
-            )
-            .order("created_at", {
-              ascending: false,
-            }),
+        supabase
+          .from("tasks")
+          .select("id, project_id, client_id, title, category, priority, status, planned_date, due_date, estimated_hours, actual_hours")
+          .order("created_at", { ascending: false }),
 
-          supabase
-            .from("timesheets")
-            .select(
-              "id, employee_id, task_id, work_date, total_hours, performance",
-            )
-            .order("work_date", {
-              ascending: false,
-            }),
-        ]);
+        supabase
+          .from("timesheets")
+          .select("id, employee_id, task_id, work_date, total_hours, performance")
+          .order("work_date", { ascending: false }),
+      ]);
 
-        if (employeesResponse.error) {
-          throw employeesResponse.error;
-        }
+      if (employeesRes.error) throw employeesRes.error;
+      if (clientsRes.error) throw clientsRes.error;
+      if (projectsRes.error) throw projectsRes.error;
+      if (tasksRes.error) throw tasksRes.error;
+      if (timesheetsRes.error) throw timesheetsRes.error;
 
-        if (clientsResponse.error) {
-          throw clientsResponse.error;
-        }
-
-        if (projectsResponse.error) {
-          throw projectsResponse.error;
-        }
-
-        if (tasksResponse.error) {
-          throw tasksResponse.error;
-        }
-
-        if (timesheetsResponse.error) {
-          throw timesheetsResponse.error;
-        }
-
-        setEmployees(
-          (employeesResponse.data ??
-            []) as Employee[],
-        );
-
-        setClients(
-          (clientsResponse.data ??
-            []) as Client[],
-        );
-
-        setProjects(
-          (projectsResponse.data ??
-            []) as Project[],
-        );
-
-        setTasks(
-          (tasksResponse.data ??
-            []) as Task[],
-        );
-
-        setTimesheets(
-          (timesheetsResponse.data ??
-            []) as Timesheet[],
-        );
-      } catch (err) {
-        console.error(
-          "Failed to load reports:",
-          err,
-        );
-
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to load reports.",
-        );
-      } finally {
-        setLoading(false);
-      }
-    }, []);
+      setEmployees((employeesRes.data ?? []) as Employee[]);
+      setClients((clientsRes.data ?? []) as Client[]);
+      setProjects((projectsRes.data ?? []) as Project[]);
+      setTasks((tasksRes.data ?? []) as Task[]);
+      setTimesheets((timesheetsRes.data ?? []) as Timesheet[]);
+    } catch (err) {
+      console.error("Failed to load reports:", err);
+      setError(err instanceof Error ? err.message : "Unable to load reports.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     void loadReports();
   }, [loadReports]);
 
   /* ==========================================================
-     FILTERED TIMESHEETS
+     QUICK PRESETS
   ========================================================== */
 
-  const filteredTimesheets =
-    useMemo(() => {
-      return timesheets.filter(
-        (entry) => {
-          if (
-            startDate &&
-            entry.work_date < startDate
-          ) {
-            return false;
-          }
+  const handleQuickPreset = (preset: "all" | "month" | "last30" | "quarter") => {
+    const now = new Date();
+    if (preset === "all") {
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
 
-          if (
-            endDate &&
-            entry.work_date > endDate
-          ) {
-            return false;
-          }
+    const todayStr = now.toISOString().split("T")[0];
+    setEndDate(todayStr);
 
-          return true;
-        },
-      );
-    }, [
-      endDate,
-      startDate,
-      timesheets,
-    ]);
+    if (preset === "month") {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      setStartDate(firstDay.toISOString().split("T")[0]);
+    } else if (preset === "last30") {
+      const past30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      setStartDate(past30.toISOString().split("T")[0]);
+    } else if (preset === "quarter") {
+      const pastQuarter = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      setStartDate(pastQuarter.toISOString().split("T")[0]);
+    }
+  };
 
   /* ==========================================================
-     FILTERED TASKS
+     FILTERED DATA
   ========================================================== */
 
-  const filteredTasks =
-    useMemo(() => {
-      return tasks.filter((task) => {
-        const date =
-          task.planned_date ||
-          task.due_date?.split("T")[0] ||
-          "";
+  const filteredTimesheets = useMemo(() => {
+    return timesheets.filter((entry) => {
+      if (startDate && entry.work_date < startDate) return false;
+      if (endDate && entry.work_date > endDate) return false;
+      return true;
+    });
+  }, [endDate, startDate, timesheets]);
 
-        if (
-          startDate &&
-          date &&
-          date < startDate
-        ) {
-          return false;
-        }
-
-        if (
-          endDate &&
-          date &&
-          date > endDate
-        ) {
-          return false;
-        }
-
-        return true;
-      });
-    }, [
-      endDate,
-      startDate,
-      tasks,
-    ]);
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      const date = task.planned_date || task.due_date?.split("T")[0] || "";
+      if (startDate && date && date < startDate) return false;
+      if (endDate && date && date > endDate) return false;
+      return true;
+    });
+  }, [endDate, startDate, tasks]);
 
   /* ==========================================================
-     OVERVIEW
+     METRICS & COMPUTATIONS
   ========================================================== */
 
-  const overview = useMemo(() => {
-    const completed =
-      filteredTasks.filter(
-        (task) =>
-          isCompleted(
-            task.status,
-          ),
-      ).length;
-
-    const delayed =
-      filteredTasks.filter(
-        (task) =>
-          isDelayed(task),
-      ).length;
-
-    const totalHours =
-      filteredTimesheets.reduce(
-        (sum, entry) =>
-          sum +
-          Number(
-            entry.total_hours || 0,
-          ),
-        0,
-      );
-
-    const activeProjects =
-      projects.filter(
-        (project) =>
-          project.is_active,
-      ).length;
-
-    const completionRate =
-      filteredTasks.length > 0
-        ? (completed /
-            filteredTasks.length) *
-          100
-        : 0;
+  const overviewMetrics = useMemo(() => {
+    const completed = filteredTasks.filter((t) => isCompleted(t.status)).length;
+    const delayed = filteredTasks.filter((t) => isDelayed(t)).length;
+    const totalHours = filteredTimesheets.reduce((sum, e) => sum + Number(e.total_hours || 0), 0);
+    const activeProjects = projects.filter((p) => p.is_active).length;
+    const completionRate = filteredTasks.length > 0 ? (completed / filteredTasks.length) * 100 : 0;
 
     return {
-      totalTasks:
-        filteredTasks.length,
+      totalTasks: filteredTasks.length,
       completed,
       delayed,
       totalHours,
       activeProjects,
       completionRate,
     };
-  }, [
-    filteredTasks,
-    filteredTimesheets,
-    projects,
-  ]);
+  }, [filteredTasks, filteredTimesheets, projects]);
 
-  /* ==========================================================
-     TASK STATUS REPORT
-  ========================================================== */
+  // Task Status Rows
+  const taskStatusRows = useMemo(() => {
+    const counts = new Map<string, number>();
+    filteredTasks.forEach((t) => {
+      const status = t.status || "unknown";
+      counts.set(status, (counts.get(status) || 0) + 1);
+    });
 
-  const taskStatusRows =
-    useMemo<TaskStatusRow[]>(() => {
-      const counts =
-        new Map<string, number>();
+    return Array.from(counts.entries())
+      .map(([status, value]) => ({
+        label: prettifyStatus(status),
+        value,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [filteredTasks]);
 
-      filteredTasks.forEach(
-        (task) => {
-          const status =
-            task.status || "unknown";
+  // Priority Rows
+  const priorityRows = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredTasks.forEach((t) => {
+      const priority = t.priority || "unknown";
+      map.set(priority, (map.get(priority) || 0) + 1);
+    });
 
-          counts.set(
-            status,
-            (counts.get(status) ||
-              0) + 1,
-          );
-        },
-      );
+    return Array.from(map.entries())
+      .map(([priority, count]) => ({ priority, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [filteredTasks]);
 
-      return Array.from(
-        counts.entries(),
-      )
-        .map(
-          ([status, value]) => ({
-            label: prettifyStatus(
-              status,
-            ),
-            value,
-          }),
-        )
-        .sort(
-          (a, b) =>
-            b.value - a.value,
-        );
-    }, [filteredTasks]);
+  // Employee Task Rows
+  const employeeTaskRows = useMemo(() => {
+    return employees
+      .map((employee) => {
+        const empTimesheets = filteredTimesheets.filter((e) => e.employee_id === employee.id);
+        const taskIds = new Set(empTimesheets.map((e) => e.task_id));
+        const empTasks = filteredTasks.filter((t) => taskIds.has(t.id));
+        const completed = empTasks.filter((t) => isCompleted(t.status)).length;
+        const delayed = empTasks.filter((t) => isDelayed(t)).length;
+        const estimated = empTasks.reduce((sum, t) => sum + Number(t.estimated_hours || 0), 0);
+        const actual = empTimesheets.reduce((sum, e) => sum + Number(e.total_hours || 0), 0);
 
-  /* ==========================================================
-     TASK BY EMPLOYEE
-  ========================================================== */
-
-  const employeeTaskRows =
-    useMemo<EmployeeTaskRow[]>(
-      () =>
-        employees
-          .map((employee) => {
-            const employeeTimesheets =
-              filteredTimesheets.filter(
-                (entry) =>
-                  entry.employee_id ===
-                  employee.id,
-              );
-
-            const taskIds =
-              new Set(
-                employeeTimesheets.map(
-                  (entry) =>
-                    entry.task_id,
-                ),
-              );
-
-            const employeeTasks =
-              filteredTasks.filter(
-                (task) =>
-                  taskIds.has(
-                    task.id,
-                  ),
-              );
-
-            const completed =
-              employeeTasks.filter(
-                (task) =>
-                  isCompleted(
-                    task.status,
-                  ),
-              ).length;
-
-            const delayed =
-              employeeTasks.filter(
-                (task) =>
-                  isDelayed(task),
-              ).length;
-
-            const estimated =
-              employeeTasks.reduce(
-                (sum, task) =>
-                  sum +
-                  Number(
-                    task.estimated_hours ||
-                      0,
-                  ),
-                0,
-              );
-
-            const actual =
-              employeeTimesheets.reduce(
-                (sum, entry) =>
-                  sum +
-                  Number(
-                    entry.total_hours ||
-                      0,
-                  ),
-                0,
-              );
-
-            return {
-              employee_id:
-                employee.id,
-
-              employee_name:
-                employee.full_name ||
-                "Unnamed",
-
-              employee_code:
-                employee.employee_code ||
-                "—",
-
-              total_tasks:
-                employeeTasks.length,
-
-              completed_tasks:
-                completed,
-
-              delayed_tasks:
-                delayed,
-
-              estimated_hours:
-                estimated,
-
-              actual_hours:
-                actual,
-
-              completion_rate:
-                employeeTasks.length >
-                0
-                  ? (completed /
-                      employeeTasks.length) *
-                    100
-                  : 0,
-            };
-          })
-          .filter(
-            (row) =>
-              row.total_tasks > 0,
-          )
-          .sort(
-            (a, b) =>
-              b.total_tasks -
-              a.total_tasks,
-          ),
-      [
-        employees,
-        filteredTasks,
-        filteredTimesheets,
-      ],
-    );
-
-  /* ==========================================================
-     TASK BY CLIENT
-  ========================================================== */
-
-  const clientTaskRows =
-    useMemo<ClientTaskRow[]>(
-      () =>
-        clients
-          .map((client) => {
-            const clientTasks =
-              filteredTasks.filter(
-                (task) =>
-                  task.client_id ===
-                  client.id,
-              );
-
-            const completed =
-              clientTasks.filter(
-                (task) =>
-                  isCompleted(
-                    task.status,
-                  ),
-              ).length;
-
-            return {
-              client_id:
-                client.id,
-
-              client_name:
-                client.name,
-
-              total_tasks:
-                clientTasks.length,
-
-              completed_tasks:
-                completed,
-
-              pending_tasks:
-                clientTasks.length -
-                completed,
-            };
-          })
-          .filter(
-            (row) =>
-              row.total_tasks > 0,
-          )
-          .sort(
-            (a, b) =>
-              b.total_tasks -
-              a.total_tasks,
-          ),
-      [clients, filteredTasks],
-    );
-
-  /* ==========================================================
-     PRIORITY REPORT
-  ========================================================== */
-
-  const priorityRows =
-    useMemo<PriorityRow[]>(() => {
-      const map =
-        new Map<string, number>();
-
-      filteredTasks.forEach(
-        (task) => {
-          const priority =
-            task.priority ||
-            "unknown";
-
-          map.set(
-            priority,
-            (map.get(priority) ||
-              0) + 1,
-          );
-        },
-      );
-
-      return Array.from(
-        map.entries(),
-      )
-        .map(
-          ([priority, count]) => ({
-            priority,
-            count,
-          }),
-        )
-        .sort(
-          (a, b) =>
-            b.count - a.count,
-        );
-    }, [filteredTasks]);
-
-  /* ==========================================================
-     HOURS BY EMPLOYEE
-  ========================================================== */
-
-  const employeeHoursRows =
-    useMemo<EmployeeHoursRow[]>(
-      () =>
-        employees
-          .map((employee) => {
-            const hours =
-              filteredTimesheets
-                .filter(
-                  (entry) =>
-                    entry.employee_id ===
-                    employee.id,
-                )
-                .reduce(
-                  (sum, entry) =>
-                    sum +
-                    Number(
-                      entry.total_hours ||
-                        0,
-                    ),
-                  0,
-                );
-
-            return {
-              employee_id:
-                employee.id,
-
-              employee_name:
-                employee.full_name ||
-                "Unnamed",
-
-              employee_code:
-                employee.employee_code ||
-                "—",
-
-              hours,
-            };
-          })
-          .filter(
-            (row) =>
-              row.hours > 0,
-          )
-          .sort(
-            (a, b) =>
-              b.hours - a.hours,
-          ),
-      [
-        employees,
-        filteredTimesheets,
-      ],
-    );
-
-  /* ==========================================================
-     HOURS BY CLIENT
-  ========================================================== */
-
-  const clientHoursRows =
-    useMemo<ClientHoursRow[]>(
-      () =>
-        clients
-          .map((client) => {
-            const clientTaskIds =
-              new Set(
-                filteredTasks
-                  .filter(
-                    (task) =>
-                      task.client_id ===
-                      client.id,
-                  )
-                  .map(
-                    (task) =>
-                      task.id,
-                  ),
-              );
-
-            const hours =
-              filteredTimesheets
-                .filter((entry) =>
-                  clientTaskIds.has(
-                    entry.task_id,
-                  ),
-                )
-                .reduce(
-                  (sum, entry) =>
-                    sum +
-                    Number(
-                      entry.total_hours ||
-                        0,
-                    ),
-                  0,
-                );
-
-            return {
-              client_id:
-                client.id,
-
-              client_name:
-                client.name,
-
-              hours,
-            };
-          })
-          .filter(
-            (row) =>
-              row.hours > 0,
-          )
-          .sort(
-            (a, b) =>
-              b.hours - a.hours,
-          ),
-      [
-        clients,
-        filteredTasks,
-        filteredTimesheets,
-      ],
-    );
-
-  /* ==========================================================
-     HOURS BY PROJECT
-  ========================================================== */
-
-  const projectHoursRows =
-    useMemo<ProjectHoursRow[]>(
-      () =>
-        projects
-          .map((project) => {
-            const projectTaskIds =
-              new Set(
-                filteredTasks
-                  .filter(
-                    (task) =>
-                      task.project_id ===
-                      project.id,
-                  )
-                  .map(
-                    (task) =>
-                      task.id,
-                  ),
-              );
-
-            const hours =
-              filteredTimesheets
-                .filter((entry) =>
-                  projectTaskIds.has(
-                    entry.task_id,
-                  ),
-                )
-                .reduce(
-                  (sum, entry) =>
-                    sum +
-                    Number(
-                      entry.total_hours ||
-                        0,
-                    ),
-                  0,
-                );
-
-            return {
-              project_id:
-                project.id,
-
-              project_name:
-                project.name,
-
-              hours,
-            };
-          })
-          .filter(
-            (row) =>
-              row.hours > 0,
-          )
-          .sort(
-            (a, b) =>
-              b.hours - a.hours,
-          ),
-      [
-        filteredTasks,
-        filteredTimesheets,
-        projects,
-      ],
-    );
-
-  /* ==========================================================
-     PROJECT REPORT
-  ========================================================== */
-
-  const projectReportRows =
-    useMemo(
-      () =>
-        projects
-          .filter(
-            (project) =>
-              project.is_active,
-          )
-          .map((project) => {
-            const total =
-              Number(
-                project.total_assets_required ||
-                  0,
-              );
-
-            const completed =
-              Number(
-                project.completed_assets ||
-                  0,
-              );
-
-            const completion =
-              total > 0
-                ? (completed /
-                    total) *
-                  100
-                : 0;
-
-            const delayed =
-              project.target_deadline
-                ? new Date(
-                    `${project.target_deadline}T23:59:59`,
-                  ) <
-                  new Date() &&
-                  completion < 100
-                : false;
-
-            const hours =
-              projectHoursRows.find(
-                (row) =>
-                  row.project_id ===
-                  project.id,
-              )?.hours || 0;
-
-            const client =
-              clients.find(
-                (item) =>
-                  item.id ===
-                  project.client_id,
-              );
-
-            return {
-              ...project,
-              clientName:
-                client?.name ||
-                "Unknown Client",
-              completion,
-              delayed,
-              hours,
-            };
-          })
-          .sort(
-            (a, b) =>
-              b.completion -
-              a.completion,
-          ),
-      [
-        clients,
-        projectHoursRows,
-        projects,
-      ],
-    );
-
-  /* ==========================================================
-     PERFORMANCE
-  ========================================================== */
-
-  const performanceSummary =
-    useMemo<PerformanceSummary>(
-      () => {
-        const result = {
-          green: 0,
-          orange: 0,
-          red: 0,
+        return {
+          employee_id: employee.id,
+          employee_name: employee.full_name || "Unnamed",
+          employee_code: employee.employee_code || "—",
+          total_tasks: empTasks.length,
+          completed_tasks: completed,
+          delayed_tasks: delayed,
+          estimated_hours: estimated,
+          actual_hours: actual,
+          completion_rate: empTasks.length > 0 ? (completed / empTasks.length) * 100 : 0,
         };
+      })
+      .filter((row) => row.total_tasks > 0)
+      .sort((a, b) => b.total_tasks - a.total_tasks);
+  }, [employees, filteredTasks, filteredTimesheets]);
 
-        employeeTaskRows.forEach(
-          (employee) => {
-            const delayRate =
-              employee.total_tasks >
-              0
-                ? (employee.delayed_tasks /
-                    employee.total_tasks) *
-                  100
-                : 0;
+  // Hours by Employee
+  const employeeHoursRows = useMemo(() => {
+    return employees
+      .map((emp) => {
+        const hours = filteredTimesheets
+          .filter((e) => e.employee_id === emp.id)
+          .reduce((sum, e) => sum + Number(e.total_hours || 0), 0);
+        return {
+          employee_id: emp.id,
+          employee_name: emp.full_name || "Unnamed",
+          employee_code: emp.employee_code || "—",
+          hours,
+        };
+      })
+      .filter((r) => r.hours > 0)
+      .sort((a, b) => b.hours - a.hours);
+  }, [employees, filteredTimesheets]);
 
-            let status:
-              | "green"
-              | "orange"
-              | "red";
-
-            if (
-              employee.total_tasks ===
-              0
-            ) {
-              status = "orange";
-            } else if (
-              employee.completion_rate >=
-                80 &&
-              delayRate <= 10
-            ) {
-              status = "green";
-            } else if (
-              employee.completion_rate <
-                50 ||
-              delayRate > 30
-            ) {
-              status = "red";
-            } else {
-              status = "orange";
-            }
-
-            result[status] += 1;
-          },
+  // Hours by Client
+  const clientHoursRows = useMemo(() => {
+    return clients
+      .map((client) => {
+        const clientTaskIds = new Set(
+          filteredTasks.filter((t) => t.client_id === client.id).map((t) => t.id)
         );
+        const hours = filteredTimesheets
+          .filter((e) => clientTaskIds.has(e.task_id))
+          .reduce((sum, e) => sum + Number(e.total_hours || 0), 0);
+        return {
+          client_id: client.id,
+          client_name: client.name,
+          hours,
+        };
+      })
+      .filter((r) => r.hours > 0)
+      .sort((a, b) => b.hours - a.hours);
+  }, [clients, filteredTasks, filteredTimesheets]);
 
-        return result;
-      },
-      [employeeTaskRows],
-    );
+  // Hours by Project
+  const projectHoursRows = useMemo(() => {
+    return projects
+      .map((project) => {
+        const projectTaskIds = new Set(
+          filteredTasks.filter((t) => t.project_id === project.id).map((t) => t.id)
+        );
+        const hours = filteredTimesheets
+          .filter((e) => projectTaskIds.has(e.task_id))
+          .reduce((sum, e) => sum + Number(e.total_hours || 0), 0);
+        return {
+          project_id: project.id,
+          project_name: project.name,
+          hours,
+        };
+      })
+      .filter((r) => r.hours > 0)
+      .sort((a, b) => b.hours - a.hours);
+  }, [filteredTasks, filteredTimesheets, projects]);
 
-  /* ==========================================================
-     WORKLOAD
-  ========================================================== */
+  // Project Report Rows
+  const projectReportRows = useMemo(() => {
+    return projects
+      .filter((p) => p.is_active)
+      .map((project) => {
+        const total = Number(project.total_assets_required || 0);
+        const completed = Number(project.completed_assets || 0);
+        const completion = total > 0 ? (completed / total) * 100 : 0;
+        const delayed = project.target_deadline
+          ? new Date(`${project.target_deadline}T23:59:59`) < new Date() && completion < 100
+          : false;
+        const hours = projectHoursRows.find((r) => r.project_id === project.id)?.hours || 0;
+        const client = clients.find((c) => c.id === project.client_id);
 
-  const workloadRows =
-    useMemo<WorkloadRow[]>(
-      () =>
-        employees
-          .map((employee) => {
-            const employeeTimesheets =
-              filteredTimesheets.filter(
-                (entry) =>
-                  entry.employee_id ===
-                  employee.id,
-              );
+        return {
+          ...project,
+          clientName: client?.name || "Unknown Client",
+          completion,
+          delayed,
+          hours,
+        };
+      })
+      .sort((a, b) => b.completion - a.completion);
+  }, [clients, projectHoursRows, projects]);
 
-            const taskIds =
-              new Set(
-                employeeTimesheets.map(
-                  (entry) =>
-                    entry.task_id,
-                ),
-              );
+  // Performance Summary
+  const performanceSummary = useMemo(() => {
+    const result = { green: 0, orange: 0, red: 0 };
+    employeeTaskRows.forEach((emp) => {
+      const delayRate = emp.total_tasks > 0 ? (emp.delayed_tasks / emp.total_tasks) * 100 : 0;
+      if (emp.total_tasks === 0) {
+        result.orange += 1;
+      } else if (emp.completion_rate >= 80 && delayRate <= 10) {
+        result.green += 1;
+      } else if (emp.completion_rate < 50 || delayRate > 30) {
+        result.red += 1;
+      } else {
+        result.orange += 1;
+      }
+    });
+    return result;
+  }, [employeeTaskRows]);
 
-            const activeTasks =
-              filteredTasks.filter(
-                (task) =>
-                  taskIds.has(
-                    task.id,
-                  ) &&
-                  !isCompleted(
-                    task.status,
-                  ),
-              );
+  // Workload Rows
+  const workloadRows = useMemo(() => {
+    return employees
+      .map((employee) => {
+        const empTimesheets = filteredTimesheets.filter((e) => e.employee_id === employee.id);
+        const taskIds = new Set(empTimesheets.map((e) => e.task_id));
+        const activeTasks = filteredTasks.filter((t) => taskIds.has(t.id) && !isCompleted(t.status));
+        const allocated = activeTasks.reduce((sum, t) => sum + Number(t.estimated_hours || 0), 0);
+        const actual = empTimesheets.reduce((sum, e) => sum + Number(e.total_hours || 0), 0);
+        const utilization = (allocated / 40) * 100;
 
-            const allocated =
-              activeTasks.reduce(
-                (sum, task) =>
-                  sum +
-                  Number(
-                    task.estimated_hours ||
-                      0,
-                  ),
-                0,
-              );
-
-            const actual =
-              employeeTimesheets.reduce(
-                (sum, entry) =>
-                  sum +
-                  Number(
-                    entry.total_hours ||
-                      0,
-                  ),
-                0,
-              );
-
-            const utilization =
-              40 > 0
-                ? Math.min(
-                    100,
-                    (allocated / 40) *
-                      100,
-                  )
-                : 0;
-
-            return {
-              employee_id:
-                employee.id,
-
-              employee_name:
-                employee.full_name ||
-                "Unnamed",
-
-              employee_code:
-                employee.employee_code ||
-                "—",
-
-              active_tasks:
-                activeTasks.length,
-
-              allocated_hours:
-                allocated,
-
-              actual_hours:
-                actual,
-
-              utilization,
-            };
-          })
-          .filter(
-            (row) =>
-              row.active_tasks > 0 ||
-              row.actual_hours > 0,
-          )
-          .sort(
-            (a, b) =>
-              b.allocated_hours -
-              a.allocated_hours,
-          ),
-      [
-        employees,
-        filteredTasks,
-        filteredTimesheets,
-      ],
-    );
-
-  /* ==========================================================
-     RESET DATE FILTER
-  ========================================================== */
-
-  const clearDateFilter =
-    () => {
-      setStartDate("");
-      setEndDate("");
-    };
-
-  /* ==========================================================
-     RENDER
-  ========================================================== */
+        return {
+          employee_id: employee.id,
+          employee_name: employee.full_name || "Unnamed",
+          employee_code: employee.employee_code || "—",
+          active_tasks: activeTasks.length,
+          allocated_hours: allocated,
+          actual_hours: actual,
+          utilization,
+        };
+      })
+      .filter((r) => r.active_tasks > 0 || r.actual_hours > 0)
+      .sort((a, b) => b.utilization - a.utilization);
+  }, [employees, filteredTasks, filteredTimesheets]);
 
   return (
-    <div className="min-h-full bg-slate-50">
-      <div className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6 lg:p-8">
-        <ProjectWorkspace mode="reports" />
+    <div className="min-w-0 space-y-6 pb-12">
+      {/* HEADER */}
+      <ReportHeader
+        startDate={startDate}
+        endDate={endDate}
+        loading={loading}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onQuickPreset={handleQuickPreset}
+        onRefresh={() => void loadReports()}
+      />
 
-        {/* ======================================================
-            HEADER
-        ====================================================== */}
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-500">
-              <BarChart3 className="h-4 w-4" />
-
-              Reports & Analytics
-            </div>
-
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              Reports
-            </h1>
-
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-              Operational reports across
-              tasks, timesheets, projects,
-              performance, and workload.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() =>
-              void loadReports()
-            }
-            disabled={loading}
-            className="inline-flex h-10 items-center justify-center gap-2 self-start rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${
-                loading
-                  ? "animate-spin"
-                  : ""
-              }`}
-            />
-
-            Refresh
+      {/* ERROR ALERT */}
+      {error && (
+        <div className="flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-700">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError("")} className="font-semibold hover:underline">
+            Dismiss
           </button>
         </div>
+      )}
 
+      {/* OVERVIEW KPIS */}
+      <ReportOverviewKpis metrics={overviewMetrics} />
+
+      {/* TAB NAVIGATION */}
+      <ReportTabNav activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* TAB CONTENTS */}
+      <div className="space-y-6">
         {/* ======================================================
-            ERROR
+            TAB 1: EXECUTIVE OVERVIEW
         ====================================================== */}
-
-        {error && (
-          <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-
-            <div>
-              <p className="font-semibold">
-                Unable to load reports
-              </p>
-
-              <p className="mt-1 break-words">
-                {error}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ======================================================
-            DATE FILTER
-        ====================================================== */}
-
-        <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-slate-500" />
-
-                <h2 className="text-sm font-semibold text-slate-900">
-                  Report Period
-                </h2>
-              </div>
-
-              <p className="mt-1 text-xs text-slate-500">
-                Filter task and timesheet
-                reporting by date.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-slate-500">
-                  From
-                </label>
-
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(event) =>
-                    setStartDate(
-                      event.target.value,
-                    )
-                  }
-                  max={
-                    endDate ||
-                    undefined
-                  }
-                  className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-medium text-slate-500">
-                  To
-                </label>
-
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(event) =>
-                    setEndDate(
-                      event.target.value,
-                    )
-                  }
-                  min={
-                    startDate ||
-                    undefined
-                  }
-                  className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
-                />
-              </div>
-
-              {(startDate ||
-                endDate) && (
-                <button
-                  type="button"
-                  onClick={
-                    clearDateFilter
-                  }
-                  className="h-10 rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* ======================================================
-            SUMMARY
-        ====================================================== */}
-
-        <div className="grid grid-cols-2 gap-4 xl:grid-cols-6">
-          <SummaryCard
-            icon={Target}
-            label="Tasks"
-            value={
-              overview.totalTasks
-            }
-            description="Reported tasks"
-          />
-
-          <SummaryCard
-            icon={CheckCircle2}
-            label="Completed"
-            value={
-              overview.completed
-            }
-            description={`${overview.completionRate.toFixed(
-              0,
-            )}% completion`}
-            iconClass="text-emerald-600"
-          />
-
-          <SummaryCard
-            icon={AlertTriangle}
-            label="Delayed"
-            value={
-              overview.delayed
-            }
-            description="Past deadline"
-            iconClass="text-red-600"
-          />
-
-          <SummaryCard
-            icon={Clock3}
-            label="Hours"
-            value={formatHours(
-              overview.totalHours,
-            )}
-            description="Tracked hours"
-            iconClass="text-blue-600"
-          />
-
-          <SummaryCard
-            icon={FolderKanban}
-            label="Projects"
-            value={
-              overview.activeProjects
-            }
-            description="Active projects"
-          />
-
-          <SummaryCard
-            icon={Users}
-            label="Employees"
-            value={
-              employeeTaskRows.length
-            }
-            description="With tracked work"
-          />
-        </div>
-
-        {/* ======================================================
-            TABS
-        ====================================================== */}
-
-        <div className="overflow-x-auto">
-          <div className="flex min-w-max gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
-            {[
-              {
-                id: "overview",
-                label: "Overview",
-                icon: BarChart3,
-              },
-              {
-                id: "tasks",
-                label: "Task Report",
-                icon: Target,
-              },
-              {
-                id: "timesheets",
-                label: "Timesheet Report",
-                icon: Clock3,
-              },
-              {
-                id: "projects",
-                label: "Project Report",
-                icon: FolderKanban,
-              },
-              {
-                id: "performance",
-                label: "Performance",
-                icon: Activity,
-              },
-              {
-                id: "workload",
-                label: "Workload",
-                icon: Users,
-              },
-            ].map((tab) => {
-              const Icon = tab.icon;
-
-              const active =
-                activeTab ===
-                tab.id;
-
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() =>
-                    setActiveTab(
-                      tab.id as ReportTab,
-                    )
-                  }
-                  className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
-                    active
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ======================================================
-            OVERVIEW TAB
-        ====================================================== */}
-
-        {activeTab ===
-          "overview" && (
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <ReportCard
-              title="Task Status"
-              subtitle="Current task distribution"
-            >
-              <SimpleBarList
-                rows={taskStatusRows.map(
-                  (row) => ({
-                    label: row.label,
-                    value: row.value,
-                  }),
-                )}
-              />
+        {activeTab === "overview" && (
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Task Status Breakdown */}
+            <ReportCard title="Task Velocity & Status" subtitle="Breakdown of tasks across workflow stages" icon={Target}>
+              <TaskStatusMeters rows={taskStatusRows} />
             </ReportCard>
 
-            <ReportCard
-              title="Performance"
-              subtitle="Employee performance distribution"
-            >
-              <PerformanceDistribution
-                summary={
-                  performanceSummary
-                }
-              />
+            {/* Performance Spectrum */}
+            <ReportCard title="Employee Performance Distribution" subtitle="Overall workforce status health" icon={Activity}>
+              <PerformanceSpectrum summary={performanceSummary} />
             </ReportCard>
 
-            <ReportCard
-              title="Top Employees by Hours"
-              subtitle="Tracked work hours"
-            >
-              <SimpleBarList
-                rows={employeeHoursRows
-                  .slice(0, 6)
-                  .map((row) => ({
-                    label:
-                      row.employee_name,
-                    value: row.hours,
-                    suffix: "h",
-                  }))}
-              />
+            {/* Priority Distribution */}
+            <ReportCard title="Task Priority Breakdown" subtitle="Distribution of tasks by priority level" icon={AlertTriangle}>
+              <PriorityDistributionCards rows={priorityRows} />
             </ReportCard>
 
-            <ReportCard
-              title="Project Health"
-              subtitle="Active project overview"
-            >
-              <ProjectHealthList
-                projects={
-                  projectReportRows.slice(
-                    0,
-                    6,
-                  )
-                }
-              />
+            {/* Top Projects Progress */}
+            <ReportCard title="Active Projects Deliverables" subtitle="Top project asset completion progress" icon={FolderKanban}>
+              <ProjectReportTable rows={projectReportRows.slice(0, 5)} />
             </ReportCard>
           </div>
         )}
 
         {/* ======================================================
-            TASK REPORT
+            TAB 2: TASK ANALYTICS
         ====================================================== */}
-
         {activeTab === "tasks" && (
           <div className="space-y-6">
-            <ReportCard
-              title="Tasks by Status"
-              subtitle="Distribution across workflow"
-            >
-              <SimpleBarList
-                rows={taskStatusRows.map(
-                  (row) => ({
-                    label: row.label,
-                    value: row.value,
-                  }),
-                )}
-              />
-            </ReportCard>
-
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-              <ReportCard
-                title="Tasks by Employee"
-                subtitle="Task ownership and completion"
-              >
-                <div className="overflow-x-auto">
-                  <ReportTable>
-                    <thead>
-                      <tr>
-                        <Th>
-                          Employee
-                        </Th>
-                        <Th>
-                          Tasks
-                        </Th>
-                        <Th>
-                          Completed
-                        </Th>
-                        <Th>
-                          Delayed
-                        </Th>
-                        <Th>
-                          Completion
-                        </Th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {employeeTaskRows.map(
-                        (row) => (
-                          <tr
-                            key={
-                              row.employee_id
-                            }
-                            className="border-t border-slate-100"
-                          >
-                            <Td>
-                              <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
-                                  {getInitials(
-                                    row.employee_name,
-                                  )}
-                                </div>
-
-                                <div>
-                                  <p className="font-semibold text-slate-800">
-                                    {
-                                      row.employee_name
-                                    }
-                                  </p>
-
-                                  <p className="text-[11px] text-slate-400">
-                                    {
-                                      row.employee_code
-                                    }
-                                  </p>
-                                </div>
-                              </div>
-                            </Td>
-
-                            <Td>
-                              {
-                                row.total_tasks
-                              }
-                            </Td>
-
-                            <Td>
-                              <span className="font-semibold text-emerald-600">
-                                {
-                                  row.completed_tasks
-                                }
-                              </span>
-                            </Td>
-
-                            <Td>
-                              <span className="font-semibold text-red-600">
-                                {
-                                  row.delayed_tasks
-                                }
-                              </span>
-                            </Td>
-
-                            <Td>
-                              {row.completion_rate.toFixed(
-                                0,
-                              )}
-                              %
-                            </Td>
-                          </tr>
-                        ),
-                      )}
-                    </tbody>
-                  </ReportTable>
-                </div>
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ReportCard title="Task Status Meters" subtitle="Detailed task status metrics" icon={Target}>
+                <TaskStatusMeters rows={taskStatusRows} />
               </ReportCard>
 
-              <ReportCard
-                title="Tasks by Client"
-                subtitle="Client workload"
-              >
-                <div className="overflow-x-auto">
-                  <ReportTable>
-                    <thead>
-                      <tr>
-                        <Th>
-                          Client
-                        </Th>
-                        <Th>
-                          Total
-                        </Th>
-                        <Th>
-                          Completed
-                        </Th>
-                        <Th>
-                          Pending
-                        </Th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {clientTaskRows.map(
-                        (row) => (
-                          <tr
-                            key={
-                              row.client_id
-                            }
-                            className="border-t border-slate-100"
-                          >
-                            <Td>
-                              <span className="font-semibold text-slate-800">
-                                {
-                                  row.client_name
-                                }
-                              </span>
-                            </Td>
-
-                            <Td>
-                              {
-                                row.total_tasks
-                              }
-                            </Td>
-
-                            <Td>
-                              <span className="text-emerald-600">
-                                {
-                                  row.completed_tasks
-                                }
-                              </span>
-                            </Td>
-
-                            <Td>
-                              <span className="text-orange-600">
-                                {
-                                  row.pending_tasks
-                                }
-                              </span>
-                            </Td>
-                          </tr>
-                        ),
-                      )}
-                    </tbody>
-                  </ReportTable>
-                </div>
+              <ReportCard title="Priority Distribution" subtitle="Task priority volume" icon={AlertTriangle}>
+                <PriorityDistributionCards rows={priorityRows} />
               </ReportCard>
             </div>
 
-            <ReportCard
-              title="Tasks by Priority"
-              subtitle="Priority distribution"
-            >
-              <SimpleBarList
-                rows={priorityRows.map(
-                  (row) => ({
-                    label:
-                      prettifyStatus(
-                        row.priority,
-                      ),
-                    value: row.count,
-                  }),
-                )}
-              />
+            <ReportCard title="Tasks by Employee" subtitle="Completion metrics and estimated vs actual hours" icon={Users}>
+              <EmployeeTaskTable rows={employeeTaskRows} />
             </ReportCard>
           </div>
         )}
 
         {/* ======================================================
-            TIMESHEET REPORT
+            TAB 3: TIMESHEETS & HOURS
         ====================================================== */}
-
-        {activeTab ===
-          "timesheets" && (
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-            <ReportCard
-              title="Hours by Employee"
-              subtitle="Tracked work hours"
-            >
-              <SimpleBarList
-                rows={employeeHoursRows.map(
-                  (row) => ({
-                    label:
-                      row.employee_name,
-                    value: row.hours,
-                    suffix: "h",
-                  }),
-                )}
-              />
-            </ReportCard>
-
-            <ReportCard
-              title="Hours by Client"
-              subtitle="Client effort"
-            >
-              <SimpleBarList
-                rows={clientHoursRows.map(
-                  (row) => ({
-                    label:
-                      row.client_name,
-                    value: row.hours,
-                    suffix: "h",
-                  }),
-                )}
-              />
-            </ReportCard>
-
-            <ReportCard
-              title="Hours by Project"
-              subtitle="Project effort"
-            >
-              <SimpleBarList
-                rows={projectHoursRows
-                  .slice(0, 10)
-                  .map((row) => ({
-                    label:
-                      row.project_name,
-                    value: row.hours,
-                    suffix: "h",
-                  }))}
-              />
-            </ReportCard>
-          </div>
-        )}
-
-        {/* ======================================================
-            PROJECT REPORT
-        ====================================================== */}
-
-        {activeTab ===
-          "projects" && (
-          <ReportCard
-            title="Project Report"
-            subtitle="Project completion, health, deadlines and hours"
-          >
-            <div className="overflow-x-auto">
-              <ReportTable>
-                <thead>
-                  <tr>
-                    <Th>
-                      Project
-                    </Th>
-
-                    <Th>
-                      Client
-                    </Th>
-
-                    <Th>
-                      Completion
-                    </Th>
-
-                    <Th>
-                      Health
-                    </Th>
-
-                    <Th>
-                      Deadline
-                    </Th>
-
-                    <Th>
-                      Hours
-                    </Th>
-
-                    <Th>
-                      Status
-                    </Th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {projectReportRows.map(
-                    (project) => (
-                      <tr
-                        key={
-                          project.id
-                        }
-                        className="border-t border-slate-100"
-                      >
-                        <Td>
-                          <div>
-                            <p className="font-semibold text-slate-800">
-                              {
-                                project.name
-                              }
-                            </p>
-
-                            {project.series_title && (
-                              <p className="mt-0.5 text-xs text-slate-400">
-                                {
-                                  project.series_title
-                                }
-                              </p>
-                            )}
-                          </div>
-                        </Td>
-
-                        <Td>
-                          {
-                            project.clientName
-                          }
-                        </Td>
-
-                        <Td>
-                          <div className="min-w-[130px]">
-                            <div className="flex items-center justify-between text-xs">
-                              <span>
-                                {
-                                  project.completed_assets
-                                }{" "}
-                                /{" "}
-                                {
-                                  project.total_assets_required
-                                }
-                              </span>
-
-                              <span className="font-semibold">
-                                {project.completion.toFixed(
-                                  0,
-                                )}
-                                %
-                              </span>
-                            </div>
-
-                            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                              <div
-                                className="h-full rounded-full bg-slate-900"
-                                style={{
-                                  width: `${Math.min(
-                                    100,
-                                    project.completion,
-                                  )}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </Td>
-
-                        <Td>
-                          <StatusBadge
-                            value={
-                              project.health
-                            }
-                          />
-                        </Td>
-
-                        <Td>
-                          <span
-                            className={
-                              project.delayed
-                                ? "font-semibold text-red-600"
-                                : "text-slate-600"
-                            }
-                          >
-                            {formatDate(
-                              project.target_deadline,
-                            )}
-                          </span>
-                        </Td>
-
-                        <Td>
-                          {formatHours(
-                            project.hours,
-                          )}
-                          h
-                        </Td>
-
-                        <Td>
-                          <StatusBadge
-                            value={
-                              project.status
-                            }
-                          />
-                        </Td>
-                      </tr>
-                    ),
-                  )}
-                </tbody>
-              </ReportTable>
-            </div>
-          </ReportCard>
-        )}
-
-        {/* ======================================================
-            PERFORMANCE REPORT
-        ====================================================== */}
-
-        {activeTab ===
-          "performance" && (
+        {activeTab === "timesheets" && (
           <div className="space-y-6">
-            <PerformanceDistribution
-              summary={
-                performanceSummary
-              }
-              large
-            />
+            <div className="grid gap-6 lg:grid-cols-3">
+              {/* Hours by Employee */}
+              <ReportCard title="Hours Logged by Employee" subtitle="Top staff by logged timesheet hours" icon={Users}>
+                <div className="space-y-3">
+                  {employeeHoursRows.length === 0 ? (
+                    <EmptyReportState />
+                  ) : (
+                    employeeHoursRows.map((r) => (
+                      <div key={r.employee_id} className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs">
+                        <div>
+                          <p className="font-semibold text-slate-900">{r.employee_name}</p>
+                          <p className="text-[10px] text-slate-400">{r.employee_code}</p>
+                        </div>
+                        <span className="font-bold text-indigo-700">{formatHours(r.hours)}h</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ReportCard>
 
-            <ReportCard
-              title="Employee Performance"
-              subtitle="Completion, delays and actual hours"
-            >
-              <div className="overflow-x-auto">
-                <ReportTable>
-                  <thead>
-                    <tr>
-                      <Th>
-                        Employee
-                      </Th>
+              {/* Hours by Client */}
+              <ReportCard title="Hours Logged by Client" subtitle="Time distribution per client" icon={Briefcase}>
+                <div className="space-y-3">
+                  {clientHoursRows.length === 0 ? (
+                    <EmptyReportState />
+                  ) : (
+                    clientHoursRows.map((r) => (
+                      <div key={r.client_id} className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs">
+                        <span className="font-semibold text-slate-800">{r.client_name}</span>
+                        <span className="font-bold text-slate-900">{formatHours(r.hours)}h</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ReportCard>
 
-                      <Th>
-                        Tasks
-                      </Th>
+              {/* Hours by Project */}
+              <ReportCard title="Hours Logged by Project" subtitle="Time spent across projects" icon={FolderKanban}>
+                <div className="space-y-3">
+                  {projectHoursRows.length === 0 ? (
+                    <EmptyReportState />
+                  ) : (
+                    projectHoursRows.map((r) => (
+                      <div key={r.project_id} className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs">
+                        <span className="font-semibold text-slate-800">{r.project_name}</span>
+                        <span className="font-bold text-indigo-700">{formatHours(r.hours)}h</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ReportCard>
+            </div>
+          </div>
+        )}
 
-                      <Th>
-                        Completed
-                      </Th>
+        {/* ======================================================
+            TAB 4: PROJECT HEALTH
+        ====================================================== */}
+        {activeTab === "projects" && (
+          <ReportCard title="Project Health & Deliverables Progress" subtitle="Asset completion percentage and project status" icon={FolderKanban}>
+            <ProjectReportTable rows={projectReportRows} />
+          </ReportCard>
+        )}
 
-                      <Th>
-                        Delayed
-                      </Th>
+        {/* ======================================================
+            TAB 5: PERFORMANCE MATRIX
+        ====================================================== */}
+        {activeTab === "performance" && (
+          <div className="space-y-6">
+            <ReportCard title="Workforce Health Spectrum" subtitle="Distribution of employee completion & delay metrics" icon={Activity}>
+              <PerformanceSpectrum summary={performanceSummary} />
+            </ReportCard>
 
-                      <Th>
-                        Hours
-                      </Th>
-
-                      <Th>
-                        Completion
-                      </Th>
-
-                      <Th>
-                        Performance
-                      </Th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {employeeTaskRows.map(
-                      (row) => {
-                        const delayRate =
-                          row.total_tasks >
-                          0
-                            ? (row.delayed_tasks /
-                                row.total_tasks) *
-                              100
-                            : 0;
-
-                        const status =
-                          row.total_tasks ===
-                          0
-                            ? "orange"
-                            : row.completion_rate >=
-                                  80 &&
-                                delayRate <=
-                                  10
-                              ? "green"
-                              : row.completion_rate <
-                                    50 ||
-                                  delayRate >
-                                    30
-                                ? "red"
-                                : "orange";
-
-                        return (
-                          <tr
-                            key={
-                              row.employee_id
-                            }
-                            className="border-t border-slate-100"
-                          >
-                            <Td>
-                              <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
-                                  {getInitials(
-                                    row.employee_name,
-                                  )}
-                                </div>
-
-                                <div>
-                                  <p className="font-semibold text-slate-800">
-                                    {
-                                      row.employee_name
-                                    }
-                                  </p>
-
-                                  <p className="text-[11px] text-slate-400">
-                                    {
-                                      row.employee_code
-                                    }
-                                  </p>
-                                </div>
-                              </div>
-                            </Td>
-
-                            <Td>
-                              {
-                                row.total_tasks
-                              }
-                            </Td>
-
-                            <Td>
-                              {
-                                row.completed_tasks
-                              }
-                            </Td>
-
-                            <Td>
-                              {
-                                row.delayed_tasks
-                              }
-                            </Td>
-
-                            <Td>
-                              {formatHours(
-                                row.actual_hours,
-                              )}
-                              h
-                            </Td>
-
-                            <Td>
-                              {row.completion_rate.toFixed(
-                                0,
-                              )}
-                              %
-                            </Td>
-
-                            <Td>
-                              <StatusBadge
-                                value={
-                                  status
-                                }
-                              />
-                            </Td>
-                          </tr>
-                        );
-                      },
-                    )}
-                  </tbody>
-                </ReportTable>
-              </div>
+            <ReportCard title="Detailed Employee Performance Table" subtitle="Task throughput, completion rate, and delay rates" icon={Users}>
+              <EmployeeTaskTable rows={employeeTaskRows} />
             </ReportCard>
           </div>
         )}
 
         {/* ======================================================
-            WORKLOAD REPORT
+            TAB 6: TEAM WORKLOAD
         ====================================================== */}
-
-        {activeTab ===
-          "workload" && (
-          <ReportCard
-            title="Employee Workload"
-            subtitle="Allocated hours versus available capacity"
-          >
-            <div className="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        {activeTab === "workload" && (
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 via-purple-50/40 to-white p-5 shadow-xs">
               <div className="flex items-start gap-3">
-                <Clock3 className="mt-0.5 h-5 w-5 text-slate-500" />
-
+                <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" />
                 <div>
-                  <p className="text-sm font-semibold text-slate-800">
-                    Capacity assumption
-                  </p>
-
-                  <p className="mt-1 text-xs leading-5 text-slate-500">
-                    Initial workload utilization
-                    uses a 40-hour weekly
-                    capacity. This can later be
-                    replaced with employee-specific
-                    working hours.
+                  <h3 className="text-sm font-bold text-slate-900">Workload Capacity Standard (40h Weekly Baseline)</h3>
+                  <p className="mt-1 text-xs text-slate-600">
+                    Workload utilization calculates allocated task hours relative to a 40-hour weekly capacity per employee. Overloaded staff ({">"}100%) are highlighted in red.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <ReportTable>
-                <thead>
-                  <tr>
-                    <Th>
-                      Employee
-                    </Th>
-
-                    <Th>
-                      Active Tasks
-                    </Th>
-
-                    <Th>
-                      Allocated
-                    </Th>
-
-                    <Th>
-                      Actual
-                    </Th>
-
-                    <Th>
-                      Utilization
-                    </Th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {workloadRows.map(
-                    (row) => (
-                      <tr
-                        key={
-                          row.employee_id
-                        }
-                        className="border-t border-slate-100"
-                      >
-                        <Td>
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
-                              {getInitials(
-                                row.employee_name,
-                              )}
-                            </div>
-
-                            <div>
-                              <p className="font-semibold text-slate-800">
-                                {
-                                  row.employee_name
-                                }
-                              </p>
-
-                              <p className="text-[11px] text-slate-400">
-                                {
-                                  row.employee_code
-                                }
-                              </p>
-                            </div>
-                          </div>
-                        </Td>
-
-                        <Td>
-                          {
-                            row.active_tasks
-                          }
-                        </Td>
-
-                        <Td>
-                          {formatHours(
-                            row.allocated_hours,
-                          )}
-                          h
-                        </Td>
-
-                        <Td>
-                          {formatHours(
-                            row.actual_hours,
-                          )}
-                          h
-                        </Td>
-
-                        <Td>
-                          <div className="min-w-[150px]">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-semibold">
-                                {row.utilization.toFixed(
-                                  0,
-                                )}
-                                %
-                              </span>
-                            </div>
-
-                            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
-                              <div
-                                className="h-full rounded-full bg-slate-900"
-                                style={{
-                                  width: `${Math.min(
-                                    100,
-                                    row.utilization,
-                                  )}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </Td>
-                      </tr>
-                    ),
-                  )}
-                </tbody>
-              </ReportTable>
-            </div>
-          </ReportCard>
-        )}
-
-        {/* ======================================================
-            LOADING OVERLAY
-        ====================================================== */}
-
-        {loading && (
-          <div className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-medium text-slate-600 shadow-lg">
-            <RefreshCw className="h-4 w-4 animate-spin" />
-
-            Loading reports...
+            <ReportCard title="Employee Workload & Capacity Utilization" subtitle="Allocated task hours versus actual logged time" icon={Users}>
+              <WorkloadTable rows={workloadRows} />
+            </ReportCard>
           </div>
         )}
       </div>
-    </div>
-  );
-}
 
-/* ============================================================
-   SUMMARY CARD
-============================================================ */
-
-function SummaryCard({
-  icon: Icon,
-  label,
-  value,
-  description,
-  iconClass = "text-slate-600",
-}: {
-  icon: typeof Target;
-  label: string;
-  value: string | number;
-  description: string;
-  iconClass?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-            {label}
-          </p>
-
-          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
-            {value}
-          </p>
-
-          <p className="mt-1 text-xs text-slate-500">
-            {description}
-          </p>
+      {/* FLOATING LOADING BADGE */}
+      {loading && (
+        <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-xs font-semibold text-slate-800 shadow-xl backdrop-blur-md">
+          <RefreshCw size={15} className="animate-spin text-indigo-600" />
+          Updating Analytics Engine...
         </div>
-
-        <div className="rounded-lg bg-slate-100 p-2.5">
-          <Icon
-            className={`h-5 w-5 ${iconClass}`}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ============================================================
-   REPORT CARD
-============================================================ */
-
-function ReportCard({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
-        <h2 className="text-base font-semibold text-slate-900">
-          {title}
-        </h2>
-
-        <p className="mt-1 text-xs text-slate-500">
-          {subtitle}
-        </p>
-      </div>
-
-      <div className="p-5">
-        {children}
-      </div>
-    </section>
-  );
-}
-
-/* ============================================================
-   TABLE
-============================================================ */
-
-function ReportTable({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <table className="w-full min-w-[700px] text-left text-sm">
-      {children}
-    </table>
-  );
-}
-
-function Th({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <th className="whitespace-nowrap bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-      {children}
-    </th>
-  );
-}
-
-function Td({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <td className="px-4 py-4 text-sm text-slate-600">
-      {children}
-    </td>
-  );
-}
-
-/* ============================================================
-   SIMPLE BAR LIST
-============================================================ */
-
-function SimpleBarList({
-  rows,
-}: {
-  rows: {
-    label: string;
-    value: number;
-    suffix?: string;
-  }[];
-}) {
-  if (rows.length === 0) {
-    return (
-      <EmptyReportState />
-    );
-  }
-
-  const max = Math.max(
-    ...rows.map(
-      (row) => row.value,
-    ),
-    1,
-  );
-
-  return (
-    <div className="space-y-4">
-      {rows.map((row) => (
-        <div key={row.label}>
-          <div className="flex items-center justify-between gap-3 text-xs">
-            <span className="truncate font-medium text-slate-700">
-              {row.label}
-            </span>
-
-            <span className="shrink-0 font-bold text-slate-900">
-              {row.value.toFixed
-                ? row.value.toFixed(
-                    row.suffix
-                      ? 1
-                      : 0,
-                  )
-                : row.value}
-              {row.suffix || ""}
-            </span>
-          </div>
-
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-slate-900 transition-all"
-              style={{
-                width: `${
-                  (row.value /
-                    max) *
-                  100
-                }%`,
-              }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ============================================================
-   PERFORMANCE DISTRIBUTION
-============================================================ */
-
-function PerformanceDistribution({
-  summary,
-  large = false,
-}: {
-  summary: PerformanceSummary;
-  large?: boolean;
-}) {
-  const total =
-    summary.green +
-    summary.orange +
-    summary.red;
-
-  return (
-    <section
-      className={`rounded-xl border border-slate-200 bg-white p-5 shadow-sm ${
-        large
-          ? ""
-          : ""
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-semibold text-slate-900">
-            Performance Distribution
-          </h2>
-
-          <p className="mt-1 text-xs text-slate-500">
-            Current employee health.
-          </p>
-        </div>
-
-        <Activity className="h-5 w-5 text-slate-400" />
-      </div>
-
-      <div className="mt-5 grid grid-cols-3 gap-3">
-        <PerformanceBox
-          label="GREEN"
-          value={
-            summary.green
-          }
-          total={total}
-          className="bg-emerald-50 text-emerald-700"
-        />
-
-        <PerformanceBox
-          label="ORANGE"
-          value={
-            summary.orange
-          }
-          total={total}
-          className="bg-orange-50 text-orange-700"
-        />
-
-        <PerformanceBox
-          label="RED"
-          value={
-            summary.red
-          }
-          total={total}
-          className="bg-red-50 text-red-700"
-        />
-      </div>
-
-      <div className="mt-5 flex h-3 overflow-hidden rounded-full bg-slate-100">
-        {total > 0 && (
-          <>
-            <div
-              className="bg-emerald-500"
-              style={{
-                width: `${
-                  (summary.green /
-                    total) *
-                  100
-                }%`,
-              }}
-            />
-
-            <div
-              className="bg-orange-500"
-              style={{
-                width: `${
-                  (summary.orange /
-                    total) *
-                  100
-                }%`,
-              }}
-            />
-
-            <div
-              className="bg-red-500"
-              style={{
-                width: `${
-                  (summary.red /
-                    total) *
-                  100
-                }%`,
-              }}
-            />
-          </>
-        )}
-      </div>
-    </section>
-  );
-}
-
-/* ============================================================
-   PERFORMANCE BOX
-============================================================ */
-
-function PerformanceBox({
-  label,
-  value,
-  total,
-  className,
-}: {
-  label: string;
-  value: number;
-  total: number;
-  className: string;
-}) {
-  const percentage =
-    total > 0
-      ? (value / total) * 100
-      : 0;
-
-  return (
-    <div
-      className={`rounded-xl p-4 ${className}`}
-    >
-      <p className="text-xs font-bold">
-        {label}
-      </p>
-
-      <p className="mt-2 text-2xl font-bold">
-        {value}
-      </p>
-
-      <p className="mt-1 text-xs opacity-70">
-        {percentage.toFixed(0)}%
-      </p>
-    </div>
-  );
-}
-
-/* ============================================================
-   PROJECT HEALTH
-============================================================ */
-
-function ProjectHealthList({
-  projects,
-}: {
-  projects: Array<{
-    id: string;
-    name: string;
-    clientName: string;
-    completion: number;
-    health: string;
-    delayed: boolean;
-    hours: number;
-  }>;
-}) {
-  if (projects.length === 0) {
-    return (
-      <EmptyReportState />
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {projects.map(
-        (project) => (
-          <div
-            key={project.id}
-            className="rounded-xl border border-slate-200 p-4"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-slate-800">
-                  {project.name}
-                </p>
-
-                <p className="mt-1 truncate text-xs text-slate-400">
-                  {project.clientName}
-                </p>
-              </div>
-
-              <StatusBadge
-                value={
-                  project.health
-                }
-              />
-            </div>
-
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500">
-                  Completion
-                </span>
-
-                <span className="font-semibold text-slate-800">
-                  {project.completion.toFixed(
-                    0,
-                  )}
-                  %
-                </span>
-              </div>
-
-              <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-slate-900"
-                  style={{
-                    width: `${Math.min(
-                      100,
-                      project.completion,
-                    )}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="mt-3 flex items-center justify-between text-xs">
-              <span className="text-slate-500">
-                Hours
-              </span>
-
-              <span className="font-semibold text-slate-700">
-                {formatHours(
-                  project.hours,
-                )}
-                h
-              </span>
-            </div>
-          </div>
-        ),
       )}
     </div>
   );
 }
-
-/* ============================================================
-   STATUS BADGE
-============================================================ */
-
-function StatusBadge({
-  value,
-}: {
-  value: string;
-}) {
-  const status =
-    normalize(value);
-
-  let classes =
-    "border-slate-200 bg-slate-50 text-slate-600";
-
-  if (
-    [
-      "green",
-      "on_track",
-      "completed",
-      "approved_delivered",
-      "approved_and_delivered",
-      "delivered",
-    ].includes(status)
-  ) {
-    classes =
-      "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (
-    [
-      "orange",
-      "at_risk",
-      "in_progress",
-      "pending",
-      "revision",
-      "client_review",
-      "internal_review",
-    ].includes(status)
-  ) {
-    classes =
-      "border-orange-200 bg-orange-50 text-orange-700";
-  }
-
-  if (
-    [
-      "red",
-      "delayed",
-      "blocked",
-      "cancelled",
-      "on_hold",
-    ].includes(status)
-  ) {
-    classes =
-      "border-red-200 bg-red-50 text-red-700";
-  }
-
-  return (
-    <span
-      className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold ${classes}`}
-    >
-      {prettifyStatus(
-        value || "Unknown",
-      )}
-    </span>
-  );
-}
-
-/* ============================================================
-   EMPTY STATE
-============================================================ */
-
-function EmptyReportState() {
-  return (
-    <div className="flex min-h-[160px] flex-col items-center justify-center text-center">
-      <BarChart3 className="h-7 w-7 text-slate-300" />
-
-      <p className="mt-3 text-sm font-semibold text-slate-700">
-        No report data
-      </p>
-
-      <p className="mt-1 text-xs text-slate-400">
-        There is no data available for
-        this report.
-      </p>
-    </div>
-  );
-}
-import ProjectWorkspace from "../../components/projects/ProjectWorkspace";

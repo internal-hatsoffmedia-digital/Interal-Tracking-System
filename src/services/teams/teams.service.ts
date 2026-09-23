@@ -15,6 +15,8 @@ async function populateTeamDetails(rawTeams: Record<string, unknown>[]): Promise
     supabase.from("profiles").select("id, full_name, role, team_id"),
   ]);
 
+  if (empRes.error) throw empRes.error;
+  if (profileRes.error) throw profileRes.error;
   const employees = empRes.data ?? [];
   const profiles = profileRes.data ?? [];
 
@@ -35,54 +37,6 @@ async function populateTeamDetails(rawTeams: Record<string, unknown>[]): Promise
     }
   }
 
-  // Authoritative team roster mapping from organizational chart
-  const knownRosters: Record<string, { lead: string; members: string[] }> = {
-    "flow force": {
-      lead: "Muskan Kumari S",
-      members: ["Muskan Kumari S", "Lavanya M", "Esther"],
-    },
-    "project coordinators": {
-      lead: "Muskan Kumari S",
-      members: ["Muskan Kumari S", "Lavanya M", "Esther"],
-    },
-    "cut masters": {
-      lead: "Sudeesh Krish G",
-      members: ["Sudeesh Krish G", "Keerthana", "Rajasekar V", "Prashanth", "Saraswathy"],
-    },
-    "video editing": {
-      lead: "Sudeesh Krish G",
-      members: ["Sudeesh Krish G", "Keerthana", "Rajasekar V", "Prashanth", "Saraswathy"],
-    },
-    "creative clan": {
-      lead: "Ganesh Kanth.K",
-      members: ["Ganesh Kanth.K", "Lalith Balakumar", "Vijay Raja", "Kesavan A", "Kamalesh Gandhii G"],
-    },
-    "graphic design": {
-      lead: "Ganesh Kanth.K",
-      members: ["Ganesh Kanth.K", "Lalith Balakumar", "Vijay Raja", "Kesavan A", "Kamalesh Gandhii G"],
-    },
-    "digital marketing": {
-      lead: "Janani R",
-      members: ["Janani R", "Hariharan"],
-    },
-    "digital ninjas": {
-      lead: "Janani R",
-      members: ["Janani R", "Hariharan"],
-    },
-    "web development": {
-      lead: "Vijay R",
-      members: ["Vijay R", "Nathimulla", "Snega"],
-    },
-    "web runners": {
-      lead: "Vijay R",
-      members: ["Vijay R", "Nathimulla", "Snega"],
-    },
-    "website warriors": {
-      lead: "Vijay R",
-      members: ["Vijay R", "Nathimulla", "Snega"],
-    },
-  };
-
   return rawTeams.map((t) => {
     const teamId = (t.id as string) ?? "";
     const teamNameKey = ((t.name as string) ?? "").toLowerCase().trim();
@@ -93,22 +47,7 @@ async function populateTeamDetails(rawTeams: Record<string, unknown>[]): Promise
       leadName = teamLeadMap.get(teamId) ?? null;
     }
 
-    // Match organizational roster by team name
-    const rosterMatch = Object.entries(knownRosters).find(([key]) => teamNameKey.includes(key))?.[1];
-
-    if (!leadName && rosterMatch) {
-      leadName = rosterMatch.lead;
-    }
-
-    let teamEmployees = employees.filter((e) => e.team_id === teamId);
-
-    if (teamEmployees.length === 0 && rosterMatch) {
-      teamEmployees = employees.filter((e) =>
-        rosterMatch.members.some((mName) =>
-          e.full_name.toLowerCase().includes(mName.toLowerCase().split(" ")[0]),
-        ),
-      );
-    }
+    const teamEmployees = employees.filter((e) => e.team_id === teamId);
 
     const members: TeamMember[] = teamEmployees.map((e) => ({
       id: e.id,
