@@ -10,15 +10,20 @@ async function populateTeamDetails(rawTeams: Record<string, unknown>[]): Promise
   if (rawTeams.length === 0) return [];
 
   // Fetch employees and profiles to map team leads and members
-  const [empRes, profileRes] = await Promise.all([
-    supabase.from("employees").select("id, full_name, email, team_id, profile_id"),
-    supabase.from("profiles").select("id, full_name, role, team_id"),
-  ]);
+  let employees: any[] = [];
+  let profiles: any[] = [];
 
-  if (empRes.error) throw empRes.error;
-  if (profileRes.error) throw profileRes.error;
-  const employees = empRes.data ?? [];
-  const profiles = profileRes.data ?? [];
+  try {
+    const [empRes, profileRes] = await Promise.all([
+      supabase.from("employees").select("id, full_name, email, team_id, profile_id"),
+      supabase.from("profiles").select("id, full_name, role, team_id"),
+    ]);
+
+    employees = empRes.data ?? [];
+    profiles = profileRes.data ?? [];
+  } catch (e) {
+    console.warn("Unable to populate team employee/profile relations:", e);
+  }
 
   const employeeMap = new Map<string, { id: string; full_name: string; email?: string | null }>();
   for (const emp of employees) {
@@ -96,14 +101,14 @@ export async function getActiveTeams(): Promise<Team[]> {
   const { data, error } = await supabase
     .from("teams")
     .select("*")
-    .eq("is_active", true)
     .order("name", { ascending: true });
 
   if (error) {
     throw error;
   }
 
-  return populateTeamDetails((data ?? []) as Record<string, unknown>[]);
+  const rawTeams = (data ?? []).filter((t: any) => t.is_active !== false);
+  return populateTeamDetails(rawTeams as Record<string, unknown>[]);
 }
 
 export async function createTeam(

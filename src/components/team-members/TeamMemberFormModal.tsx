@@ -1,5 +1,6 @@
 import { Eye, EyeOff, Lock, Mail, Shield, UserCheck, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getActiveTeams } from "../../services/teams/teams.service";
 import type { UserRole } from "../../types/auth";
 import type { Team } from "../../types/team";
 import type { CreateTeamMemberInput, TeamMember, UpdateTeamMemberInput } from "../../types/teamMember";
@@ -25,6 +26,7 @@ export default function TeamMemberFormModal({
 }: TeamMemberFormModalProps) {
   const isEditing = Boolean(member);
 
+  const [availableTeams, setAvailableTeams] = useState<Team[]>(teams);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,6 +42,18 @@ export default function TeamMemberFormModal({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (teams && teams.length > 0) {
+      setAvailableTeams(teams);
+    } else if (isOpen) {
+      void getActiveTeams().then((data) => {
+        if (data && data.length > 0) {
+          setAvailableTeams(data);
+        }
+      });
+    }
+  }, [teams, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -389,7 +403,7 @@ export default function TeamMemberFormModal({
                 className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-100"
               >
                 <option value="">No team assignment</option>
-                {teams.map((t) => (
+                {availableTeams.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
                   </option>
