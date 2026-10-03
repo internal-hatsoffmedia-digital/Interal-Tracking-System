@@ -26,6 +26,25 @@ html[data-theme=dark] :is(.text-slate-700,.text-slate-600,.text-gray-700,.text-g
 html[data-theme=dark] :is(.text-slate-500,.text-slate-400,.text-gray-500,.text-gray-400) { color:#9dacc4; }
 html[data-theme=dark] :is(.border-slate-100,.border-slate-200,.border-slate-300,.border-gray-200,.border,[class*="divide-slate-"]>*) { border-color:var(--line); }
 html[data-theme=dark] :is(input,select,textarea) { background-color:var(--surface); color:var(--ink); }
+
+/* The login card uses a light surface even when the workspace theme is dark. */
+.brand-login input:not([type=checkbox]):not([type=radio]),
+html[data-theme=dark] .brand-login input:not([type=checkbox]):not([type=radio]) {
+  background-color:#fff!important;
+  color:#111111!important;
+  caret-color:#111111;
+  color-scheme:light;
+}
+.brand-login input::placeholder { color:#64748b; opacity:1; }
+.brand-login input:autofill {
+  color:#111111!important;
+  background-color:#fff;
+}
+.brand-login input:-webkit-autofill {
+  -webkit-text-fill-color:#111111;
+  caret-color:#111111;
+  box-shadow:0 0 0 1000px #fff inset;
+}
 html[data-theme=dark] :is([class*="hover:bg-slate-50"],[class*="hover:bg-slate-100"]):hover { background-color:#27364e; }
 html[data-theme=dark] :is(.bg-amber-50,.bg-yellow-50) { background-color:#3b2e16; color:#ffe0a3; }
 html[data-theme=dark] :is(.bg-red-50,.bg-rose-50) { background-color:#3b2030; color:#ffb5bf; }
