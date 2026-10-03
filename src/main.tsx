@@ -6,6 +6,7 @@ import "./index.css";
 import "./styles/workspace-theme.css";
 import "./styles/future-ui.css";
 import "./styles/studio-ui.css";
+import "./styles/brand-palette.css";
 import {initializeTheme} from "./components/layouts/ThemeToggle";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";

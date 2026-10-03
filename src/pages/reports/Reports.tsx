@@ -640,7 +640,7 @@ export default function Reports() {
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">Workload Capacity Standard (40h Weekly Baseline)</h3>
                   <p className="mt-1 text-xs text-slate-600">
-                    Workload utilization calculates allocated task hours relative to a 40-hour weekly capacity per employee. Overloaded staff ({">"}100%) are highlighted in red.
+                    Workload utilization calculates allocated task hours relative to a 40-hour weekly capacity per employee. Overloaded staff ({">"}100%) are identified by their utilization percentage and status label.
                   </p>
                 </div>
               </div>

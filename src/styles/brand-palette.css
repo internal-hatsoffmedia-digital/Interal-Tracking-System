@@ -1,0 +1,117 @@
+/* Final brand palette: both theme settings use only black and signature yellow. */
+:root, html[data-theme=dark], html[data-theme=light] {
+  --surface:#000; --canvas:#000; --ink:#ffcc00; --line:#ffcc00;
+  --accent:#ffcc00; --primary:#ffcc00; --primary-light:#000;
+  --background:#000; --background-subtle:#000; --background-secondary:#000;
+  --foreground:#ffcc00; --body:#ffcc00; --muted:#ffcc00; --border:#ffcc00;
+  --future-muted:#ffcc00; --studio-green:#ffcc00;
+}
+html body, #root { background:#000; color:#ffcc00; color-scheme:dark; }
+/* Override older page-specific gradients and semantic color utility classes. */
+html #root :where(div,section,article,aside,header,footer,main,nav,form,table,thead,tbody,tr,th,td,button,a,input,select,textarea,span,p,label,h1,h2,h3,h4,h5,h6,strong,small,svg) {
+  color:#ffcc00!important;
+  border-color:#ffcc00!important;
+  background-image:none!important;
+  text-shadow:none!important;
+  box-shadow:none!important;
+}
+html #root :where(div,section,article,aside,header,footer,main,nav,form,table,thead,tbody,tr,th,td,button,a,input,select,textarea,span,p,label) {
+  background-color:#000!important;
+}
+html #root :where(input,textarea,select) {
+  color-scheme:dark; caret-color:#ffcc00;
+  accent-color:#ffcc00;
+}
+html #root input::placeholder, html #root textarea::placeholder {
+  color:#ffcc00!important; opacity:1;
+}
+html #root input:-webkit-autofill {
+  -webkit-text-fill-color:#ffcc00!important;
+  box-shadow:0 0 0 1000px #000 inset!important;
+}
+html #root :where(button[type=submit],.future-primary,[aria-current=page]) {
+  background:#ffcc00!important; color:#000!important;
+}
+html #root :where(button[type=submit],.future-primary,[aria-current=page]) * {
+  color:#000!important; background-color:transparent!important;
+}
+html #root :focus-visible { outline:2px solid #ffcc00!important; outline-offset:3px; }
+/* Progress bars and chart markers remain visible against black tracks. */
+html #root :where(.h-full[class*="bg-"],.h-1\.5.w-1\.5[class*="bg-"],.h-2.w-2[class*="bg-"]) {
+  background:#ffcc00!important;
+}
+html #root .dark-heading-gradient {
+  -webkit-text-fill-color:#ffcc00!important;
+}
+html #root *::before, html #root *::after {
+  background-image:none!important;
+  border-color:#ffcc00!important;
+  color:#ffcc00!important;
+}
+html #root svg [stroke]:not([stroke="none"]) { stroke:currentColor!important; }
+html #root svg [fill]:not([fill="none"]) { fill:currentColor!important; }
+::-webkit-scrollbar-track { background:#000; }
+::-webkit-scrollbar-thumb { background:#ffcc00; }
+
+/* Quiet, contained navigation with a single clear active state. */
+html #root .future-sidebar {
+  height:100dvh;
+  border-right:1px solid #ffcc00!important;
+  padding:0 12px;
+}
+html #root .future-brand { padding:24px 8px 20px; flex-shrink:0; }
+html #root .future-sidebar nav {
+  padding:0 0 12px;
+  scrollbar-width:thin;
+  scrollbar-color:#ffcc00 #000;
+}
+html #root .future-nav-group { margin-bottom:18px; }
+html #root .future-nav-group>p {
+  padding:0 12px; margin:14px 0 8px;
+  font-size:10px; letter-spacing:.1em; line-height:1.5;
+}
+html #root .future-nav-link {
+  min-height:42px; padding:10px 12px; margin:3px 0;
+  border:1px solid transparent!important;
+  border-radius:10px!important;
+  gap:10px; transform:none;
+}
+html #root .future-nav-link::before,
+html #root .future-nav-link::after { content:none; }
+html #root .future-nav-link:hover:not(.is-active) {
+  border-color:#ffcc00!important;
+  transform:none;
+}
+html #root .future-nav-link.is-active {
+  background:#ffcc00!important; color:#000!important; font-weight:700;
+}
+html #root .future-nav-link.is-active * {
+  color:#000!important; background:transparent!important;
+}
+html #root .future-nav-link.is-active .nav-active-dot {
+  background:#000!important; width:5px; height:5px; margin-right:0;
+}
+html #root .future-sidebar-footer {
+  padding:12px 0 16px; flex-shrink:0;
+}
+html #root .future-account { padding:12px 4px 0; gap:10px; min-width:0; }
+html #root .future-account>span:nth-child(2) { min-width:0; flex:1; }
+html #root .future-account strong {
+  display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+html #root .future-account small { display:block; font-size:10px; line-height:1.5; }
+html #root .future-account button {
+  min-width:36px; min-height:36px; border:1px solid #ffcc00; border-radius:10px;
+  display:grid; place-items:center; flex-shrink:0;
+}
+html #root .future-avatar { border:1px solid #ffcc00; border-radius:10px; flex-shrink:0; }
+html #root .future-nav-backdrop { background:#000!important; opacity:.75; }
+@media(prefers-reduced-motion:no-preference) {
+  html #root .future-sidebar { transition:transform .25s ease,visibility .25s; }
+  html #root .future-nav-link { transition:background-color .18s ease,color .18s ease,border-color .18s ease; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html #root *, html #root *::before, html #root *::after {
+    animation:none!important; transition:none!important; scroll-behavior:auto!important;
+  }
+}
