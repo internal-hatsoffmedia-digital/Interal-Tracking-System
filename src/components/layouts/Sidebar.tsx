@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {NavLink,useLocation,useNavigate} from 'react-router-dom';
-import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,Target,LogOut,X} from 'lucide-react';
+import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,Target,LogOut,X,ArrowUpRight,Sparkles} from 'lucide-react';
 import {useAuth} from '../../context/AuthContext';
 
 const groups=[
@@ -47,6 +47,7 @@ export default function Sidebar(){
  <aside ref={panel} className={`future-sidebar ${open?'is-open':''}`} aria-label="Main navigation">
  <div className="future-brand"><NavLink to="/dashboard" onClick={close} aria-label="Hatsoff home"><img src="/hatsoff-brand.svg" alt="Hatsoff Media"/><span>HATSOFF<small>INTERNAL FORCE<span className="brand-dot"/></small></span></NavLink><button className="future-mobile-close" aria-label="Close navigation" onClick={close}><X size={19}/></button></div>
  <nav>{visibleGroups.map(group=><div className="future-nav-group" key={group.name}><p>{group.name}</p>{group.items.map(([label,path,Icon])=><NavLink to={path} onClick={close} key={path} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Icon size={18} strokeWidth={1.7}/><span>{label}</span>{location.pathname===path&&<span className="nav-active-dot"/>}</NavLink>)}</div>)}
+ <div className="future-studio-note"><Sparkles size={18}/><span>Focus. Create.<br/><strong>Deliver.</strong></span><ArrowUpRight size={17}/></div>
  </nav>
  <div className="future-sidebar-footer"><NavLink to="/settings" onClick={close} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Settings size={18}/><span>Settings</span></NavLink><div className="future-account"><span className="future-avatar">{name.slice(0,1).toUpperCase()}</span><span><strong>{name}</strong><small>{profile?.role?.replaceAll('_',' ')||'Account'}</small></span><button title="Sign out" aria-label="Sign out" disabled={signingOut} onClick={()=>void logout()}><LogOut size={17}/></button></div>{error&&<p role="alert">{error}</p>}</div>
  </aside></>;

@@ -26,7 +26,7 @@ export default function ReportHeader({
   const hasActiveDateFilter = Boolean(startDate || endDate);
 
   return (
-    <div className="flex flex-col gap-6 print:hidden">
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between print:hidden">
       {/* TITLE & BRAND BADGE */}
       <div className="min-w-0">
         <div className="flex items-center gap-2">
