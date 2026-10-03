@@ -467,7 +467,7 @@ export default function Reports() {
   }, [employees, filteredTasks, filteredTimesheets]);
 
   return (
-    <div className="min-w-0 space-y-6 pb-12">
+    <div className="reports-page min-w-0 space-y-6 pb-12">
       {/* HEADER */}
       <ReportHeader
         startDate={startDate}

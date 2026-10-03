@@ -24,7 +24,7 @@ const TABS: { id: ReportTab; label: string; icon: typeof BarChart3; description:
 export default function ReportTabNav({ activeTab, onTabChange }: ReportTabNavProps) {
   return (
     <div className="min-w-0 print:hidden">
-      <div className="flex w-full overflow-x-auto rounded-2xl border border-slate-200/80 bg-slate-900 p-1.5 shadow-xl scrollbar-none">
+      <div className="report-tabs flex w-full overflow-x-auto rounded-2xl border border-slate-200/80 bg-white p-1.5 shadow-xs scrollbar-none">
         <div className="flex min-w-full items-center gap-1.5 sm:min-w-0">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -34,6 +34,7 @@ export default function ReportTabNav({ activeTab, onTabChange }: ReportTabNavPro
               <button
                 key={tab.id}
                 type="button"
+                aria-pressed={isActive}
                 onClick={() => onTabChange(tab.id)}
                 className={`group relative flex shrink-0 items-center gap-2.5 rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-200 ${
                   isActive

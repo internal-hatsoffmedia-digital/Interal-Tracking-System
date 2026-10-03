@@ -6,8 +6,8 @@
 html #root :is([class*="text-emerald-"],[class*="text-green-"],[class*="text-rose-"],[class*="text-red-"],[class*="text-blue-"],[class*="text-indigo-"],[class*="text-purple-"],[class*="text-violet-"],[class*="text-amber-"],[class*="text-yellow-"],[class*="text-pink-"],[class*="text-orange-"],[class*="text-cyan-"],[class*="text-teal-"]) { color:var(--ink,#111)!important; }
 html #root :is([class*="bg-emerald-50"],[class*="bg-green-50"],[class*="bg-rose-50"],[class*="bg-red-50"],[class*="bg-indigo-50"],[class*="bg-blue-50"],[class*="bg-amber-50"],[class*="bg-purple-50"],[class*="bg-yellow-50"],[class*="bg-pink-50"],[class*="bg-orange-50"],[class*="bg-violet-50"],[class*="bg-cyan-50"],[class*="bg-teal-50"]) { background-color:#fff7d6!important; }
 html #root :is([class*="border-emerald-"],[class*="border-green-"],[class*="border-rose-"],[class*="border-red-"],[class*="border-indigo-"],[class*="border-blue-"],[class*="border-amber-"],[class*="border-purple-"],[class*="border-yellow-"],[class*="border-pink-"],[class*="border-orange-"],[class*="border-violet-"],[class*="border-cyan-"],[class*="border-teal-"]) { border-color:#ffcc00!important; }
-html #root :is([class*="bg-emerald-5"],[class*="bg-emerald-6"],[class*="bg-rose-5"],[class*="bg-rose-6"],[class*="bg-indigo-5"],[class*="bg-indigo-6"],[class*="bg-blue-5"],[class*="bg-amber-5"],[class*="bg-green-5"],[class*="bg-purple-5"],[class*="bg-violet-5"],[class*="bg-pink-5"],[class*="bg-orange-5"]) { background-color:#ffcc00!important; color:#111!important; }
-html #root :is([class*="bg-emerald-5"],[class*="bg-emerald-6"],[class*="bg-rose-5"],[class*="bg-rose-6"],[class*="bg-indigo-5"],[class*="bg-indigo-6"]) svg { color:#111!important; }
+html #root :is([class*="bg-emerald-500"],[class*="bg-emerald-600"],[class*="bg-rose-500"],[class*="bg-rose-600"],[class*="bg-indigo-500"],[class*="bg-indigo-600"],[class*="bg-blue-500"],[class*="bg-amber-500"],[class*="bg-green-500"],[class*="bg-purple-500"],[class*="bg-violet-500"],[class*="bg-pink-500"],[class*="bg-orange-500"]) { background-color:#ffcc00!important; color:#111!important; }
+html #root :is([class*="bg-emerald-500"],[class*="bg-emerald-600"],[class*="bg-rose-500"],[class*="bg-rose-600"],[class*="bg-indigo-500"],[class*="bg-indigo-600"]) svg { color:#111!important; }
 /* Existing gradient cards retain their shape and shadow, with pale-yellow fills. */
 html #root :is([class*="from-indigo-"],[class*="from-purple-"],[class*="from-blue-"],[class*="from-emerald-"],[class*="from-green-"],[class*="from-rose-"],[class*="from-pink-"],[class*="from-violet-"]) { background-image:none!important; background-color:#fff7d6!important; }
 html #root [class*="via-"][class*="bg-gradient-"]:not([class*="from-slate-"]) { background-image:none!important; background-color:var(--surface,#fff)!important; }
@@ -30,3 +30,17 @@ html #root .future-primary { background:#ffcc00!important; color:#111!important;
 html #root :is([class*="from-fuchsia-"],[class*="from-pink-"],[class*="from-cyan-"],[class*="from-teal-"],[class*="from-orange-"],[class*="from-yellow-"]) { background-image:none!important; background-color:#fff7d6!important; }
 html #root :is([class*="text-fuchsia-"],[class*="text-teal-"],[class*="text-cyan-"]) { color:var(--ink,#111)!important; }
 html #root :is([class*="bg-fuchsia-50"],[class*="bg-fuchsia-100"],[class*="bg-indigo-100"],[class*="bg-purple-100"],[class*="bg-blue-100"],[class*="bg-green-100"],[class*="bg-emerald-100"],[class*="bg-pink-100"],[class*="bg-rose-100"]) { background:#fff7d6!important; color:#111!important; }
+
+/* Reports use quiet surfaces; yellow identifies selection and progress. */
+html #root .reports-page tbody tr { background:var(--surface,#fff)!important; }
+html #root .reports-page tbody tr:hover { background:#fff7d6!important; }
+html #root .reports-page thead { background:#fff7d6!important; color:#111!important; }
+html #root .reports-page thead th { color:#111!important; }
+html #root .report-tabs button { color:var(--ink,#111)!important; }
+html #root .report-tabs button[aria-pressed=true] { background:#ffcc00!important; color:#111!important; }
+html #root .report-tabs button[aria-pressed=true] span { color:#111!important; }
+html #root .report-tabs button[aria-pressed=false] { background:transparent; }
+html #root .report-tabs button[aria-pressed=false]>div:first-child { background:#fff7d6!important; color:#111!important; }
+html #root .report-tabs button[aria-pressed=true]>div:first-child { background:#111!important; color:#ffcc00!important; }
+html #root .report-tabs button[aria-pressed=true] svg { color:#ffcc00!important; }
+html[data-theme=dark] #root .reports-page tbody tr:hover { background:#262112!important; }

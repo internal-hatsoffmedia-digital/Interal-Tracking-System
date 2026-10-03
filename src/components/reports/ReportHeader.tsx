@@ -28,7 +28,7 @@ export default function ReportHeader({
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between print:hidden">
       {/* TITLE & BRAND BADGE */}
-      <div className="min-w-0">
+      <div className="min-w-0 lg:w-2/5 lg:shrink-0">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-slate-950 via-indigo-950 to-slate-900 text-amber-400 shadow-md ring-1 ring-white/10">
             <BarChart3 size={20} />
@@ -52,7 +52,7 @@ export default function ReportHeader({
       </div>
 
       {/* CONTROLS & DATE FILTERS */}
-      <div className="flex shrink-0 flex-wrap items-center gap-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-3 lg:justify-end">
         {/* QUICK PRESETS */}
         <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-xs">
           <button
