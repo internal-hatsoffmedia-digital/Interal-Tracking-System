@@ -30,6 +30,7 @@ interface TaskOption {
 }
 
 interface EmployeeOption {
+  account_role?: string | null;
   id: string;
   full_name: string;
   employee_code: string;
@@ -486,7 +487,7 @@ function TaskAssignmentForm({
                       —{" "}
                       {
                         employee.employee_code
-                      }
+                      }{employee.account_role ? ` - ${employee.account_role.replaceAll("_", " ")}` : ""}
                     </option>
                   ),
                 )}

@@ -15,6 +15,7 @@ const MyWork = lazy(() => import("../pages/my-work/MyWork"));
 const Landing = lazy(() => import("../pages/landing/Landing"));
 const Login = lazy(() => import("../pages/auth/Login"));
 const Timesheet = lazy(() => import("../pages/timesheet/Timesheet"));
+const MyTeam = lazy(() => import("../pages/teams/MyTeam"));
 const Teams = lazy(() => import("../pages/teams/Teams"));
 const Employees = lazy(() => import("../pages/employees/Employees"));
 const TeamMembers = lazy(() => import("../pages/team-members/TeamMembers"));
@@ -47,6 +48,7 @@ function AppRouter() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/my-team" element={<MyTeam />} />
               <Route path="/teams" element={<Teams />} />
               <Route path="/employees" element={<Employees />} />
               <Route path="/team-members" element={<TeamMembers />} />

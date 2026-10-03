@@ -1,3 +1,4 @@
+import {useAssignmentRefresh} from '../../hooks/useAssignmentRefresh';
 import {
   AlertCircle,
   CheckCircle2,
@@ -133,6 +134,8 @@ function MyWork() {
     },
     [],
   );
+
+  useAssignmentRefresh(()=>loadWork(true));
 
   /* =======================================================
      INITIAL LOAD

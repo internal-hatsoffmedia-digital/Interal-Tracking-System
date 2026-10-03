@@ -1,3 +1,4 @@
+import {useNavigate} from 'react-router-dom';
 import {useProjectManagement} from "../../hooks/useProjectManagement";
 import {supabase} from "../../lib/supabase";
 import { useState } from 'react';
@@ -15,6 +16,7 @@ import type { CreateProjectInput, UpdateProjectInput } from '../../types/project
 
 export default function Projects() {
   useAuth();
+  const navigate=useNavigate();
   const [editing, setEditing] = useState<ManagedProject | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,25 +38,10 @@ export default function Projects() {
         : [];
       const activeEmps = results[1].value.filter(e => e.is_active);
 
-      const filteredCoords = activeEmps.filter(e => {
-        const linkedProfile = coordinators.find(u => u.id === e.profile_id || u.id === e.id);
-        if (linkedProfile) {
-          const role = (linkedProfile.role ?? '').toLowerCase();
-          if (['project_coordinator', 'associate_lead', 'team_lead', 'admin', 'director'].includes(role)) {
-            return true;
-          }
-        }
-        const teamName = (e.team?.name ?? '').toLowerCase();
-        const jobTitle = (e.job_title ?? '').toLowerCase();
-        const fullName = (e.full_name ?? '').toLowerCase();
-
-        return teamName.includes('coordinator') || teamName.includes('flow') || teamName.includes('production') ||
-               jobTitle.includes('coordinator') || jobTitle.includes('lead') || jobTitle.includes('manager') ||
-               ['muskan', 'lavanya', 'esther', 'sabari', 'veena', 'kamalesh'].some(n => fullName.includes(n));
-      });
+      const filteredCoords = activeEmps.filter(e => coordinators.some(u => u.id===e.profile_id && u.is_active && u.role==='project_coordinator'));
 
       setClients(results[0].value);
-      setEmployees(filteredCoords.length > 0 ? filteredCoords : activeEmps);
+      setEmployees(filteredCoords);
       setEditing(project); setOpen(true);
     } catch(e) { setError(e instanceof Error ? e.message : 'Unable to load project form'); }
     finally { setBusy(false); }
@@ -84,6 +71,7 @@ export default function Projects() {
       statusOptions={[...new Set([...projectStatuses,...(editing ? [editing.status]:[])])]}
       healthOptions={[...new Set(['on_track',...(editing ? [editing.health]:[])])]}
       invoiceStatusOptions={[...new Set(['pending_billing',...(editing ? [editing.invoice_status]:[])])]}
+      onManageAssignments={editing ? ()=>{setOpen(false);navigate('/projects?project='+editing.id);} : undefined}
       loading={busy} error={error} onClose={()=>{if(!busy)setOpen(false);}} onSubmit={save} />
       {manager && editing && <button disabled={busy} className="fixed bottom-4 left-4 z-[60] rounded-lg border bg-white px-3 py-2 text-sm shadow-lg" onClick={()=>void archive()}>{editing.is_active ? 'Archive project' : 'Restore project'}</button>}</>}
   </div>;

@@ -33,6 +33,13 @@ export interface Task {
 
 export interface TaskWithRelations
   extends Task {
+  creator_name?: string | null;
+  creator?: {
+    id: string;
+    full_name: string;
+    email?: string;
+  } | null;
+
   project?: {
     id: string;
     name: string;

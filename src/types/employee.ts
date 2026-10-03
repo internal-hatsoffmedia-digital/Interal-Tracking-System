@@ -14,6 +14,7 @@ export interface Employee {
 }
 
 export interface EmployeeWithTeam extends Employee {
+  account_role?: string | null;
   team?: {
     id: string;
     name: string;

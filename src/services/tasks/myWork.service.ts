@@ -30,132 +30,40 @@ async function getCurrentEmployee() {
     );
   }
 
-  // 1. Try RPC get_current_employee_profile (handles auto-linking & self-provisioning)
-  try {
-    const { data: rpcData, error: rpcErr } = await supabase.rpc(
-      "get_current_employee_profile"
-    );
+  const rpc = await supabase.rpc("get_current_employee_profile");
+  if (!rpc.error && Array.isArray(rpc.data) && rpc.data.length && rpc.data[0].profile_id === user.id && rpc.data[0].is_active) return rpc.data[0];
+  // Never guess a login identity by similar names or email prefixes.
+  const {data:employee,error} = await supabase.from("employees").select("*")
+    .eq("profile_id",user.id).eq("is_active",true).maybeSingle();
+  if(error)throw new Error(`Unable to resolve your employee account: ${error.message}`);
+  if(employee)return employee;
+  throw new Error("No active employee record is linked to your login. Ask an administrator to link your Auth account in Employees. " + (rpc.error?.message || ""));
 
-    if (!rpcErr && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
-      return rpcData[0];
-    }
-  } catch (e) {
-    console.warn("get_current_employee_profile RPC failed, falling back to direct table queries:", e);
-  }
-
-  // 2. Direct match by profile_id
-  let {
-    data: employee,
-  } =
-    await supabase
-      .from("employees")
-      .select("*")
-      .eq(
-        "profile_id",
-        user.id,
-      )
-      .eq(
-        "is_active",
-        true,
-      )
-      .maybeSingle();
-
-  if (employee) {
-    return employee;
-  }
-
-  // 3. Self-healing fallback: match by email or name if profile_id link is missing
-  if (user.email) {
-    const userEmail = user.email.trim().toLowerCase();
-    const userPrefix = userEmail.split("@")[0].replace(/[^a-zA-Z]/g, "");
-
-    const { data: allActiveEmployees } = await supabase
-      .from("employees")
-      .select("*")
-      .eq("is_active", true);
-
-    if (allActiveEmployees && allActiveEmployees.length > 0) {
-      const match = allActiveEmployees.find((e) => {
-        const empEmail = (e.email ?? "").trim().toLowerCase();
-        const empName = (e.full_name ?? "").trim().toLowerCase();
-        return (
-          (empEmail && empEmail === userEmail) ||
-          (userPrefix && userPrefix.length > 2 && empEmail.includes(userPrefix)) ||
-          (userPrefix && userPrefix.length > 2 && empName.includes(userPrefix))
-        );
-      });
-
-      if (match) {
-        employee = match;
-        void supabase
-          .from("employees")
-          .update({ profile_id: user.id })
-          .eq("id", match.id);
-        return employee;
-      }
-    }
-  }
-
-  throw new Error(
-    "No active employee record is linked to this account.",
-  );
 }
 
 /* =========================================================
    LOAD RELATIONS
 ========================================================= */
 
-async function getRelations() {
-  const [
-    tasksResult,
-    clientsResult,
-    projectsResult,
-  ] = await Promise.all([
-    supabase
-      .from("tasks")
-      .select("*"),
-
-    supabase
-      .from("clients")
-      .select(
-        "id, name, short_name",
-      ),
-
-    supabase
-      .from("projects")
-      .select(
-        "id, name, series_title",
-      ),
+async function getRelations(taskIds: string[]) {
+  async function rows(table:string, ids:string[], columns="*") {
+    const result: Record<string, any>[]=[];
+    const unique=[...new Set(ids)];
+    for(let i=0;i<unique.length;i+=100){
+      const {data,error}=await supabase.from(table).select(columns).in("id",unique.slice(i,i+100));
+      if(error)throw new Error(`Unable to load ${table}: ${error.message}`);
+      result.push(...(data??[]));
+    }
+    return result;
+  }
+  const tasks=await rows("tasks",taskIds);
+  const missing=taskIds.filter(id=>!tasks.some(t=>t.id===id));
+  if(missing.length)throw new Error(`${missing.length} assigned task(s) are hidden by database access rules. Ask the administrator to run the assignment visibility repair SQL.`);
+  const [clients,projects]=await Promise.all([
+    rows("clients",tasks.map(t=>t.client_id).filter(Boolean),"id,name,short_name"),
+    rows("projects",tasks.map(t=>t.project_id).filter(Boolean),"id,name,series_title")
   ]);
-
-  if (tasksResult.error) {
-    throw new Error(
-      `Unable to load tasks: ${tasksResult.error.message}`,
-    );
-  }
-
-  if (clientsResult.error) {
-    throw new Error(
-      `Unable to load clients: ${clientsResult.error.message}`,
-    );
-  }
-
-  if (projectsResult.error) {
-    throw new Error(
-      `Unable to load projects: ${projectsResult.error.message}`,
-    );
-  }
-
-  return {
-    tasks:
-      tasksResult.data ?? [],
-
-    clients:
-      clientsResult.data ?? [],
-
-    projects:
-      projectsResult.data ?? [],
-  };
+  return {tasks,clients,projects};
 }
 
 /* =========================================================
@@ -168,30 +76,12 @@ export async function getMyWork(): Promise<
   const employee =
     await getCurrentEmployee();
 
-  const {
-    data: assignments,
-    error: assignmentError,
-  } =
-    await supabase
-      .from(
-        "task_assignments",
-      )
-      .select("*")
-      .eq(
-        "employee_id",
-        employee.id,
-      )
-      .order(
-        "assigned_at",
-        {
-          ascending: false,
-        },
-      );
-
-  if (assignmentError) {
-    throw new Error(
-      `Unable to load assigned tasks: ${assignmentError.message}`,
-    );
+  const assignments: Record<string, any>[]=[];
+  for(let offset=0;;offset+=500){
+    const {data,error}=await supabase.from("task_assignments").select("*")
+      .eq("employee_id",employee.id).order("assigned_at",{ascending:false}).order("id").range(offset,offset+499);
+    if(error)throw new Error(`Unable to load assigned tasks: ${error.message}`);
+    assignments.push(...(data??[]).filter(a=>a.status!=="rejected"));if(!data||data.length<500)break;
   }
 
   if (
@@ -206,7 +96,7 @@ export async function getMyWork(): Promise<
     clients,
     projects,
   } =
-    await getRelations();
+    await getRelations(assignments.map(a=>a.task_id));
 
   return assignments
     .map(

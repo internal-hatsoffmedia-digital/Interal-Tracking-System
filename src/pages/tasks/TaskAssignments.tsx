@@ -695,6 +695,7 @@ function TaskAssignments() {
           employees={employees.map(
             (employee) => ({
               id: employee.id,
+              account_role: employee.account_role,
               full_name:
                 employee.full_name,
               employee_code:
@@ -1041,7 +1042,7 @@ function EditAssignmentModal({
                       —{" "}
                       {
                         employee.employee_code
-                      }
+                      }{employee.account_role ? ` - ${employee.account_role.replaceAll("_", " ")}` : ""}
                     </option>
                   ),
                 )}

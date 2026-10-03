@@ -4,7 +4,7 @@ import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanba
 import {useAuth} from '../../context/AuthContext';
 
 const groups=[
- {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/teams',Users],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Timesheet','/timesheet',Timer],['Projects','/projects',FolderKanban]]},
+ {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Timesheet','/timesheet',Timer],['Projects','/projects',FolderKanban]]},
  {name:'Studio',items:[['Clients','/clients',BriefcaseBusiness],['Teams','/teams',Users],['Employees','/employees',UserRound],['Team Members','/team-members',UserCheck],['Performance','/performance',BarChart3],['Reports','/reports',BarChart3]]},
  {name:'Sales & Marketing',items:[['Sales Tracker','/sales',Target]]},
 ] as const;
@@ -25,14 +25,13 @@ export default function Sidebar(){
    if (isMuskan && g.name === 'Sales & Marketing') return false;
    return true;
  }).map(g => {
-   if (isCoordinator && g.name === 'Your workspace') {
-     return {
-       ...g,
-       items: g.items.filter(([label]) => label !== 'My Work')
-     };
-   }
-   return g;
- });
+   const isLead = profile?.role === 'associate_lead' || profile?.role === 'team_lead';
+   return {...g, items:g.items.filter(([label]) => {
+     if(label === 'My Team') return isLead;
+     if(label === 'Teams' && isLead) return false;
+     if(label === 'My Work' && isCoordinator) return false;
+     return true;
+   })}; });
 
  const close=()=>{setOpen(false);window.dispatchEvent(new CustomEvent('hatsoff:close-mobile-sidebar'));};
 

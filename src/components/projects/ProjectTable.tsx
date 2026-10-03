@@ -72,6 +72,29 @@ function formatDate(
   );
 }
 
+function formatDateTime(
+  value: string | null | undefined,
+): string {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+}
+
 
 function getProgress(
   project: ProjectWithRelations,
@@ -495,6 +518,10 @@ function DesktopTable({
               </th>
 
               <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                Created
+              </th>
+
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Payment
               </th>
 
@@ -514,7 +541,7 @@ function DesktopTable({
             ) : projects.length === 0 ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="p-0"
                 >
                   <EmptyState />
@@ -696,6 +723,41 @@ function DesktopTable({
                               Overdue
                             </p>
                           )}
+
+                        </div>
+
+                      </td>
+
+
+                      {/* CREATED */}
+
+                      <td className="px-4 py-4">
+
+                        <div className="whitespace-nowrap">
+
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700">
+
+                            <Clock3
+                              size={13}
+                              strokeWidth={1.8}
+                              className="text-slate-400"
+                            />
+
+                            <span>
+                              {formatDateTime(
+                                project.created_at,
+                              )}
+                            </span>
+
+                          </div>
+
+                          <p className="mt-0.5 text-[11px] font-normal text-slate-500">
+                            By{" "}
+                            {project.creator_name ||
+                              project.creator
+                                ?.full_name ||
+                              "Admin"}
+                          </p>
 
                         </div>
 

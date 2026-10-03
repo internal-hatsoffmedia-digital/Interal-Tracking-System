@@ -826,7 +826,11 @@ function TaskForm({
 
               <p className="mt-0.5 text-xs text-slate-400">
                 {isEdit
-                  ? "Update production task details."
+                  ? `Update production task details.${
+                      task?.created_at
+                        ? ` • Created: ${new Date(task.created_at).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true })} by ${task.creator_name || task.creator?.full_name || "Admin"}`
+                        : ""
+                    }`
                   : "Create a task for your production workflow."}
               </p>
             </div>
@@ -1379,7 +1383,7 @@ function TaskForm({
                             }
                             {employee.employee_code
                               ? ` (${employee.employee_code})`
-                              : ""}
+                              : ""}{employee.account_role ? ` - ${employee.account_role.replaceAll("_", " ")}` : ""}
                           </option>
                         ),
                       )}

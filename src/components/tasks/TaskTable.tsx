@@ -151,6 +151,29 @@ function formatDate(
   ).format(date);
 }
 
+function formatDateTime(
+  value: string | null | undefined,
+): string {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
+}
+
 
 /* =========================================================
    DEADLINE CHECK
@@ -401,23 +424,23 @@ function TaskCard({
         <div>
 
           <p className="text-[10px] uppercase tracking-wide text-slate-400">
-            Estimated
+            Created
           </p>
 
           <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-slate-600">
-
             <Clock3
               size={13}
               strokeWidth={1.8}
             />
 
-            {Number(
-              task.estimated_hours ??
-                0,
-            ).toFixed(1)}
-            h
-
+            {formatDateTime(
+              task.created_at,
+            )}
           </div>
+
+          <p className="mt-0.5 text-[10px] text-slate-400">
+            By {task.creator_name || task.creator?.full_name || "Admin"}
+          </p>
 
         </div>
 
@@ -505,6 +528,10 @@ function TaskTable({
               </th>
 
               <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                Created
+              </th>
+
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Hours
               </th>
 
@@ -524,7 +551,7 @@ function TaskTable({
             ) : tasks.length === 0 ? (
               <tr>
 
-                <td colSpan={8}>
+                <td colSpan={9}>
 
                   <EmptyState />
 
@@ -693,6 +720,41 @@ function TaskTable({
                             Overdue
                           </p>
                         )}
+
+                      </td>
+
+
+                      {/* CREATED */}
+
+                      <td className="px-4 py-4">
+
+                        <div className="whitespace-nowrap">
+
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700">
+
+                            <Clock3
+                              size={13}
+                              strokeWidth={1.8}
+                              className="text-slate-400"
+                            />
+
+                            <span>
+                              {formatDateTime(
+                                task.created_at,
+                              )}
+                            </span>
+
+                          </div>
+
+                          <p className="mt-0.5 text-[11px] font-normal text-slate-500">
+                            By{" "}
+                            {task.creator_name ||
+                              task.creator
+                                ?.full_name ||
+                              "Admin"}
+                          </p>
+
+                        </div>
 
                       </td>
 

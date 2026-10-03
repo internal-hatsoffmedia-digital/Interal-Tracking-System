@@ -37,7 +37,8 @@ const employeeSelect = `
   is_active,
   created_at,
   updated_at,
-  teams (
+  profiles!employees_profile_id_fkey (role),
+  teams!employees_team_id_fkey (
     id,
     name
   )
@@ -53,6 +54,7 @@ function normalizeEmployee(
 ): EmployeeWithTeam {
   return {
     ...employee,
+    account_role: (Array.isArray(employee.profiles) ? employee.profiles[0] : employee.profiles)?.role ?? null,
 
     team: Array.isArray(employee.teams)
       ? employee.teams[0] ?? null

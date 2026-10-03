@@ -53,6 +53,7 @@ async function getTaskRelations() {
     projectsResult,
     assignmentsResult,
     employeesResult,
+    profilesResult,
   ] = await Promise.all([
     supabase
       .from("clients")
@@ -86,7 +87,13 @@ async function getTaskRelations() {
     supabase
       .from("employees")
       .select(
-        "id, full_name, employee_code, email, job_title, team_id",
+        "id, full_name, employee_code, email, job_title, team_id, profile_id",
+      ),
+
+    supabase
+      .from("profiles")
+      .select(
+        "id, full_name, email, role, team_id",
       ),
   ]);
 
@@ -120,7 +127,11 @@ async function getTaskRelations() {
 
     employees:
       (employeesResult.data ??
-        []) as EmployeeRelation[],
+        []) as (EmployeeRelation & { profile_id?: string | null })[],
+
+    profiles:
+      (profilesResult.data ??
+        []) as { id: string; full_name: string; email?: string }[],
   };
 }
 
@@ -134,8 +145,24 @@ function attachRelations(
   clients: ClientRelation[],
   projects: ProjectRelation[],
   assignments: AssignmentRelation[] = [],
-  employees: EmployeeRelation[] = [],
+  employees: (EmployeeRelation & { profile_id?: string | null })[] = [],
+  profiles: { id: string; full_name: string; email?: string }[] = [],
 ): TaskWithRelations[] {
+  const userMap = new Map<string, { id: string; full_name: string; email?: string }>();
+  for (const prof of profiles) {
+    if (prof.id && prof.full_name) {
+      userMap.set(prof.id, prof);
+    }
+  }
+  for (const emp of employees) {
+    if (emp.id && emp.full_name && !userMap.has(emp.id)) {
+      userMap.set(emp.id, { id: emp.id, full_name: emp.full_name, email: emp.email });
+    }
+    if (emp.profile_id && emp.full_name && !userMap.has(emp.profile_id)) {
+      userMap.set(emp.profile_id, { id: emp.profile_id, full_name: emp.full_name, email: emp.email });
+    }
+  }
+
   return tasks.map(
     (task) => {
       const taskAssignment =
@@ -154,8 +181,14 @@ function attachRelations(
             ) ?? null
           : null;
 
+      const creatorObj = task.created_by ? userMap.get(task.created_by) ?? null : null;
+      const creatorName = creatorObj ? creatorObj.full_name : (task.created_by ? "Admin" : null);
+
       return {
         ...task,
+
+        creator_name: creatorName,
+        creator: creatorObj ? { id: creatorObj.id, full_name: creatorObj.full_name, email: creatorObj.email } : null,
 
         client:
           clients.find(
@@ -232,6 +265,7 @@ export async function getTasks(): Promise<
     projects,
     assignments,
     employees,
+    profiles,
   } =
     await getTaskRelations();
 
@@ -242,6 +276,7 @@ export async function getTasks(): Promise<
     projects,
     assignments,
     employees,
+    profiles,
   );
 }
 
@@ -280,6 +315,7 @@ export async function getTaskById(
     projects,
     assignments,
     employees,
+    profiles,
   } =
     await getTaskRelations();
 
@@ -291,6 +327,7 @@ export async function getTaskById(
       projects,
       assignments,
       employees,
+      profiles,
     )[0] ?? null
   );
 }

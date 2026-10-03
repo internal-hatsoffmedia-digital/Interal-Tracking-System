@@ -11,6 +11,7 @@ import type {
 ========================================================= */
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
+  // Disambiguate membership from teams.team_lead_id -> profiles.id.
   const { data: profileData, error: profileError } = await supabase
     .from("profiles")
     .select(`
@@ -22,12 +23,12 @@ export async function getTeamMembers(): Promise<TeamMember[]> {
       job_title,
       is_active,
       created_at,
-      employees (
+      employees!employees_profile_id_fkey (
         employee_code,
         job_title,
         is_active
       ),
-      teams (
+      teams!profiles_team_id_fkey (
         id,
         name
       )

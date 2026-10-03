@@ -36,7 +36,8 @@ before(async () => {
     '202609190010_active_task_projects_and_employee_linking.sql',
     '202609190011_team_employee_scoping.sql',
     '202609190013_reset_employees_and_auth_sync.sql',
-    '202609220014_fix_task_visibility_and_lead_scoping.sql'
+    '202609220014_fix_task_visibility_and_lead_scoping.sql',
+    '202609240018_assignment_visibility.sql'
   ];
 
   for (const name of migrationFiles) {
@@ -44,6 +45,7 @@ before(async () => {
     await db.exec(fileContent);
   }
 
+  await db.exec("alter type assignment_status add value if not exists 'rejected'");
   // Insert Auth users & Teams
   for (let n = 1; n <= 14; n++) {
     await db.query('insert into auth.users (id, email) values ($1, $2)', [id(n), `user${n}@hatsoffmedia.in`]);
@@ -145,4 +147,24 @@ test('Req 5: Production associate lead (Vijay R) sees only his own team members 
     assert.equal(emp.team_id, id(103));
   }
   assert.equal(vijayEmployees.length, 2);
+});
+
+test('Direct assignments remain visible when issued by admin or coordinator', async () => {
+  for (const assigner of [1,7]) {
+    await db.exec('reset role');
+    await db.query('update task_assignments set assigned_by=$1 where id=$2',[id(assigner),id(501)]);
+    assert.equal((await as(5,'select id from tasks where id=$1',[id(401)])).rows.length,1);
+    assert.equal((await as(3,'select id from tasks where id=$1',[id(401)])).rows.length,0);
+  }
+});
+test('Employee resolver returns only the signed-in linked account', async () => {
+  const own=(await as(5,'select profile_id from public.get_current_employee_profile()')).rows;
+  assert.deepEqual(own.map(e=>e.profile_id),[id(5)]);
+});
+test('Rejected assignments no longer grant direct task visibility', async () => {
+  await db.exec('reset role');
+  await db.query("update task_assignments set status='rejected' where id=$1",[id(501)]);
+  assert.equal((await as(5,'select id from tasks where id=$1',[id(401)])).rows.length,0);
+  await db.exec('reset role');
+  await db.query("update task_assignments set status='assigned' where id=$1",[id(501)]);
 });

@@ -161,7 +161,13 @@ export default function ExecutiveBriefing({
     ? "Project Coordinator"
     : isAdmin
     ? "Studio Administrator / CEO"
-    : "Team Lead";
+    : userRole === "associate_lead"
+    ? "Associate Lead"
+    : userRole === "team_lead"
+    ? "Team Lead"
+    : userRole === "director"
+    ? "Director"
+    : "Employee";
 
   return <div className="future-briefing">
     <div className="future-briefing-intro"><div className="future-eyebrow"><span/>YOUR STUDIO, IN FOCUS</div><h1>Welcome, {displayName}<span className="future-heading-dot">.</span></h1><p>{roleTitle} · {currentTime || 'Today'}</p>

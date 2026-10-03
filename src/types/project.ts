@@ -39,6 +39,13 @@ export interface Project {
 
 export interface ProjectWithRelations
   extends Project {
+  creator_name?: string | null;
+  creator?: {
+    id: string;
+    full_name: string;
+    email?: string;
+  } | null;
+
   client?: {
     id: string;
     name: string;

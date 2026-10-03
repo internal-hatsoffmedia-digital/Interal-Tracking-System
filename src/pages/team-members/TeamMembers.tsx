@@ -5,6 +5,7 @@ import TeamMemberFilters from "../../components/team-members/TeamMemberFilters";
 import TeamMemberFormModal from "../../components/team-members/TeamMemberFormModal";
 import TeamMemberTable from "../../components/team-members/TeamMemberTable";
 import { useAuth } from "../../context/AuthContext";
+import { errorMessage as formatErrorMessage } from "../../lib/errorMessage";
 import {
   createTeamMember,
   deleteTeamMember,
@@ -71,7 +72,7 @@ export default function TeamMembers() {
     } catch (err) {
       console.error("Failed to load team members data:", err);
       setErrorMessage(
-        err instanceof Error ? err.message : "Unable to load team members data.",
+        formatErrorMessage(err, "Unable to load team members data."),
       );
     } finally {
       setLoading(false);

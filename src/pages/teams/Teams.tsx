@@ -1,3 +1,4 @@
+import {Navigate} from "react-router-dom";
 import AssignTeamAccount from "../../components/teams/AssignTeamAccount";
 import { useAuth } from "../../context/AuthContext";
 import { Plus, Users } from "lucide-react";
@@ -14,6 +15,11 @@ import {
 
 import type { Team } from "../../types/team";
 
+function TeamsRoute() {
+ const {profile} = useAuth();
+ if (profile?.role === 'associate_lead' || profile?.role === 'team_lead') return <Navigate to="/my-team" replace />;
+ return <Teams />;
+}
 function Teams() {
  const { profile } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
@@ -346,4 +352,4 @@ function Teams() {
   );
 }
 
-export default Teams;
+export default TeamsRoute;

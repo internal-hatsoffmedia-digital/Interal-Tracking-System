@@ -1,0 +1,14 @@
+node_modules/
+.expo/
+.env
+.env.local
+dist/
+test-artifacts/
+*.tsbuildinfo
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.jks
+*.keystore
+!android/app/debug.keystore

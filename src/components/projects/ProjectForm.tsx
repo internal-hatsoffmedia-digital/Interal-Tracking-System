@@ -41,6 +41,7 @@ interface ProjectFormProps {
   error?: string;
 
   onClose: () => void;
+  onManageAssignments?: () => void;
 
   onSubmit: (
     data:
@@ -104,6 +105,7 @@ function ProjectForm({
   loading = false,
   error = "",
   onClose,
+  onManageAssignments,
   onSubmit,
 }: ProjectFormProps) {
   const isEditing =
@@ -950,18 +952,18 @@ function ProjectForm({
                     htmlFor="project-lead"
                     className="mb-1.5 block text-xs font-medium text-slate-600"
                   >
-                    {isEditing ? 'Legacy lead (managed in Assignments & shared access)' : 'Initial Project Coordinator'}
+                    {isEditing ? 'Project assignments' : 'Initial Project Coordinator'}
                   </label>
 
                   <div className="relative">
 
-                    <UserRound
+                    {!isEditing && <UserRound
                       size={16}
                       strokeWidth={1.8}
                       className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
+                    />}
 
-                    <select
+                    {isEditing ? <div className="space-y-2"><p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Project coordinators are managed in Assignments & Shared Access. Assign production work to staff from Tasks.</p><button type="button" disabled={loading || !onManageAssignments} onClick={onManageAssignments} className="rounded-xl bg-yellow-300 px-4 py-2 text-sm font-semibold text-slate-900">Manage project assignees</button><p className="text-xs text-slate-500">Opening assignments closes this form without saving unsaved detail changes.</p></div> : <select
                       id="project-lead"
                       aria-describedby={!isEditing && employees.length === 0 ? 'project-coordinator-setup' : undefined}
                       value={
@@ -1001,7 +1003,7 @@ function ProjectForm({
                         ),
                       )}
 
-                    </select>
+                    </select>}
 
                     {!isEditing && employees.length === 0 && (
                       <p id="project-coordinator-setup" role="status" className="mt-2 text-sm text-amber-800">

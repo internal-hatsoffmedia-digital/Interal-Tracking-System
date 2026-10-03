@@ -12,7 +12,7 @@ import type {
 ========================================================= */
 
 async function getProjectRelations() {
-  const [clientsResult, employeesResult] = await Promise.all([
+  const [clientsResult, employeesResult, profilesResult] = await Promise.all([
     supabase
       .from("clients")
       .select("id, name, short_name")
@@ -22,7 +22,14 @@ async function getProjectRelations() {
 
     supabase
       .from("employees")
-      .select("id, full_name, employee_code")
+      .select("id, full_name, employee_code, profile_id")
+      .order("full_name", {
+        ascending: true,
+      }),
+
+    supabase
+      .from("profiles")
+      .select("id, full_name, email, role")
       .order("full_name", {
         ascending: true,
       }),
@@ -43,6 +50,7 @@ async function getProjectRelations() {
   return {
     clients: clientsResult.data ?? [],
     employees: employeesResult.data ?? [],
+    profiles: profilesResult.data ?? [],
   };
 }
 
@@ -61,22 +69,51 @@ function attachRelations(
     id: string;
     full_name: string;
     employee_code: string;
+    profile_id?: string | null;
   }[],
+  profiles: {
+    id: string;
+    full_name: string;
+    email?: string;
+  }[] = [],
 ): ProjectWithRelations[] {
-  return projects.map((project) => ({
-    ...project,
+  const userMap = new Map<string, { id: string; full_name: string; email?: string }>();
+  for (const prof of profiles) {
+    if (prof.id && prof.full_name) {
+      userMap.set(prof.id, prof);
+    }
+  }
+  for (const emp of employees) {
+    if (emp.id && emp.full_name && !userMap.has(emp.id)) {
+      userMap.set(emp.id, { id: emp.id, full_name: emp.full_name });
+    }
+    if (emp.profile_id && emp.full_name && !userMap.has(emp.profile_id)) {
+      userMap.set(emp.profile_id, { id: emp.profile_id, full_name: emp.full_name });
+    }
+  }
 
-    client:
-      clients.find(
-        (client) => client.id === project.client_id,
-      ) ?? null,
+  return projects.map((project) => {
+    const creatorObj = project.created_by ? userMap.get(project.created_by) ?? null : null;
+    const creatorName = creatorObj ? creatorObj.full_name : (project.created_by ? "Admin" : null);
 
-    lead_employee:
-      employees.find(
-        (employee) =>
-          employee.id === project.lead_employee_id,
-      ) ?? null,
-  }));
+    return {
+      ...project,
+
+      creator_name: creatorName,
+      creator: creatorObj ? { id: creatorObj.id, full_name: creatorObj.full_name, email: creatorObj.email } : null,
+
+      client:
+        clients.find(
+          (client) => client.id === project.client_id,
+        ) ?? null,
+
+      lead_employee:
+        employees.find(
+          (employee) =>
+            employee.id === project.lead_employee_id,
+        ) ?? null,
+    };
+  });
 }
 
 /* =========================================================
@@ -105,13 +142,14 @@ export async function getProjects(): Promise<
     return [];
   }
 
-  const { clients, employees } =
+  const { clients, employees, profiles } =
     await getProjectRelations();
 
   return attachRelations(
     projects,
     clients,
     employees,
+    profiles,
   );
 }
 
@@ -151,13 +189,14 @@ export async function getActiveProjects(): Promise<
     return [];
   }
 
-  const { clients, employees } =
+  const { clients, employees, profiles } =
     await getProjectRelations();
 
   return attachRelations(
     rawProjects,
     clients,
     employees,
+    profiles,
   );
 }
 
@@ -186,7 +225,7 @@ export async function getProjectById(
 
   const project = data as Project;
 
-  const { clients, employees } =
+  const { clients, employees, profiles } =
     await getProjectRelations();
 
   return (
@@ -194,6 +233,7 @@ export async function getProjectById(
       [project],
       clients,
       employees,
+      profiles,
     )[0] ?? null
   );
 }
