@@ -10,15 +10,15 @@ export function Badge({ label, variant = 'default' }: BadgeProps) {
   const getColors = () => {
     switch (variant) {
       case 'success':
-        return { bg: '#065f46', text: '#34d399' };
+        return { bg: '#fff7d6', text: '#111111' };
       case 'warning':
-        return { bg: '#78350f', text: '#fbbf24' };
+        return { bg: '#fff7d6', text: '#111111' };
       case 'danger':
-        return { bg: '#7f1d1d', text: '#f87171' };
+        return { bg: '#fff7d6', text: '#111111' };
       case 'info':
-        return { bg: '#1e3a8a', text: '#60a5fa' };
+        return { bg: '#fff7d6', text: '#111111' };
       default:
-        return { bg: '#334155', text: '#cbd5e1' };
+        return { bg: '#fff7d6', text: '#111111' };
     }
   };
 

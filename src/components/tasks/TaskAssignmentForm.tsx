@@ -543,6 +543,7 @@ function TaskAssignmentForm({
             {/* =============================================
                 NOTES
             ============================================= */}
+            <p className="rounded-xl bg-yellow-50 p-4 text-sm text-black">The task’s exact deadline is saved with this assignment. Set a date and time on the task before assigning Cut Masters work. For rescheduling or changing the editor, create a new assignment so recorded timing stays traceable.</p>
 
             <div>
               <label

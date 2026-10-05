@@ -14,6 +14,7 @@ export interface TaskAssignment {
   assigned_at: string;
   accepted_at: string | null;
   completed_at: string | null;
+  deadline_at?: string | null;
 
   status: string;
   notes: string | null;

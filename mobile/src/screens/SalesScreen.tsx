@@ -8,14 +8,15 @@ import { StatCard } from '../components/StatCard';
 export const SalesScreen: React.FC = () => {
   const [leads, setLeads] = useState<SalesLead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error,setError]=useState('');
 
   const fetchData = async () => {
-    setLoading(true);
+    setLoading(true);setError('');
     try {
       const data = await getSalesLeads();
       setLeads(data);
     } catch (e: any) {
-      console.error(e);
+      setError(e.message || 'Unable to load workspace data.');
     } finally {
       setLoading(false);
     }
@@ -29,10 +30,10 @@ export const SalesScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sales Workspace</Text>
+      {error?<Text accessibilityRole="alert" style={{color:'#ffcc00',marginBottom:12}}>{error}</Text>:null}<Text style={styles.title}>Sales Workspace</Text>
       <View style={styles.statsRow}>
-        <StatCard title="Pipeline Leads" value={leads.length} accentColor="#3b82f6" subtitle="Active pipeline" />
-        <StatCard title="Value" value={`$${totalRevenue}`} accentColor="#10b981" subtitle="Total opportunity" />
+        <StatCard title="Pipeline Leads" value={leads.length} accentColor="#ffcc00" subtitle="Active pipeline" />
+        <StatCard title="Value" value={`$${totalRevenue}`} accentColor="#ffcc00" subtitle="Total opportunity" />
       </View>
       <ScrollView
         style={styles.scrollList}
@@ -69,18 +70,18 @@ export const SalesScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0b0f19', padding: 16 },
-  title: { color: '#ffffff', fontSize: 22, fontWeight: '800', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: '#ffffff', padding: 16 },
+  title: { color: '#111111', fontSize: 22, fontWeight: '800', marginBottom: 16 },
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   scrollList: { flex: 1 },
-  emptyCard: { backgroundColor: '#0f172a', borderRadius: 14, padding: 20, borderWidth: 1, borderColor: '#1e293b', alignItems: 'center' },
-  emptyTitle: { color: '#ffffff', fontSize: 16, fontWeight: '700', marginBottom: 6 },
+  emptyCard: { backgroundColor: '#ffffff', borderRadius: 14, padding: 20, borderWidth: 1, borderColor: '#333333', alignItems: 'center' },
+  emptyTitle: { color: '#111111', fontSize: 16, fontWeight: '700', marginBottom: 6 },
   emptyText: { color: '#94a3b8', fontSize: 12, textAlign: 'center' },
-  card: { backgroundColor: '#0f172a', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#1e293b', marginBottom: 10 },
+  card: { backgroundColor: '#ffffff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#333333', marginBottom: 10 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  leadName: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
+  leadName: { color: '#111111', fontSize: 16, fontWeight: '700' },
   company: { color: '#94a3b8', fontSize: 12, marginTop: 2 },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#1e293b' },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#333333' },
   source: { color: '#64748b', fontSize: 11 },
   revenue: { color: '#ffcc00', fontSize: 14, fontWeight: '700' },
 });

@@ -140,7 +140,7 @@ export const TimesheetScreen: React.FC = () => {
                 <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} disabled={submitting}>
-                {submitting ? <ActivityIndicator color="#0f172a" /> : <Text style={styles.submitBtnText}>Submit</Text>}
+                {submitting ? <ActivityIndicator color="#111111" /> : <Text style={styles.submitBtnText}>Submit</Text>}
               </TouchableOpacity>
             </View>
           </View>
@@ -151,25 +151,25 @@ export const TimesheetScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0b0f19', padding: 16 },
+  container: { flex: 1, backgroundColor: '#ffffff', padding: 16 },
   topHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  title: { color: '#ffffff', fontSize: 22, fontWeight: '800' },
+  title: { color: '#111111', fontSize: 22, fontWeight: '800' },
   addBtn: { backgroundColor: '#ffcc00', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  addBtnText: { color: '#0f172a', fontSize: 13, fontWeight: '700' },
+  addBtnText: { color: '#111111', fontSize: 13, fontWeight: '700' },
   scrollList: { flex: 1 },
-  card: { backgroundColor: '#0f172a', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#1e293b', marginBottom: 10 },
+  card: { backgroundColor: '#ffffff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#333333', marginBottom: 10 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   date: { color: '#ffcc00', fontSize: 11, fontWeight: '700' },
-  taskTitle: { color: '#ffffff', fontSize: 15, fontWeight: '700', marginTop: 2 },
-  notes: { color: '#94a3b8', fontSize: 12, marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: '#1e293b' },
+  taskTitle: { color: '#111111', fontSize: 15, fontWeight: '700', marginTop: 2 },
+  notes: { color: '#94a3b8', fontSize: 12, marginTop: 8, paddingTop: 6, borderTopWidth: 1, borderTopColor: '#333333' },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 20 },
-  modalContent: { backgroundColor: '#0f172a', borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#1e293b' },
-  modalTitle: { color: '#ffffff', fontSize: 18, fontWeight: '800', marginBottom: 16 },
+  modalContent: { backgroundColor: '#ffffff', borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#333333' },
+  modalTitle: { color: '#111111', fontSize: 18, fontWeight: '800', marginBottom: 16 },
   label: { color: '#94a3b8', fontSize: 12, fontWeight: '600', marginBottom: 6, marginTop: 8 },
-  input: { backgroundColor: '#1e293b', borderRadius: 10, color: '#ffffff', paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
+  input: { backgroundColor: '#fff7d6', borderRadius: 10, color: '#111111', paddingHorizontal: 12, paddingVertical: 10, fontSize: 14 },
   modalBtnRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 20 },
-  cancelBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, backgroundColor: '#1e293b' },
+  cancelBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, backgroundColor: '#fff7d6' },
   cancelBtnText: { color: '#94a3b8', fontSize: 13, fontWeight: '600' },
   submitBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, backgroundColor: '#ffcc00' },
-  submitBtnText: { color: '#0f172a', fontSize: 13, fontWeight: '700' },
+  submitBtnText: { color: '#111111', fontSize: 13, fontWeight: '700' },
 });

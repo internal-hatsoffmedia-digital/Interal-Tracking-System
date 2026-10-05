@@ -35,6 +35,7 @@ interface EmployeeRelation {
 
 interface AssignmentRelation {
   id: string;
+  assigned_by: string | null;
   task_id: string;
   employee_id: string;
   status: string;
@@ -78,7 +79,7 @@ async function getTaskRelations() {
     supabase
       .from("task_assignments")
       .select(
-        "id, task_id, employee_id, status, notes, assigned_at",
+        "id, task_id, employee_id, assigned_by, status, notes, assigned_at",
       )
       .order("assigned_at", {
         ascending: false,
@@ -111,6 +112,10 @@ async function getTaskRelations() {
     );
   }
 
+
+  if (assignmentsResult.error) throw new Error(`Unable to load assignments: ${assignmentsResult.error.message}`);
+  if (employeesResult.error) throw new Error(`Unable to load assignees: ${employeesResult.error.message}`);
+  if (profilesResult.error) throw new Error(`Unable to load assigners: ${profilesResult.error.message}`);
 
   return {
     clients:
@@ -182,12 +187,17 @@ function attachRelations(
           : null;
 
       const creatorObj = task.created_by ? userMap.get(task.created_by) ?? null : null;
-      const creatorName = creatorObj ? creatorObj.full_name : (task.created_by ? "Admin" : null);
+      const creatorName = creatorObj ? creatorObj.full_name : null;
 
       return {
         ...task,
 
         creator_name: creatorName,
+        assignments: assignments.filter(assignment => assignment.task_id === task.id).map(assignment => ({
+          ...assignment,
+          assigner_name: assignment.assigned_by ? userMap.get(assignment.assigned_by)?.full_name ?? null : null,
+          employee: employees.find(employee => employee.id === assignment.employee_id) ?? null,
+        })),
         creator: creatorObj ? { id: creatorObj.id, full_name: creatorObj.full_name, email: creatorObj.email } : null,
 
         client:

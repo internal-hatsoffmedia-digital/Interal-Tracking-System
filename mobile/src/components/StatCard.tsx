@@ -21,11 +21,11 @@ export function StatCard({ title, value, subtitle, accentColor = '#ffcc00' }: St
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: '#333333',
     flex: 1,
     minWidth: 140,
     position: 'relative',

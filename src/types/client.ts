@@ -14,6 +14,8 @@ export interface Client {
   } | null;
   is_active: boolean;
   created_at: string;
+  created_by?: string | null;
+  creator_name?: string | null;
   updated_at: string;
 }
 export interface CreateClientInput {

@@ -11,6 +11,7 @@ import {
 import type {
   Client,
 } from "../../types/client";
+import {formatAssignmentTime} from '../../lib/assignmentTime';
 
 
 interface ClientTableProps {
@@ -173,6 +174,7 @@ function ClientTable({
               <th className="w-[180px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Project Coordinator
               </th>
+              <th className="px-5 py-4 text-left text-[11px] font-semibold uppercase text-slate-400">Created by / time (IST)</th>
 
               <th className="w-[130px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Short Name
@@ -205,7 +207,7 @@ function ClientTable({
               <tr>
 
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="p-0"
                 >
                   <ClientTableSkeleton />
@@ -220,7 +222,7 @@ function ClientTable({
                 <tr>
 
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="p-0"
                   >
                     <EmptyClientState />
@@ -298,6 +300,7 @@ function ClientTable({
 
 
                     {/* SHORT NAME */}
+                    <td className="px-5 py-5 text-xs"><p className="font-semibold">{client.creator_name||'Not recorded / unavailable'}</p><p className="mt-1 whitespace-nowrap">{formatAssignmentTime(client.created_at)}</p></td>
 
                     <td className="px-5 py-5">
 
@@ -509,6 +512,7 @@ function ClientTable({
                 {/* DETAILS */}
 
                 <div className="mt-4 space-y-3">
+                  <div className="rounded-xl bg-yellow-50 p-3 text-xs"><p className="font-semibold">Created by {client.creator_name||'Not recorded / unavailable'}</p><p className="mt-1">{formatAssignmentTime(client.created_at)}</p></div>
 
                   {client.contact_person && (
                     <div className="rounded-xl bg-slate-50 p-3">

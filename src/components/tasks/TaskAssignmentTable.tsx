@@ -1,3 +1,4 @@
+import { formatAssignmentTime } from '../../lib/assignmentTime';
 import {
   CheckCircle2,
   Clock3,
@@ -59,25 +60,7 @@ function formatDate(value: string | null) {
   });
 }
 
-function formatDateTime(value: string | null) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+function formatDateTime(value: string | null) { return formatAssignmentTime(value); }
 
 function getStatusClasses(status: string) {
   switch (status) {
@@ -414,16 +397,11 @@ function TaskAssignmentTable({
                     <td className="px-5 py-5">
                       <div>
                         <p className="text-sm text-slate-600">
-                          {formatDate(
-                            assignment.assigned_at,
-                          )}
+                          {formatAssignmentTime(assignment.assigned_at)}
                         </p>
 
                         <p className="mt-0.5 text-xs text-slate-400">
-                          {formatDateTime(
-                            assignment.assigned_at,
-                          ).split(", ")[1] ||
-                            ""}
+                          By: {assignment.assigned_by_profile?.full_name || "Not recorded / unavailable"}
                         </p>
                       </div>
                     </td>
@@ -658,7 +636,7 @@ function TaskAssignmentTable({
 
                 {/* ASSIGNED DATE */}
 
-                <div className="mt-4 border-t border-slate-100 pt-3">
+                <div className="mt-4 border-t border-slate-100 pt-3"><p className="mb-1 text-xs text-slate-600">Assigned by: {assignment.assigned_by_profile?.full_name || "Not recorded / unavailable"}</p>
                   <p className="text-xs text-slate-400">
                     Assigned{" "}
                     <span className="font-medium text-slate-600">

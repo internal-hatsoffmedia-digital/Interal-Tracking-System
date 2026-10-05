@@ -10,7 +10,7 @@ before(async()=>{
  await db.exec(`create policy fixture_tasks_write on tasks for all to authenticated using(true) with check(true);
  create policy fixture_workers_write on employees for all to authenticated using(true) with check(true);
  create policy fixture_assignment_write on task_assignments for all to authenticated using(true) with check(true);`);
- for(const name of ['202609050001_roles_and_statuses.sql','202609050002_project_access.sql','202609050003_sales_tracker.sql','202609050004_workspace_updates.sql','202609080005_coordinator_project_access.sql','202609080006_team_access_admin.sql','202609180007_coordinator_team_leads.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
+ for(const name of ['202609050001_roles_and_statuses.sql','202609050002_project_access.sql','202609050003_sales_tracker.sql','202609050004_workspace_updates.sql','202609080005_coordinator_project_access.sql','202609080006_team_access_admin.sql','202609180007_coordinator_team_leads.sql','202610050020_team_pc_worker_names.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
  await db.exec(`insert into auth.users select ('00000000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid from generate_series(1,14)n;
  insert into teams(id,name) values('${id(100)}','Project Coordinators'),('${id(101)}','Creative Clan'),('${id(102)}','Cut Masters'),('${id(103)}','Web Development'),('${id(104)}','Digital Ninjas');`);
  const people=[[1,'Admin','admin',100],[2,'Muskan','associate_lead',100],[3,'Ganesh','associate_lead',101],[4,'Sudeesh','associate_lead',102],[5,'Vijay','associate_lead',103],[6,'Janani','associate_lead',104],[7,'Lavanya','project_coordinator',100],[8,'Esther','project_coordinator',100],[9,'Director','director',100],[10,'Image editor','employee',101],[11,'Video editor','employee',102],[12,'Web developer','employee',103],[13,'Digital marketer','employee',104],[14,'Kamalesh','team_lead',100]];
@@ -27,6 +27,17 @@ before(async()=>{
  await db.exec(`insert into timesheets(employee_id,task_id,work_date,start_time) values('${id(210)}','${id(405)}',current_date,now()),('${id(211)}','${id(405)}',current_date,now());`);
 });
 after(()=>db.close());
+
+test('Team PC worker names retain supervisor boundaries and exclude private contact fields',async()=>{
+ const coordination=(await as(2,'select * from team_pc_workers()')).rows;
+ assert.equal(coordination.length,14);
+ assert.deepEqual(Object.keys(coordination[0]).sort(),['full_name','id','is_active','team_id','team_type']);
+ const production=(await as(4,'select * from team_pc_workers()')).rows;
+ assert.ok(production.length>0);assert.ok(production.every(row=>row.team_id===id(102)));
+ assert.equal((await as(10,'select * from team_pc_workers()')).rows.length,0);
+ assert.equal((await as(7,'select * from team_pc_workers()')).rows.length,0);
+ assert.equal((await as(14,'select * from team_pc_workers()')).rows.length,14);
+});
 
 test('Flow Force team lead can discover coordinators and create an assigned project',async()=>{
  assert.equal((await as(14,'select workspace_access_context() as access')).rows[0].access.can_manage_projects,true);

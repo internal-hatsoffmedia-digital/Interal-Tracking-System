@@ -9,6 +9,17 @@ import {
 } from "lucide-react";
 
 import type { TaskWithRelations } from "../../types/task";
+import { formatAssignmentTime } from '../../lib/assignmentTime';
+
+function AssignmentDetails({ task }: { task: TaskWithRelations }) {
+  const assignments = task.assignments ?? (task.assignment ? [task.assignment] : []);
+  if (!assignments.length) return <p className="text-xs text-slate-500">Unassigned</p>;
+  return <div className="space-y-3">{assignments.map(assignment => <div key={assignment.id} className="text-xs">
+    <p className="font-medium text-slate-900">To: {assignment.employee?.full_name || 'Name unavailable'}</p>
+    <p className="mt-1 text-slate-600">By: {assignment.assigner_name || 'Not recorded / unavailable'}</p>
+    <time className="mt-1 block whitespace-nowrap text-slate-500" dateTime={assignment.assigned_at || undefined}>{formatAssignmentTime(assignment.assigned_at)}</time>
+  </div>)}</div>;
+}
 
 
 interface TaskTableProps {
@@ -219,7 +230,7 @@ function LoadingRows() {
             className="border-b border-slate-100 last:border-0"
           >
             {Array.from(
-              { length: 8 },
+              { length: 10 },
               (_, cellIndex) => (
                 <td
                   key={cellIndex}
@@ -439,7 +450,7 @@ function TaskCard({
           </div>
 
           <p className="mt-0.5 text-[10px] text-slate-400">
-            By {task.creator_name || task.creator?.full_name || "Admin"}
+            By {task.creator_name || task.creator?.full_name || "Name unavailable"}
           </p>
 
         </div>
@@ -447,6 +458,7 @@ function TaskCard({
       </div>
 
 
+      <div className="mb-4"><p className="mb-2 text-[10px] uppercase tracking-wide text-slate-400">Assignment details</p><AssignmentDetails task={task} /></div>
       {/* FOOTER */}
 
       {onStatusChange && (
@@ -532,6 +544,9 @@ function TaskTable({
               </th>
 
               <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+                Assignment details
+              </th>
+              <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Hours
               </th>
 
@@ -551,7 +566,7 @@ function TaskTable({
             ) : tasks.length === 0 ? (
               <tr>
 
-                <td colSpan={9}>
+                <td colSpan={10}>
 
                   <EmptyState />
 
@@ -751,7 +766,7 @@ function TaskTable({
                             {task.creator_name ||
                               task.creator
                                 ?.full_name ||
-                              "Admin"}
+                              "Name unavailable"}
                           </p>
 
                         </div>
@@ -760,6 +775,7 @@ function TaskTable({
 
 
                       {/* HOURS */}
+                      <td className="min-w-[240px] px-4 py-4"><AssignmentDetails task={task} /></td>
 
                       <td className="px-4 py-4">
 

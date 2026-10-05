@@ -34,14 +34,14 @@ export function CoordinatorOverview(){
  }
  useEffect(()=>{if(profile?.role==='associate_lead')void load();},[profile?.id,profile?.team_id]);
  if(profile?.role!=='associate_lead')return null;
- return <View style={{marginBottom:20}}><Text style={{color:'white',fontSize:18,fontWeight:'700'}}>Coordinator Activity</Text>
- <TouchableOpacity accessibilityRole="button" disabled={loading} onPress={load}><Text style={{color:'#ffcc00',paddingVertical:12}}>{loading?'Loading…':'Refresh coordinator activity'}</Text></TouchableOpacity>
- {error?<Text accessibilityRole="alert" style={{color:'#fca5a5'}}>{error}</Text>:null}
+ return <View style={{marginBottom:20}}><Text style={{color:'#111111',fontSize:18,fontWeight:'700'}}>Coordinator Activity</Text>
+ <TouchableOpacity accessibilityRole="button" disabled={loading} onPress={load}><Text style={{color:'#111111',paddingVertical:12}}>{loading?'Loading…':'Refresh coordinator activity'}</Text></TouchableOpacity>
+ {error?<Text accessibilityRole="alert" style={{color:'#111111'}}>{error}</Text>:null}
  {!loading&&!error&&!rows.length?<Text style={{color:'#94a3b8'}}>No active coordinators are linked to your team.</Text>:null}
- {rows.map(row=><View key={row.id} style={{backgroundColor:'#111827',padding:16,borderRadius:12,marginBottom:12}}>
- <TouchableOpacity accessibilityRole="button" onPress={()=>setExpanded(expanded===row.id?null:row.id)}><Text style={{color:'white',fontWeight:'700'}}>{row.name}</Text></TouchableOpacity>
- <Text style={{color:'#cbd5e1',marginTop:8}}>{row.projects.length} projects created · {row.assignmentsMade} assignments made</Text>
- <Text style={{color:'#cbd5e1',marginTop:8}}>{row.pending} pending · {row.overdue} overdue · {row.completed} delivered tasks</Text>
- {expanded===row.id?<View>{row.projects.map(project=><Text key={project.id} style={{color:'#cbd5e1',marginTop:8}}>{project.name} · {project.status.replace(/_/g,' ')}</Text>)}{row.tasks.map(task=><Text key={task.id} style={{color:'#cbd5e1',marginTop:8}}>{task.title} · {task.status.replace(/_/g,' ')}</Text>)}</View>:null}
+ {rows.map(row=><View key={row.id} style={{backgroundColor:'#ffffff',padding:16,borderRadius:12,marginBottom:12}}>
+ <TouchableOpacity accessibilityRole="button" onPress={()=>setExpanded(expanded===row.id?null:row.id)}><Text style={{color:'#111111',fontWeight:'700'}}>{row.name}</Text></TouchableOpacity>
+ <Text style={{color:'#555555',marginTop:8}}>{row.projects.length} projects created · {row.assignmentsMade} assignments made</Text>
+ <Text style={{color:'#555555',marginTop:8}}>{row.pending} pending · {row.overdue} overdue · {row.completed} delivered tasks</Text>
+ {expanded===row.id?<View>{row.projects.map(project=><Text key={project.id} style={{color:'#555555',marginTop:8}}>{project.name} · {project.status.replace(/_/g,' ')}</Text>)}{row.tasks.map(task=><Text key={task.id} style={{color:'#555555',marginTop:8}}>{task.title} · {task.status.replace(/_/g,' ')}</Text>)}</View>:null}
  </View>)}</View>;
 }

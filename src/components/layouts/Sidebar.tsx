@@ -4,7 +4,7 @@ import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanba
 import {useAuth} from '../../context/AuthContext';
 
 const groups=[
- {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Timesheet','/timesheet',Timer],['Projects','/projects',FolderKanban]]},
+ {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team PC','/team-pc',UserCheck],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Timesheet','/timesheet',Timer],['Projects','/projects',FolderKanban]]},
  {name:'Studio',items:[['Clients','/clients',BriefcaseBusiness],['Teams','/teams',Users],['Employees','/employees',UserRound],['Team Members','/team-members',UserCheck],['Performance','/performance',BarChart3],['Reports','/reports',BarChart3]]},
  {name:'Sales & Marketing',items:[['Sales Tracker','/sales',Target]]},
 ] as const;
@@ -28,6 +28,7 @@ export default function Sidebar(){
    const isLead = profile?.role === 'associate_lead' || profile?.role === 'team_lead';
    return {...g, items:g.items.filter(([label]) => {
      if(label === 'My Team') return isLead;
+     if(label === 'Team PC') return isLead || profile?.role === 'admin';
      if(label === 'Teams' && isLead) return false;
      if(label === 'My Work' && isCoordinator) return false;
      return true;
@@ -45,7 +46,7 @@ export default function Sidebar(){
 
  return <>{open&&<button tabIndex={-1} aria-label="Close navigation backdrop" className="future-nav-backdrop" onClick={close}/>}
  <aside ref={panel} className={`future-sidebar ${open?'is-open':''}`} aria-label="Main navigation">
- <div className="future-brand"><NavLink to="/dashboard" onClick={close} aria-label="Hatsoff home"><img src="/hatsoff-brand.svg" alt="Hatsoff Media"/><span>HATSOFF<small>INTERNAL FORCE<span className="brand-dot"/></small></span></NavLink><button className="future-mobile-close" aria-label="Close navigation" onClick={close}><X size={19}/></button></div>
+ <div className="future-brand"><NavLink to="/dashboard" onClick={close} aria-label="Hatsoff home"><img src="/hatsoff-brand.svg" alt="Hatsoff Media"/><span><small>INTERNAL FORCE<span className="brand-dot"/></small></span></NavLink><button className="future-mobile-close" aria-label="Close navigation" onClick={close}><X size={19}/></button></div>
  <nav>{visibleGroups.map(group=><div className="future-nav-group" key={group.name}><p>{group.name}</p>{group.items.map(([label,path,Icon])=><NavLink to={path} onClick={close} key={path} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Icon size={18} strokeWidth={1.7}/><span>{label}</span>{location.pathname===path&&<span className="nav-active-dot"/>}</NavLink>)}</div>)}
  <div className="future-studio-note"><Sparkles size={18}/><span>Focus. Create.<br/><strong>Deliver.</strong></span><ArrowUpRight size={17}/></div>
  </nav>

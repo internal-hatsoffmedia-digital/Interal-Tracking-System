@@ -1,10 +1,12 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {useAuth} from '../../context/AuthContext';
 
 const pages = [
   ["Dashboard", "/dashboard", "Overview and delivery priorities"],
   ["My Work", "/my-work", "Your assigned tasks"],
+  ["Team PC", "/team-pc", "Coordinator activity and monthly editor delivery timing"],
   ["Tasks", "/tasks", "Manage production work"],
   ["Task Assignments", "/task-assignments", "Assign work to employees"],
   ["Planner", "/planner", "Plan upcoming delivery"],
@@ -20,12 +22,13 @@ const pages = [
 ];
 
 export default function WorkspaceSearch() {
+  const {profile}=useAuth();
   const navigate = useNavigate();
   const input = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const results = pages.filter(([name, , description]) =>
-    `${name} ${description}`.toLowerCase().includes(query.trim().toLowerCase()),
+    (name!=='Team PC'||['admin','associate_lead','team_lead'].includes(profile?.role??'')) && `${name} ${description}`.toLowerCase().includes(query.trim().toLowerCase()),
   );
 
   useEffect(() => {

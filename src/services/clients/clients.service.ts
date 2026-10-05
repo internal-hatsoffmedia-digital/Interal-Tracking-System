@@ -8,11 +8,15 @@ import type {
 
 async function attachAssignedCoordinators(clients: Record<string, unknown>[]): Promise<Client[]> {
   if (clients.length === 0) return [];
+  const creatorIds=[...new Set(clients.map(c=>c.created_by as string).filter(Boolean))];
+  const creators=creatorIds.length ? await supabase.rpc('project_people') : {data:[],error:null};
+  if(creators.error)throw creators.error;
 
   // Fetch employees to map assigned_coordinator_id
-  const { data: employees } = await supabase
+  const { data: employees, error: employeesError } = await supabase
     .from("employees")
     .select("id, full_name, email");
+  if(employeesError)throw employeesError;
 
   const employeeMap = new Map<string, { id: string; full_name: string; email: string | null }>();
   if (employees) {
@@ -26,6 +30,7 @@ async function attachAssignedCoordinators(clients: Record<string, unknown>[]): P
     const coord = coordId ? employeeMap.get(coordId) ?? null : null;
     return {
       ...c,
+      creator_name: creators.data?.find((p:{id:string;full_name:string|null})=>p.id===c.created_by)?.full_name ?? null,
       assigned_coordinator_id: coordId,
       assigned_coordinator: coord
         ? { id: coord.id, full_name: coord.full_name, email: coord.email }

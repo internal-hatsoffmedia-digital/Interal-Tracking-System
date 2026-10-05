@@ -107,8 +107,8 @@ export const ProjectsScreen: React.FC = () => {
           <Text style={styles.addBtnText}>+ New Project</Text>
         </TouchableOpacity>}
       </View>
-      {error ? <Text accessibilityRole="alert" style={{color:'#fca5a5',marginBottom:12}}>{error}</Text> : null}
-      {canManage && profile?.role!=='admin' && !profile?.team_id ? <Text style={{color:'#fca5a5',marginBottom:12}}>Your coordinator team is missing. Ask your administrator to link your account before creating projects.</Text> : null}
+      {error ? <Text accessibilityRole="alert" style={{color:'#ffcc00',marginBottom:12}}>{error}</Text> : null}
+      {canManage && profile?.role!=='admin' && !profile?.team_id ? <Text style={{color:'#ffcc00',marginBottom:12}}>Your coordinator team is missing. Ask your administrator to link your account before creating projects.</Text> : null}
 
       <TextInput
         style={styles.searchInput}
@@ -219,7 +219,7 @@ export const ProjectsScreen: React.FC = () => {
                 <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} disabled={submitting}>
-                {submitting ? <ActivityIndicator color="#0f172a" /> : <Text style={styles.submitBtnText}>Create</Text>}
+                {submitting ? <ActivityIndicator color="#111111" /> : <Text style={styles.submitBtnText}>Create</Text>}
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -232,7 +232,7 @@ export const ProjectsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0f19',
+    backgroundColor: '#ffffff',
     padding: 16,
   },
   topHeader: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 22,
     fontWeight: '800',
   },
@@ -253,16 +253,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   addBtnText: {
-    color: '#0f172a',
+    color: '#111111',
     fontSize: 13,
     fontWeight: '700',
   },
   searchInput: {
-    backgroundColor: '#0f172a',
-    borderColor: '#1e293b',
+    backgroundColor: '#ffffff',
+    borderColor: '#333333',
     borderWidth: 1,
     borderRadius: 10,
-    color: '#ffffff',
+    color: '#111111',
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -277,10 +277,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
   },
   activeFilterTab: {
-    backgroundColor: '#1e293b',
+    backgroundColor: '#fff7d6',
     borderWidth: 1,
     borderColor: '#ffcc00',
   },
@@ -296,11 +296,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   projectCard: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: '#333333',
     marginBottom: 10,
   },
   cardHeader: {
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   projectName: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -330,10 +330,10 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#1e293b',
+    borderTopColor: '#333333',
   },
   assetsText: {
-    color: '#cbd5e1',
+    color: '#555555',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -344,14 +344,14 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: '#333333',
   },
   modalTitle: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 16,
@@ -364,9 +364,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   input: {
-    backgroundColor: '#1e293b',
+    backgroundColor: '#fff7d6',
     borderRadius: 10,
-    color: '#ffffff',
+    color: '#111111',
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   selectChip: {
-    backgroundColor: '#1e293b',
+    backgroundColor: '#fff7d6',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   selectChipTextActive: {
-    color: '#0f172a',
+    color: '#111111',
     fontWeight: '800',
   },
   modalBtnRow: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#fff7d6',
   },
   cancelBtnText: {
     color: '#94a3b8',
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffcc00',
   },
   submitBtnText: {
-    color: '#0f172a',
+    color: '#111111',
     fontSize: 13,
     fontWeight: '700',
   },

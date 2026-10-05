@@ -79,10 +79,6 @@ function Login() {
                 className="h-12 w-auto object-contain"
               />
               <div>
-                <div className="text-xl font-black tracking-tight text-white leading-none">
-                  HATSOFF
-                </div>
-
                 <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.25em] text-[#FFCC00]">
                   Internal Force
                 </div>
@@ -171,9 +167,6 @@ function Login() {
                     className="h-12 w-auto object-contain"
                   />
                   <div>
-                    <div className="text-lg font-black tracking-tight text-slate-950 leading-none">
-                      HATSOFF
-                    </div>
                     <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.22em] text-[#ffcc00]">
                       Internal Force
                     </div>

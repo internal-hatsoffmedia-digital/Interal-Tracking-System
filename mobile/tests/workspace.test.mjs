@@ -100,3 +100,34 @@ test('assignment provenance uses the authenticated coordinator', async () => {
   const service=load('assignments.service.ts',{'./supabase':db,'./access':access,'./profile.service':{getWorkspaceProfile:async()=>profile}});
   await service.assignTask('task','worker');assert.equal(db.writes[0].value.assigned_by,'person');assert.equal(db.writes[0].value.employee_id,'worker');
 });
+
+test('workspace paging preserves team filter and loads every page', async () => {
+  const calls=[];
+  const supabase={from(table){let page=0;const filters={};const query={select(){return query;},order(){return query;},eq(column,value){filters[column]=value;return query;},range(start,end){page=start;calls.push({table,start,end,filters});return query;},then(resolve){return Promise.resolve({data:page===0?Array.from({length:500},(_,id)=>({id})): [{id:500}],error:null}).then(resolve);}};return query;}};
+  const {workspaceRows}=load('workspaceData.ts',{'./supabase':{supabase}});
+  const rows=await workspaceRows('employees','id',{column:'team_id',value:'team-one'});
+  assert.equal(rows.length,501);
+  assert.equal(calls.length,2);
+  assert.equal(calls[1].start,500);
+  assert.equal(calls[0].filters.team_id,'team-one');
+  assert.equal(calls[1].filters.team_id,'team-one');
+});
+test('workspace reads surface backend errors instead of reporting empty data', async () => {
+  const query={select(){return query;},order(){return query;},range(){return query;},then(resolve){return Promise.resolve({data:null,error:{message:'permission denied'}}).then(resolve);}};
+  const {workspaceRows}=load('workspaceData.ts',{'./supabase':{supabase:{from(){return query;}}}});
+  await assert.rejects(()=>workspaceRows('tasks','id'),/permission denied/);
+});
+
+test('report dates reject impossible calendar days and retain leap days', () => {
+ const {validDate}=load('workspaceData.ts',{'./supabase':{supabase:{}}});
+ assert.equal(validDate('2026-02-30'),false);
+ assert.equal(validDate('2026-13-01'),false);
+ assert.equal(validDate('2024-02-29'),true);
+ assert.equal(validDate('2026-10-03'),true);
+});
+
+test('performance failures cannot appear as fabricated success metrics', async () => {
+ const query={select(){return query;},order(){return Promise.resolve({data:null,error:{message:'missing evaluation table'}});}};
+ const {getPerformanceRecords}=load('performance.service.ts',{'./supabase':{supabase:{from(){return query;}}}});
+ await assert.rejects(()=>getPerformanceRecords(),/missing evaluation table/);
+});

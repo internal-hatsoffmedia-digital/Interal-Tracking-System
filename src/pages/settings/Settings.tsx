@@ -884,7 +884,7 @@ export default function Settings() {
                           )
                         }
                         placeholder="Enter phone number"
-                        className="settings-input pl-9"
+                        className="settings-input settings-input-with-icon"
                       />
                     </div>
                   </FormField>
@@ -1244,6 +1244,10 @@ export default function Settings() {
             border-color 150ms ease,
             box-shadow 150ms ease,
             background-color 150ms ease;
+        }
+
+        .settings-input.settings-input-with-icon {
+          padding-left: 2.5rem;
         }
 
         .settings-input::placeholder {

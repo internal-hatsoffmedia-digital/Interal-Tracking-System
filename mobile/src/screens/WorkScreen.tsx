@@ -44,9 +44,11 @@ export function WorkScreen({ownOnly}: {ownOnly: boolean}) {
     {rows.map(row=><View key={row.id} style={styles.card}>
       <Text style={styles.text}>{row.task?.title || 'Task details unavailable'}</Text>
       <Text style={styles.text}>{row.employee?.full_name || 'Employee'} · {row.status.replace(/_/g,' ')}</Text>
+      <Text style={styles.text}>Assigned by: {row.assigner_name || 'Not recorded / unavailable'}</Text>
+      <Text style={styles.text}>{row.assigned_at ? new Date(row.assigned_at).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'})+' IST' : 'Assignment time not recorded'}</Text>
       {row.task?.due_date?<Text style={styles.text}>Due {row.task.due_date}</Text>:null}
       {ownOnly && row.status==='assigned'?<TouchableOpacity accessibilityRole="button" disabled={busy} onPress={()=>action(()=>acceptAssignment(row.id))}><Text style={styles.action}>Accept Assignment</Text></TouchableOpacity>:null}
     </View>)}
   </ScrollView>;
 }
-const styles=StyleSheet.create({page:{flex:1,padding:16,backgroundColor:'#0b0f19'},title:{fontSize:22,fontWeight:'700',color:'white',marginBottom:16},card:{padding:16,backgroundColor:'#111827',borderRadius:12,marginBottom:12},text:{color:'#cbd5e1',marginBottom:10},error:{color:'#fca5a5',marginBottom:12},action:{color:'#ffcc00',paddingVertical:12,fontWeight:'700'}});
+const styles=StyleSheet.create({page:{flex:1,padding:16,backgroundColor:'#ffffff'},title:{fontSize:22,fontWeight:'700',color:'#111111',marginBottom:16},card:{padding:16,backgroundColor:'#ffffff',borderRadius:12,marginBottom:12},text:{color:'#555555',marginBottom:10},error:{color:'#111111',backgroundColor:'#fff7d6',padding:12,marginBottom:12},action:{color:'#111111',backgroundColor:'#ffcc00',padding:12,borderRadius:10,textAlign:'center',fontWeight:'700'}});

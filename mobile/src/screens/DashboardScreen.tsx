@@ -68,15 +68,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
         <Text style={styles.subtitle}>Production metrics & real-time operation</Text>
         <Text style={styles.subtitle}>{profile?.full_name} · {profile?.role.replace(/_/g,' ')}</Text>
       </View>
-      {error ? <Text accessibilityRole="alert" style={{color:'#fca5a5',marginBottom:12}}>{error}</Text> : null}
+      {error ? <Text accessibilityRole="alert" style={{color:'#ffcc00',marginBottom:12}}>{error}</Text> : null}
       <CoordinatorOverview />
 
       <View style={styles.statsGrid}>
         <StatCard title="Projects" value={stats.projects} accentColor="#ffcc00" subtitle="Accessible active projects" />
-        <StatCard title="Tasks" value={stats.tasks} accentColor="#3b82f6" subtitle="Work items" />
+        <StatCard title="Tasks" value={stats.tasks} accentColor="#ffcc00" subtitle="Work items" />
       </View>
       <View style={[styles.statsGrid, { marginTop: 10 }]}>
-        <StatCard title="Clients" value={stats.clients} accentColor="#10b981" subtitle="Active accounts" />
+        <StatCard title="Clients" value={stats.clients} accentColor="#ffcc00" subtitle="Active accounts" />
         <StatCard title="Team" value={stats.employees} accentColor="#a855f7" subtitle="Employees" />
       </View>
 
@@ -139,7 +139,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0f19',
+    backgroundColor: '#ffffff',
     padding: 16,
   },
   header: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   title: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 24,
     fontWeight: '800',
   },
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -178,11 +178,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   card: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: '#333333',
     marginBottom: 10,
   },
   cardHeader: {
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   projectName: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 15,
     fontWeight: '700',
     flex: 1,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   },
   progressBarBg: {
     height: 6,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#fff7d6',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -228,13 +228,13 @@ const styles = StyleSheet.create({
   },
   shortcutBtn: {
     flex: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#fff7d6',
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
   },
   shortcutText: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 13,
     fontWeight: '600',
   },

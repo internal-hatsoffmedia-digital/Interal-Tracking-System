@@ -7,14 +7,15 @@ import { Badge } from '../components/Badge';
 export const TeamsScreen: React.FC = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error,setError]=useState('');
 
   const fetchData = async () => {
-    setLoading(true);
+    setLoading(true);setError('');
     try {
       const data = await getTeams();
       setTeams(data);
     } catch (e: any) {
-      console.error(e);
+      setError(e.message || 'Unable to load workspace data.');
     } finally {
       setLoading(false);
     }
@@ -26,7 +27,7 @@ export const TeamsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Teams & Divisions</Text>
+      {error?<Text accessibilityRole="alert" style={{color:'#ffcc00',marginBottom:12}}>{error}</Text>:null}<Text style={styles.title}>Teams & Divisions</Text>
       <ScrollView
         style={styles.scrollList}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchData} tintColor="#ffcc00" />}
@@ -49,13 +50,13 @@ export const TeamsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0b0f19', padding: 16 },
-  title: { color: '#ffffff', fontSize: 22, fontWeight: '800', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: '#ffffff', padding: 16 },
+  title: { color: '#111111', fontSize: 22, fontWeight: '800', marginBottom: 16 },
   scrollList: { flex: 1 },
-  card: { backgroundColor: '#0f172a', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#1e293b', marginBottom: 10 },
+  card: { backgroundColor: '#ffffff', borderRadius: 14, padding: 14, borderWidth: 1, borderColor: '#333333', marginBottom: 10 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  teamName: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
+  teamName: { color: '#111111', fontSize: 16, fontWeight: '700' },
   desc: { color: '#94a3b8', fontSize: 12, marginTop: 6 },
-  footer: { marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#1e293b' },
+  footer: { marginTop: 10, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#333333' },
   membersText: { color: '#64748b', fontSize: 11 },
 });

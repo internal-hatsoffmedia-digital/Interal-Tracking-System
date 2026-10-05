@@ -117,10 +117,6 @@ function Landing() {
               className="h-10 w-auto object-contain"
             />
             <div>
-              <div className="text-base font-black tracking-tight text-slate-950 leading-none">
-                HATSOFF
-              </div>
-
               <div className="mt-1 text-[9px] font-bold uppercase tracking-[0.25em] text-[#ffcc00]">
                 Internal Force
               </div>
@@ -340,9 +336,7 @@ function Landing() {
                   {/* Preview sidebar */}
                   <div className="border-r border-slate-100 bg-white p-3">
                     <div className="mb-6">
-                      <p className="text-[9px] font-bold text-slate-900">
-                        HATSOFF
-                      </p>
+                      <img src="/hatsoff-brand.svg" alt="Hatsoff Media" className="mb-1 h-8 w-auto object-contain" />
                       <p className="text-[6px] tracking-[0.2em] text-slate-400">
                         INTERNAL FORCE
                       </p>
@@ -744,10 +738,6 @@ function Landing() {
               className="h-9 w-auto object-contain"
             />
             <div>
-              <div className="text-sm font-black text-slate-950 leading-none">
-                HATSOFF
-              </div>
-
               <div className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.25em] text-[#ffcc00]">
                 Internal Force
               </div>

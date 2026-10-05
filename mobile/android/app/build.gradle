@@ -124,6 +124,15 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
         }
+        // Standalone internal testing APK; production release still requires its own key.
+        preview {
+            initWith release
+            signingConfig signingConfigs.debug
+            applicationIdSuffix ".preview"
+            versionNameSuffix "-preview"
+            matchingFallbacks = ['release']
+            debuggable false
+        }
     }
     packagingOptions {
         jniLibs {

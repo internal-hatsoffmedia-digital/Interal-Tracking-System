@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, AppState, Platform } from 'react-native';
+import { StyleSheet, View, Text, Image, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, AppState, Platform, BackHandler } from 'react-native';
 import type { Session } from '@supabase/supabase-js';
 import { getWorkspaceProfile } from './src/services/profile.service';
 import { WorkspaceProfile } from './src/services/access';
@@ -17,8 +17,17 @@ import { PerformanceScreen } from './src/screens/PerformanceScreen';
 import { SalesScreen } from './src/screens/SalesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { WorkScreen } from './src/screens/WorkScreen';
+import { ReportsScreen } from './src/screens/ReportsScreen';
+import { PlannerScreen } from './src/screens/PlannerScreen';
+import { TeamDirectoryScreen } from './src/screens/TeamDirectoryScreen';
+import { UpdatesScreen } from './src/screens/UpdatesScreen';
 
 type Tab =
+  | 'updates'
+  | 'reports'
+  | 'planner'
+  | 'my-team'
+  | 'team-members'
   | 'dashboard'
   | 'my-work'
   | 'team-work'
@@ -41,6 +50,15 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (showMoreMenu) { setShowMoreMenu(false); return true; }
+      if (activeTab !== 'dashboard') { setActiveTab('dashboard'); return true; }
+      return false;
+    });
+    return () => subscription.remove();
+  }, [activeTab, showMoreMenu]);
 
   useEffect(() => {
     let mounted = true;
@@ -123,12 +141,12 @@ export default function App() {
   return (
     <WorkspaceContext.Provider value={profile}>
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0b0f19" />
+      <StatusBar barStyle="light-content" backgroundColor="#111111" />
 
       {/* TOP BRAND BAR */}
       <View style={styles.topBar}>
         <View style={styles.brandContainer}>
-          <Text style={styles.brandName}>HATSOFF</Text>
+          <Image source={require('./assets/hatsoff-logo.png')} accessibilityLabel="Hatsoff Media" style={{width:44,height:36,resizeMode:'contain'}} />
           <View style={styles.dot} />
           <Text style={styles.brandSub}>INTERNAL FORCE</Text>
         </View>
@@ -138,83 +156,18 @@ export default function App() {
         </TouchableOpacity>
       </View>
 
-      {/* TOP CATEGORY STRIP / NAVIGATION SELECTOR */}
+            {/* Compact mobile navigation; the full directory is under More. */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.topNavStrip}>
-        <TouchableOpacity style={styles.chip} onPress={()=>navigateTo('my-work')}><Text style={styles.chipText}>My Work</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.chip} onPress={()=>navigateTo('team-work')}><Text style={styles.chipText}>Team Work</Text></TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'dashboard' && styles.activeChip]}
-          onPress={() => navigateTo('dashboard')}
-        >
-          <Text style={[styles.chipText, activeTab === 'dashboard' && styles.activeChipText]}>Dashboard</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'projects' && styles.activeChip]}
-          onPress={() => navigateTo('projects')}
-        >
-          <Text style={[styles.chipText, activeTab === 'projects' && styles.activeChipText]}>Projects</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'tasks' && styles.activeChip]}
-          onPress={() => navigateTo('tasks')}
-        >
-          <Text style={[styles.chipText, activeTab === 'tasks' && styles.activeChipText]}>Tasks</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'clients' && styles.activeChip]}
-          onPress={() => navigateTo('clients')}
-        >
-          <Text style={[styles.chipText, activeTab === 'clients' && styles.activeChipText]}>Clients</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'timesheet' && styles.activeChip]}
-          onPress={() => navigateTo('timesheet')}
-        >
-          <Text style={[styles.chipText, activeTab === 'timesheet' && styles.activeChipText]}>Timesheet</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'teams' && styles.activeChip]}
-          onPress={() => navigateTo('teams')}
-        >
-          <Text style={[styles.chipText, activeTab === 'teams' && styles.activeChipText]}>Teams</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'employees' && styles.activeChip]}
-          onPress={() => navigateTo('employees')}
-        >
-          <Text style={[styles.chipText, activeTab === 'employees' && styles.activeChipText]}>Employees</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'performance' && styles.activeChip]}
-          onPress={() => navigateTo('performance')}
-        >
-          <Text style={[styles.chipText, activeTab === 'performance' && styles.activeChipText]}>Performance</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'sales' && styles.activeChip]}
-          onPress={() => navigateTo('sales')}
-        >
-          <Text style={[styles.chipText, activeTab === 'sales' && styles.activeChipText]}>Sales Workspace</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.chip, activeTab === 'settings' && styles.activeChip]}
-          onPress={() => navigateTo('settings')}
-        >
-          <Text style={[styles.chipText, activeTab === 'settings' && styles.activeChipText]}>Settings</Text>
-        </TouchableOpacity>
+        {([['dashboard','Dashboard'],['my-work','My Work'],['team-work','Team Work'],['planner','Planner']] as const).map(([key,label])=><TouchableOpacity key={key} accessibilityRole="button" accessibilityState={{selected:activeTab===key}} style={[styles.chip,activeTab===key&&styles.activeChip]} onPress={()=>navigateTo(key)}><Text style={[styles.chipText,activeTab===key&&styles.activeChipText]}>{label}</Text></TouchableOpacity>)}
       </ScrollView>
 
       {/* SCREEN BODY */}
       <View style={styles.screenBody} key={session.user.id}>
+        {activeTab === 'updates' && <UpdatesScreen onNavigate={navigateTo} />}
+        {activeTab === 'reports' && <ReportsScreen />}
+        {activeTab === 'planner' && <PlannerScreen />}
+        {activeTab === 'my-team' && <TeamDirectoryScreen ownTeam />}
+        {activeTab === 'team-members' && <TeamDirectoryScreen />}
         {activeTab === 'my-work' && <WorkScreen ownOnly />}
         {activeTab === 'team-work' && <WorkScreen ownOnly={false} />}
         {activeTab === 'dashboard' && <DashboardScreen onNavigate={navigateTo} />}
@@ -273,8 +226,9 @@ export default function App() {
       {showMoreMenu && (
         <View style={styles.moreMenuOverlay}>
           <TouchableOpacity style={styles.moreMenuBackdrop} onPress={() => setShowMoreMenu(false)} />
-          <View style={styles.moreMenuContent}>
+          <ScrollView style={[styles.moreMenuContent,{maxHeight:'80%'}]}>
             <Text style={styles.moreMenuTitle}>All Workspaces & Modules</Text>
+            {([['updates','Updates'],['my-work','My Work'],['team-work','Team Work'],['clients','Clients'],['reports','Reports'],['planner','Planner'],['my-team','My Team'],['team-members','Team Members']] as const).map(([key,label]) => <TouchableOpacity key={key} accessibilityRole="button" style={styles.menuItem} onPress={()=>navigateTo(key)}><Text style={styles.menuItemText}>{label}</Text></TouchableOpacity>)}
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('timesheet')}>
               <Text style={styles.menuItemText}>⏱️ Timesheet Logs</Text>
@@ -299,7 +253,7 @@ export default function App() {
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('settings')}>
               <Text style={styles.menuItemText}>⚙️ Account Settings</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         </View>
       )}
     </SafeAreaView>
@@ -310,11 +264,11 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0f19',
+    backgroundColor: '#111111',
   },
   center: {
     flex: 1,
-    backgroundColor: '#0b0f19',
+    backgroundColor: '#111111',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -330,8 +284,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
-    backgroundColor: '#0f172a',
+    borderBottomColor: '#333333',
+    backgroundColor: '#111111',
   },
   brandContainer: {
     flexDirection: 'row',
@@ -360,7 +314,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#333333',
   },
   signOutText: {
     color: '#94a3b8',
@@ -369,17 +323,17 @@ const styles = StyleSheet.create({
   },
   topNavStrip: {
     maxHeight: 44,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#111111',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: '#333333',
   },
   chip: {
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: '#1e293b',
+    backgroundColor: '#333333',
     marginRight: 8,
     alignItems: 'center',
     justifyContent: 'center',
@@ -393,7 +347,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   activeChipText: {
-    color: '#0f172a',
+    color: '#111111',
     fontWeight: '800',
   },
   screenBody: {
@@ -401,9 +355,9 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#0f172a',
+    backgroundColor: '#111111',
     borderTopWidth: 1,
-    borderTopColor: '#1e293b',
+    borderTopColor: '#333333',
     paddingVertical: 8,
     paddingHorizontal: 6,
   },
@@ -414,7 +368,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTabItem: {
-    backgroundColor: '#1e293b',
+    backgroundColor: '#333333',
   },
   tabLabel: {
     color: '#64748b',
@@ -442,12 +396,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   moreMenuContent: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#111111',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: '#333333',
   },
   moreMenuTitle: {
     color: '#ffcc00',
@@ -460,7 +414,7 @@ const styles = StyleSheet.create({
   menuItem: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: '#333333',
   },
   menuItemText: {
     color: '#ffffff',

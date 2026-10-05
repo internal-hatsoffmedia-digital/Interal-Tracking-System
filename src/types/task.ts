@@ -54,6 +54,8 @@ export interface TaskWithRelations
 
   assignment?: {
     id: string;
+    assigned_by?: string | null;
+    assigner_name?: string | null;
     status: string;
     notes: string | null;
     assigned_at: string;
@@ -67,6 +69,7 @@ export interface TaskWithRelations
       team_id: string | null;
     } | null;
   } | null;
+  assignments?: NonNullable<TaskWithRelations['assignment']>[];
 }
 
 

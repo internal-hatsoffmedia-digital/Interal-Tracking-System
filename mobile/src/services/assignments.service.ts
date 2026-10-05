@@ -3,6 +3,7 @@ import { getWorkspaceProfile } from './profile.service';
 import { canManageWork } from './access';
 export interface WorkAssignment {
   id: string; task_id: string; employee_id: string; status: string; notes: string | null;
+  assigned_at: string | null; assigned_by: string | null; assigner_name?: string | null;
   task: { id: string; title: string; status: string; due_date: string | null } | null;
   employee: { full_name: string } | null;
 }
@@ -15,11 +16,14 @@ async function currentEmployee() {
   return result.data;
 }
 export async function getAssignments(ownOnly: boolean): Promise<WorkAssignment[]> {
-  let query = supabase.from('task_assignments').select('id,task_id,employee_id,status,notes,task:tasks(id,title,status,due_date),employee:employees(full_name)');
+  let query = supabase.from('task_assignments').select('id,task_id,employee_id,status,notes,assigned_at,assigned_by,task:tasks(id,title,status,due_date),employee:employees(full_name)');
   if (ownOnly) query = query.eq('employee_id',(await currentEmployee()).id);
   const { data, error } = await query.order('assigned_at',{ascending:false});
   if (error) throw new Error(`Unable to load assignments: ${error.message}`);
-  return (data || []).map((row:any) => ({...row,task:Array.isArray(row.task)?row.task[0]:row.task,employee:Array.isArray(row.employee)?row.employee[0]:row.employee}));
+  const ids = [...new Set((data || []).map(row=>row.assigned_by).filter(Boolean))];
+  const profiles = ids.length ? await supabase.from('profiles').select('id,full_name').in('id',ids) : {data:[],error:null};
+  if(profiles.error) throw new Error(`Unable to load assigners: ${profiles.error.message}`);
+  return (data || []).map((row:any) => ({...row,assigner_name:profiles.data?.find(person=>person.id===row.assigned_by)?.full_name || null,task:Array.isArray(row.task)?row.task[0]:row.task,employee:Array.isArray(row.employee)?row.employee[0]:row.employee}));
 }
 export async function assignTask(taskId: string, employeeId: string) {
   if (!taskId || !employeeId) throw new Error('Select a task and employee.');

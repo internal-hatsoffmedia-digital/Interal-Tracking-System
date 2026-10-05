@@ -10,13 +10,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ label, type = 'info' }
   const getBadgeStyle = () => {
     switch (type) {
       case 'success':
-        return { bg: '#064e3b', text: '#34d399', border: '#047857' };
+        return { bg: '#fff7d6', text: '#111111', border: '#ffcc00' };
       case 'warning':
-        return { bg: '#451a03', text: '#fbbf24', border: '#78350f' };
+        return { bg: '#fff7d6', text: '#111111', border: '#ffcc00' };
       case 'neutral':
-        return { bg: '#1e293b', text: '#94a3b8', border: '#334155' };
+        return { bg: '#fff7d6', text: '#111111', border: '#ffcc00' };
       default:
-        return { bg: '#172554', text: '#60a5fa', border: '#1d4ed8' };
+        return { bg: '#fff7d6', text: '#111111', border: '#ffcc00' };
     }
   };
 

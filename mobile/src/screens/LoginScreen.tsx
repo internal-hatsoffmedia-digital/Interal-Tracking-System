@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { supabase } from '../services/supabase';
 
 interface LoginScreenProps {
@@ -42,7 +42,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   return (
     <View style={styles.container}>
       <View style={styles.brandHeader}>
-        <Text style={styles.brandTitle}>HATSOFF</Text>
+        <Image source={require('../../assets/hatsoff-logo.png')} accessibilityLabel="Hatsoff Media" style={{width:92,height:72,resizeMode:'contain',alignSelf:'center',marginBottom:12}} />
         <Text style={styles.brandSubtitle}>INTERNAL FORCE MOBILE</Text>
       </View>
 
@@ -76,10 +76,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           secureTextEntry
         />
 
-        {errorMessage ? <Text accessibilityRole="alert" style={{color:'#fca5a5',marginBottom:12}}>{errorMessage}</Text> : null}
+        {errorMessage ? <Text accessibilityRole="alert" style={{color:'#ffcc00',marginBottom:12}}>{errorMessage}</Text> : null}
         <TouchableOpacity accessibilityRole="button" accessibilityLabel="Sign In" style={styles.button} onPress={handleLogin} disabled={loading}>
           {loading ? (
-            <ActivityIndicator color="#0f172a" />
+            <ActivityIndicator color="#111111" />
           ) : (
             <Text style={styles.buttonText}>Sign In</Text>
           )}
@@ -92,7 +92,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0f19',
+    backgroundColor: '#ffffff',
     justifyContent: 'center',
     padding: 20,
   },
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   brandTitle: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 28,
     fontWeight: '900',
     letterSpacing: 2,
@@ -114,14 +114,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   card: {
-    backgroundColor: '#111827',
+    backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 24,
     borderWidth: 1,
     borderColor: '#1f2937',
   },
   title: {
-    color: '#ffffff',
+    color: '#111111',
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 6,
@@ -132,17 +132,17 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   label: {
-    color: '#cbd5e1',
+    color: '#555555',
     fontSize: 12,
     fontWeight: '600',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#334155',
-    color: '#ffffff',
+    borderColor: '#333333',
+    color: '#111111',
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 14,
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   buttonText: {
-    color: '#0f172a',
+    color: '#111111',
     fontSize: 15,
     fontWeight: '700',
   },
