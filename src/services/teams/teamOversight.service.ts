@@ -25,19 +25,20 @@ export async function getTeamOversight() {
   const people=peopleResult.data as {id:string;full_name:string|null;role:string;team_id:string|null;is_active:boolean}[];
   const coordinators=people.filter(p=>p.role==='project_coordinator' && (profile.role==='admin'||p.team_id===profile.team_id));
   const coordinatorIds=coordinators.map(p=>p.id);
-  const [projects,clients,createdTasks,assignments,employees]=await Promise.all([
+  const [projects,clients,createdTasks,assignments,employees,teams]=await Promise.all([
     rows('projects','id,name,created_by,status,created_at,project_members(profile_id)'),
     rows('clients','id,name,created_by,created_at','created_by',coordinatorIds),
     rows('tasks','id,title,created_by,status,created_at','created_by',coordinatorIds),
     rows('task_assignments','id,task_id,employee_id,assigned_by,assigned_at,status,deadline_at,completed_at'),
     (async()=>{const response=await supabase.rpc('team_pc_workers');if(response.error)throw new Error(response.error.message);return response.data as Record<string,any>[];})(),
+    rows('teams','id,name'),
   ]);
   // RLS remains authoritative. Flow Force leads see work assigned by their own coordinators;
-  // production leads see their own editors, administrators see all permitted editor work.
-  const editors=employees.filter(e=>e.team_type==='cut_masters' && (profile.role==='admin' || coordinatorIds.length>0 || e.team_id===profile.team_id));
-  const editorIds=editors.map(e=>e.id);
-  const editorAssignments=assignments.filter(a=>editorIds.includes(a.employee_id) && (profile.role==='admin' || a.employee_id && editors.find(e=>e.id===a.employee_id)?.team_id===profile.team_id || coordinatorIds.includes(a.assigned_by)));
+  // production leads see their own team members, administrators see all permitted work.
+  const teamMembers=employees.filter(e=>(profile.role==='admin' || coordinatorIds.length>0 || e.team_id===profile.team_id));
+  const memberIds=teamMembers.map(e=>e.id);
+  const teamAssignments=assignments.filter(a=>memberIds.includes(a.employee_id) && (profile.role==='admin' || a.employee_id && teamMembers.find(e=>e.id===a.employee_id)?.team_id===profile.team_id || coordinatorIds.includes(a.assigned_by)));
   const taskIds=[...new Set(assignments.map(a=>a.task_id))];
   const tasks=await rows('tasks','id,title,status,due_date','id',taskIds);
-  return {coordinators,projects,clients,createdTasks,assignments:assignments.filter(a=>coordinatorIds.includes(a.assigned_by)),editors,editorAssignments,tasks,people,employees};
+  return {coordinators,projects,clients,createdTasks,assignments:assignments.filter(a=>coordinatorIds.includes(a.assigned_by)),teamMembers,teamAssignments,tasks,people,employees,teams};
 }

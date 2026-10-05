@@ -76,6 +76,7 @@ export async function getEmployees(): Promise<
   } = await supabase
     .from("employees")
     .select(employeeSelect)
+    .not("profile_id", "is", null)
     .order("full_name", {
       ascending: true,
     });
@@ -103,6 +104,7 @@ export async function getActiveEmployees(): Promise<
   } = await supabase
     .from("employees")
     .select(employeeSelect)
+    .not("profile_id", "is", null)
     .eq("is_active", true)
     .order("full_name", {
       ascending: true,

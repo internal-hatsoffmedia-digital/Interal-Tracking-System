@@ -600,8 +600,8 @@ function Employees() {
             </h1>
 
             <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-              Manage employees, teams and
-              internal workforce information.
+              Employees linked to application login accounts.
+              Manage account roles in Team Members.
             </p>
 
           </div>
@@ -709,7 +709,7 @@ function Employees() {
           </p>
 
           <p className="mt-1 text-xs text-slate-400">
-            All employee records
+            Linked employee records
           </p>
 
         </div>
