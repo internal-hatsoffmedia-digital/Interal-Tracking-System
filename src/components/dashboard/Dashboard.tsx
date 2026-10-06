@@ -1,3 +1,5 @@
+import {Link} from 'react-router-dom';
+import {BookOpen} from 'lucide-react';
 import AssignedToYou from './AssignedToYou';
 import {useState} from 'react';
 import {useLocation,useNavigate} from 'react-router-dom';
@@ -18,6 +20,7 @@ export default function Dashboard(){
  const active=location.hash==='#attention'?'today':view;
  const tabs=[{id:'today',label:'Today',icon:LayoutGrid},{id:'projects',label:'Projects & people',icon:FolderKanban},{id:'insights',label:'Studio insights',icon:ChartNoAxesCombined}];
  return <div className="future-dashboard"><ExecutiveBriefing viewMode={mode} onToggleViewMode={setMode}/>
+ <div className="flex justify-end py-3"><Link to="/user-guide" className="project-button flex items-center gap-2 px-4 py-2"><BookOpen size={17}/>User Guide / README</Link></div>
  <div className="future-dashboard-navigation"><div className="future-section-title"><span className="future-eyebrow">MAKE SPACE FOR GREAT WORK</span><h2>Your workspace <ArrowUpRight size={20}/></h2></div><div className="future-dashboard-tabs" aria-label="Dashboard views">{tabs.map(t=><button key={t.id} aria-pressed={active===t.id} onClick={()=>{if(location.hash)navigate(location.pathname,{replace:true});setView(t.id);}}><t.icon size={16}/>{t.label}</button>)}</div></div>
  <div className="future-dashboard-panel" key={active}>
  {active==='today'&&<><AssignedToYou/><Announcements/>{mode==='executive'?<section aria-label="Agency Velocity Pipeline"><ProductionFunnel/></section>:<section aria-label="Dashboard summary"><StatsCards/></section>}<section id="attention" className="scroll-mt-24" aria-label="Tasks requiring attention"><AttentionTasks/></section>{mode==='operations'&&<ProductionAlert/>}</>}

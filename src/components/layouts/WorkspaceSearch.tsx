@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {useAuth} from '../../context/AuthContext';
 
 const pages = [
+  ["User Guide", "/user-guide", "README, help, roles and how to use Internal Force"],
   ["Dashboard", "/dashboard", "Overview and delivery priorities"],
   ["My Work", "/my-work", "Your assigned tasks"],
   ["Team PC", "/team-pc", "Coordinator activity and monthly editor delivery timing"],

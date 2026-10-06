@@ -1,6 +1,8 @@
 # HatsOff Internal Tracking System
 
-Internal workspace for managing agency projects, production tasks, teams, employees, clients, timesheets, performance, and sales.
+Internal workspace for managing agency projects, production tasks, teams, employees, clients, timesheets and performance. Sales Tracker is temporarily disabled.
+
+For staff instructions, read the [User Guide](docs/USER_GUIDE.md), also available from Dashboard → User Guide / README. The dated engineering status below is historical.
 
 ## Current status — 17 September 2026
 

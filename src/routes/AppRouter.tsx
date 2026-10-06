@@ -4,6 +4,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import AppShell from "../components/layouts/AppShell";
 import PageErrorBoundary from "../components/layouts/PageErrorBoundary";
 
+const UserGuide = lazy(() => import("../pages/help/UserGuide"));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const Performance = lazy(() => import("../pages/performance/Performance"));
 const Dashboard = lazy(() => import("../components/dashboard/Dashboard"));
@@ -48,6 +49,7 @@ function AppRouter() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/user-guide" element={<UserGuide />} />
               <Route path="/my-team" element={<MyTeam />} />
               <Route path="/team-pc" element={<TeamPC />} />
               <Route path="/teams" element={<Teams />} />
