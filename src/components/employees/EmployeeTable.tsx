@@ -15,6 +15,7 @@ import type {
 interface EmployeeTableProps {
   employees: EmployeeWithTeam[];
   loading?: boolean;
+  canManage?: boolean;
 
   onEdit: (
     employee: EmployeeWithTeam,
@@ -237,6 +238,7 @@ function StatusBadge({
 function EmployeeTable({
   employees,
   loading = false,
+  canManage = false,
   onEdit,
   onToggleStatus,
 }: EmployeeTableProps) {
@@ -484,7 +486,7 @@ function EmployeeTable({
 
                     <td className="px-5 py-5">
 
-                      <div className="flex items-center gap-2">
+                      {canManage && <div className="flex items-center gap-2">
 
                         {/* EDIT */}
 
@@ -535,7 +537,7 @@ function EmployeeTable({
 
                         </button>
 
-                      </div>
+                      </div>}
 
                     </td>
 
@@ -715,7 +717,7 @@ function EmployeeTable({
                     MOBILE ACTIONS
                 ========================================== */}
 
-                <div className="mt-4 flex gap-2">
+                {canManage && <div className="mt-4 flex gap-2">
 
                   <button
                     type="button"
@@ -760,7 +762,7 @@ function EmployeeTable({
 
                   </button>
 
-                </div>
+                </div>}
 
               </div>
             ),

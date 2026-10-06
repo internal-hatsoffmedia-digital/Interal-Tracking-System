@@ -141,11 +141,7 @@ function Employees() {
      PERMISSIONS
   ========================================================== */
 
-  const canManageEmployees =
-    currentProfile?.role ===
-      "admin" ||
-    currentProfile?.role ===
-      "project_coordinator";
+  const canManageEmployees = currentProfile?.role === "admin";
 
 
   /* =========================================================
@@ -345,6 +341,7 @@ function Employees() {
 
   const handleAddEmployee =
     () => {
+      if (!canManageEmployees) return;
       setEditingEmployee(null);
       setErrorMessage("");
       setIsFormOpen(true);
@@ -360,6 +357,7 @@ function Employees() {
   const handleEdit = (
     employee: EmployeeWithTeam,
   ) => {
+    if (!canManageEmployees) return;
     setEditingEmployee(
       employee,
     );
@@ -392,6 +390,7 @@ function Employees() {
     async (
       formData: EmployeeFormData,
     ) => {
+      if (!canManageEmployees) return;
       setSaving(true);
       setErrorMessage("");
 
@@ -516,6 +515,7 @@ function Employees() {
     async (
       employee: EmployeeWithTeam,
     ) => {
+      if (!canManageEmployees) return;
       const action =
         employee.is_active
           ? "deactivate"
@@ -807,6 +807,7 @@ function Employees() {
       <section className="min-w-0">
 
         <EmployeeTable
+          canManage={canManageEmployees}
           employees={
             filteredEmployees
           }

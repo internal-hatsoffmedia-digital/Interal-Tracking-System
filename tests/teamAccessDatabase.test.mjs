@@ -155,3 +155,12 @@ test('Team PC worker dropdown excludes legacy employees, inactive workers and di
  await db.exec('reset role');
  assert.equal((await db.query('select count(*)::int as total from task_assignments where employee_id=$1',[id(210)])).rows[0].total,3);
 });
+
+test('only Admin can edit employee names or status; coordinator assignment choices remain readable',async()=>{
+ await db.exec('reset role');await db.exec(await readFile(new URL('../supabase/migrations/202610060026_admin_only_employee_management.sql',import.meta.url),'utf8'));
+ for(const actor of [2,7,9,14]){assert.equal((await as(actor,'update employees set full_name=$1,is_active=false where id=$2 returning id',['Forbidden',id(208)])).rows.length,0);}
+ assert.notEqual((await as(1,'select full_name from employees where id=$1',[id(208)])).rows[0].full_name,'Forbidden');
+ assert.ok((await as(7,'select id from employees')).rows.length>0);
+ assert.equal((await as(1,'update employees set full_name=$1,is_active=false where id=$2 returning id',['Admin updated',id(208)])).rows.length,1);
+ assert.equal((await as(1,'update employees set full_name=$1,is_active=true where id=$2 returning id',['Esther',id(208)])).rows.length,1);
+});
