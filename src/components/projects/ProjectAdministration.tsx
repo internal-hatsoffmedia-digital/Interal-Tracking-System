@@ -43,8 +43,8 @@ export default function ProjectAdministration({people, projectId, onSaved}: {
   }
 
   if(!projectId) return (
-    <a href="/settings#access-management" className="inline-flex items-center gap-2 rounded-xl bg-slate-800 border border-slate-700 px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition">
-      <Users size={14} className="text-violet-400" />
+    <a href="/settings#access-management" className="inline-flex items-center gap-2 rounded-xl bg-slate-900 border border-slate-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-black hover:text-white transition">
+      <Users size={14} className="text-inherit" />
       <span>Administrator: account roles & teams → Access Management</span>
     </a>
   );

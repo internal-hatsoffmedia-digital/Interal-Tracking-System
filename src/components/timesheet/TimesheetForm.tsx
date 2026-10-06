@@ -1,5 +1,4 @@
 import {
-  CalendarDays,
   Check,
   Clock3,
   FileText,
@@ -799,12 +798,7 @@ function TimesheetForm({
                   required
                 >
                   <div className="relative">
-                    <CalendarDays
-                      size={16}
-                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                    />
-
-                    <input
+<input
                       type="date"
                       value={
                         workDate
@@ -820,7 +814,7 @@ function TimesheetForm({
                       disabled={
                         loading
                       }
-                      className="input pl-10"
+                      className="input"
                     />
                   </div>
                 </Field>
