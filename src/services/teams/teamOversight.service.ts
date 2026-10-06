@@ -1,3 +1,4 @@
+import {coordinatorDirectory} from '../../lib/coordinatorDirectory';
 import {supabase} from '../../lib/supabase';
 export const oversightRoles=['admin','manager','director','associate_lead','team_lead'];
 export async function getTeamOversight() {
@@ -23,15 +24,16 @@ export async function getTeamOversight() {
   const peopleResult=await supabase.rpc('project_people');
   if(peopleResult.error)throw new Error(peopleResult.error.message);
   const people=peopleResult.data as {id:string;full_name:string|null;role:string;team_id:string|null;is_active:boolean}[];
-  const coordinators=people.filter(p=>p.role==='project_coordinator' && (['admin','manager','director'].includes(profile.role)||p.team_id===profile.team_id));
+  const teams=await rows('teams','id,name,team_type');
+  const coordinators=coordinatorDirectory(people,teams as {id:string;name:string;team_type:string}[],profile);
   const coordinatorIds=coordinators.map(p=>p.id);
-  const [projects,clients,createdTasks,assignments,employees,teams]=await Promise.all([
+  const [projects,clients,createdTasks,assignments,employees]=await Promise.all([
     rows('projects','id,name,created_by,status,created_at,project_members(profile_id)'),
     rows('clients','id,name,created_by,created_at','created_by',coordinatorIds),
     rows('tasks','id,title,created_by,status,created_at','created_by',coordinatorIds),
     rows('task_assignments','id,task_id,employee_id,assigned_by,assigned_at,status,deadline_at,completed_at'),
     (async()=>{const response=await supabase.rpc('team_pc_workers');if(response.error)throw new Error(response.error.message);return response.data as Record<string,any>[];})(),
-    rows('teams','id,name,team_type'),
+
   ]);
   // RLS remains authoritative. Flow Force leads see work assigned by their own coordinators;
   // production leads see their own team members, administrators see all permitted work.

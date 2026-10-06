@@ -38,3 +38,8 @@ html[data-theme=dark] #root .team-pc { --pc-surface:#171717; --pc-ink:#fff7d6; -
 html #root .team-pc .pc-team-filters { display:flex; flex-wrap:wrap; gap:16px; margin-top:20px; }
 html #root .team-pc .pc-team-filters .pc-editor-filter { margin:0; }
 html #root .team-pc .pc-team-name { display:block; font-size:11px; opacity:.65; margin-top:4px; }
+
+html #root .team-pc .pc-coordinator-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; }
+html #root .team-pc .pc-directory-help { font-size:12px; opacity:.65; margin:12px 0; }
+html #root .team-pc .pc-coordinator-toolbar select { max-width:100%; }
+@media(max-width:640px) { html #root .team-pc .pc-coordinator-toolbar label { width:100%; } html #root .team-pc .pc-coordinator-toolbar select { flex:1; min-width:0; } }
