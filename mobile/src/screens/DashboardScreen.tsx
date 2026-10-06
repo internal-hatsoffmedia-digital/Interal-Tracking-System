@@ -19,7 +19,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
     clients: 0,
     tasks: 0,
     employees: 0,
-    leads: 0,
   });
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
 
@@ -27,15 +26,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
     setLoading(true);
     setError('');
     try {
-      const [pRes, cRes, tRes, eRes, lRes, pData] = await Promise.all([
+      const [pRes, cRes, tRes, eRes, pData] = await Promise.all([
         supabase.from('projects').select('*', { count: 'exact', head: true }).eq('is_active',true),
         supabase.from('clients').select('*', { count: 'exact', head: true }),
         supabase.from('tasks').select('*', { count: 'exact', head: true }),
         supabase.from('employees').select('*', { count: 'exact', head: true }),
-        supabase.from('sales_leads').select('*', { count: 'exact', head: true }),
         supabase.from('projects').select('id, name, status, completed_assets, total_assets_required').eq('is_active',true).order('created_at',{ascending:false}).limit(5),
       ]);
-      const failure = [pRes,cRes,tRes,eRes,lRes,pData].find(result => result.error)?.error;
+      const failure = [pRes,cRes,tRes,eRes,pData].find(result => result.error)?.error;
       if (failure) throw new Error(failure.message);
 
       setStats({
@@ -43,7 +41,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
         clients: cRes.count ?? 0,
         tasks: tRes.count ?? 0,
         employees: eRes.count ?? 0,
-        leads: lRes.count ?? 0,
       });
 
       setRecentProjects(pData.data ?? []);
@@ -126,9 +123,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate }) 
           </TouchableOpacity>
           <TouchableOpacity style={styles.shortcutBtn} onPress={() => onNavigate?.('timesheet')}>
             <Text style={styles.shortcutText}>⏱️ Log Hours</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutBtn} onPress={() => onNavigate?.('sales')}>
-            <Text style={styles.shortcutText}>💼 Sales</Text>
           </TouchableOpacity>
         </View>
       </View>

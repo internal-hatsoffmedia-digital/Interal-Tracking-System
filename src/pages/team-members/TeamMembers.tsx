@@ -25,6 +25,7 @@ import type {
 const VALID_ROLES: { value: UserRole; label: string }[] = [
   { value: "admin", label: "Admin" },
   { value: "director", label: "Director" },
+  { value: "manager", label: "Manager" },
   { value: "associate_lead", label: "Associate Lead" },
   { value: "project_coordinator", label: "Project Coordinator" },
   { value: "team_lead", label: "Team Lead" },

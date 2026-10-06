@@ -62,9 +62,9 @@ async function populateTeamDetails(rawTeams: Record<string, unknown>[]): Promise
 
     let displayName = (t.name as string) ?? "";
     if (teamNameKey.includes("web") || teamNameKey.includes("warrior")) {
-      displayName = "Website Development & Deployment";
+      displayName = "Web Crafters · Web Development & Deployment";
     } else if (teamNameKey.includes("ninja") || teamNameKey.includes("digital ninjas")) {
-      displayName = "Digital Ninjas";
+      displayName = "Digital Ninjas · Digital Marketing";
     } else if (teamNameKey.includes("marketing")) {
       displayName = "Digital Marketing";
     } else if (teamNameKey.includes("creative") || teamNameKey.includes("design")) {

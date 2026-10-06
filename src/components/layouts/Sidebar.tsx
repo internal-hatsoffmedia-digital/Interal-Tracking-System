@@ -1,12 +1,12 @@
+import ProfileAvatar from '../common/ProfileAvatar';
 import {useEffect,useRef,useState} from 'react';
 import {NavLink,useLocation,useNavigate} from 'react-router-dom';
-import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,Target,LogOut,X,ArrowUpRight,Sparkles} from 'lucide-react';
+import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,LogOut,X,ArrowUpRight,Sparkles} from 'lucide-react';
 import {useAuth} from '../../context/AuthContext';
 
 const groups=[
  {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team PC','/team-pc',UserCheck],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Timesheet','/timesheet',Timer],['Projects','/projects',FolderKanban]]},
  {name:'Studio',items:[['Clients','/clients',BriefcaseBusiness],['Teams','/teams',Users],['Employees','/employees',UserRound],['Team Members','/team-members',UserCheck],['Performance','/performance',BarChart3],['Reports','/reports',BarChart3]]},
- {name:'Sales & Marketing',items:[['Sales Tracker','/sales',Target]]},
 ] as const;
 
 export default function Sidebar(){
@@ -18,17 +18,13 @@ export default function Sidebar(){
  const [error,setError]=useState('');
  const panel=useRef<HTMLElement>(null);
 
- const isMuskan = profile?.email?.toLowerCase() === 'muskan@hatsoffmedia.in' || profile?.full_name?.toLowerCase().includes('muskan');
  const isCoordinator = profile?.role === 'project_coordinator';
 
- const visibleGroups = groups.filter(g => {
-   if (isMuskan && g.name === 'Sales & Marketing') return false;
-   return true;
- }).map(g => {
+ const visibleGroups = groups.map(g => {
    const isLead = profile?.role === 'associate_lead' || profile?.role === 'team_lead';
    return {...g, items:g.items.filter(([label]) => {
      if(label === 'My Team') return isLead;
-     if(label === 'Team PC') return isLead || profile?.role === 'admin';
+     if(label === 'Team PC') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director';
      if(label === 'Teams' && isLead) return false;
      if(label === 'My Work' && isCoordinator) return false;
      return true;
@@ -50,6 +46,6 @@ export default function Sidebar(){
  <nav>{visibleGroups.map(group=><div className="future-nav-group" key={group.name}><p>{group.name}</p>{group.items.map(([label,path,Icon])=><NavLink to={path} onClick={close} key={path} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Icon size={18} strokeWidth={1.7}/><span>{label}</span>{location.pathname===path&&<span className="nav-active-dot"/>}</NavLink>)}</div>)}
  <div className="future-studio-note"><Sparkles size={18}/><span>Focus. Create.<br/><strong>Deliver.</strong></span><ArrowUpRight size={17}/></div>
  </nav>
- <div className="future-sidebar-footer"><NavLink to="/settings" onClick={close} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Settings size={18}/><span>Settings</span></NavLink><div className="future-account"><span className="future-avatar">{name.slice(0,1).toUpperCase()}</span><span><strong>{name}</strong><small>{profile?.role?.replaceAll('_',' ')||'Account'}</small></span><button title="Sign out" aria-label="Sign out" disabled={signingOut} onClick={()=>void logout()}><LogOut size={17}/></button></div>{error&&<p role="alert">{error}</p>}</div>
+ <div className="future-sidebar-footer"><NavLink to="/settings" onClick={close} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Settings size={18}/><span>Settings</span></NavLink><div className="future-account"><span className="future-avatar"><ProfileAvatar src={profile?.avatar_url} name={name}/></span><span><strong>{name}</strong><small>{profile?.role?.replaceAll('_',' ')||'Account'}</small></span><button title="Sign out" aria-label="Sign out" disabled={signingOut} onClick={()=>void logout()}><LogOut size={17}/></button></div>{error&&<p role="alert">{error}</p>}</div>
  </aside></>;
 }

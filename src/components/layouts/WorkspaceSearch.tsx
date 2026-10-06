@@ -12,7 +12,6 @@ const pages = [
   ["Planner", "/planner", "Plan upcoming delivery"],
   ["Timesheet", "/timesheet", "Track working hours"],
   ["Projects", "/projects", "Manage projects and deadlines"],
-  ["Sales Tracker", "/sales", "Sales & Marketing: leads, follow-ups, conversions, and performance"],
   ["Clients", "/clients", "Manage client relationships"],
   ["Teams", "/teams", "Organize your teams"],
   ["Employees", "/employees", "Manage employee information"],
@@ -28,7 +27,7 @@ export default function WorkspaceSearch() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const results = pages.filter(([name, , description]) =>
-    (name!=='Team PC'||['admin','associate_lead','team_lead'].includes(profile?.role??'')) && `${name} ${description}`.toLowerCase().includes(query.trim().toLowerCase()),
+    (name!=='Team PC'||['admin','manager','director','associate_lead','team_lead'].includes(profile?.role??'')) && `${name} ${description}`.toLowerCase().includes(query.trim().toLowerCase()),
   );
 
   useEffect(() => {

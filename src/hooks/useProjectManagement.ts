@@ -23,7 +23,7 @@ export function useProjectManagement() {
     };
   }, [profile?.id, profile?.role, profile?.team_id]);
 
-  const isDirectorOrAdmin = profile?.role === 'admin' || profile?.role === 'director';
+  const isDirectorOrAdmin = profile?.role === 'admin' || (profile?.role === 'director' || profile?.role === 'manager');
   const isProjectCoordinator = profile?.role === 'project_coordinator';
   const isFlowForceCoordinatorLead = (profile?.role === 'associate_lead' || profile?.role === 'team_lead') && allowed;
 

@@ -168,7 +168,7 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
   const [historyLoading, setHistoryLoading] = useState(true);
   const projectManager=useProjectManagement();
   const manager = profile?.role === 'admin' || (projectManager && !!profile?.team_id && profile.team_id === project.team_id);
-  const fullDetail=manager||['director','team_lead','project_coordinator'].includes(profile?.role ?? '');
+  const fullDetail=manager||['director','manager','team_lead','project_coordinator'].includes(profile?.role ?? '');
   const name = (id: string | null) => people.find(p=>p.id===id)?.full_name ?? (id ? 'Account unavailable' : 'Not recorded');
 
   useEffect(() => {

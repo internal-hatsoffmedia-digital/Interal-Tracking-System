@@ -18,7 +18,7 @@ export default function ProjectNotifications() {
   const load = useCallback(async () => {
     const request = ++requests.current;
     setLoading(true);setError('');
-    try { const data = await loadProjectNotifications(); if(request===requests.current)setRows(data); }
+    try { const data = await loadProjectNotifications(); if(request===requests.current)setRows(data.filter(row=>row.entity_type!=='sales_lead')); }
     catch(e) { if(request===requests.current){setRows([]);setError(e instanceof Error ? e.message : 'Unable to load notifications');} }
     finally { if(request===requests.current)setLoading(false); }
   }, []);
@@ -39,12 +39,6 @@ export default function ProjectNotifications() {
         if(r.error)throw new Error(r.error.message);
         if(!r.data)throw new Error('This task is no longer accessible.');
         await readProjectNotification(row.id,'task');setOpen(false);await load();navigate('/my-work');return;
-      }
-      if(row.entity_type==='sales_lead') {
-        const r=await supabase.from('sales_leads').select('id').eq('id',row.project_id).maybeSingle();
-        if(r.error)throw new Error(r.error.message);
-        if(!r.data){await load();throw new Error('This sales lead is no longer accessible.');}
-        await readProjectNotification(row.id,row.entity_type);setOpen(false);await load();navigate(`/sales?lead=${row.project_id}`);return;
       }
       if (!await getProjectById(row.project_id)) { await load(); throw new Error('This project is no longer accessible.'); }
       await readProjectNotification(row.id);setOpen(false);await load();navigate(`/projects?project=${row.project_id}`);

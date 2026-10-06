@@ -1,3 +1,5 @@
+import ProfilePhotoEditor from '../../components/common/ProfilePhotoEditor';
+import {useAuth} from '../../context/AuthContext';
 import AdminAccessManagement from "../../components/admin/AdminAccessManagement";
 import {
   Activity,
@@ -230,6 +232,7 @@ function mapProfile(
 ============================================================ */
 
 export default function Settings() {
+ const {refreshProfile}=useAuth();
   const [profile, setProfile] =
     useState<Profile | null>(null);
 
@@ -580,6 +583,7 @@ export default function Settings() {
             "",
         });
 
+        await refreshProfile();
         setSuccess(
           "Profile updated successfully.",
         );
@@ -912,31 +916,7 @@ export default function Settings() {
                   {/* Avatar URL */}
 
                   <div className="md:col-span-2">
-                    <FormField label="Avatar URL">
-                      <input
-                        type="url"
-                        value={
-                          form.avatar_url
-                        }
-                        onChange={(
-                          event,
-                        ) =>
-                          handleFormChange(
-                            "avatar_url",
-                            event.target
-                              .value,
-                          )
-                        }
-                        placeholder="https://example.com/profile.jpg"
-                        className="settings-input"
-                      />
-
-                      <p className="mt-1.5 text-[11px] leading-4 text-slate-400">
-                        Use a publicly accessible
-                        image URL for your profile
-                        picture.
-                      </p>
-                    </FormField>
+                    <FormField label="Profile picture"><ProfilePhotoEditor value={form.avatar_url} onChange={value=>handleFormChange('avatar_url',value)}/></FormField>
                   </div>
                 </div>
 

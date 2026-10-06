@@ -23,7 +23,6 @@ const TeamMembers = lazy(() => import("../pages/team-members/TeamMembers"));
 const Clients = lazy(() => import("../pages/clients/Clients"));
 const Reports = lazy(() => import("../pages/reports/Reports"));
 const Settings = lazy(() => import("../pages/settings/Settings"));
-const SalesWorkspace = lazy(() => import("../pages/sales/SalesWorkspace"));
 
 function AppRouter() {
   return (
@@ -63,7 +62,7 @@ function AppRouter() {
               <Route path="/performance" element={<Performance />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/sales" element={<SalesWorkspace />} />
+              <Route path="/sales/*" element={<Navigate to="/dashboard" replace />} />
               <Route path="/task-assignments" element={<TaskAssignments />} />
             </Route>
           </Route>

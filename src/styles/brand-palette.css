@@ -79,3 +79,10 @@ html #root .future-sidebar nav::-webkit-scrollbar-thumb { background:#625728; bo
 @media(prefers-reduced-motion:no-preference) {
   html #root .future-nav-link { transition:background-color .18s ease,color .18s ease; }
 }
+html #root .profile-photo-editor { padding:18px; border:1px solid rgba(17,17,17,.12); border-radius:16px; }
+html #root .profile-photo-editor input { display:block; margin-top:10px; max-width:100%; font-size:13px; }
+html #root .profile-photo-editor p { font-size:12px; line-height:1.6; margin:12px 0; }
+html #root .profile-photo-options { display:flex; flex-wrap:wrap; gap:10px; }
+html #root .profile-photo-options button { display:flex; gap:8px; align-items:center; padding:8px 12px; border:1px solid #ffcc00; border-radius:12px; font-size:12px; }
+html #root .profile-photo-options button[aria-pressed=true] { background:#ffcc00; color:#111; }
+html #root .profile-photo-options img { width:32px; height:32px; border-radius:9px; }

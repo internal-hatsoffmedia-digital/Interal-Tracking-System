@@ -112,3 +112,31 @@ test('saving team and Sales access is atomic, audited and revokes the previous t
  assert.equal((await as(1,'select id from admin_access_history')).rows.length,1);
  assert.equal((await as(3,'select id from admin_access_history')).rows.length,0);
 });
+
+ test('Manager reads all team work without administrator mutation rights',async()=>{
+ await db.exec('reset role');
+ for(const name of ['202610060021_manager_and_team_categories.sql','202610060022_manager_oversight_and_web_team.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
+ await as(1,'update profiles set role=$1 where id=$2',['manager',id(9)]);
+ assert.equal((await as(9,'select id from tasks')).rows.length,5);
+ assert.equal((await as(9,'select id from projects')).rows.length,2);
+ assert.equal((await as(9,'select * from team_pc_workers()')).rows.length,14);
+ await assert.rejects(as(9,'select admin_access_directory()'),/Administrator/);
+ await as(9,'update profiles set role=$1 where id=$2',['admin',id(10)]);
+ assert.equal((await as(1,'select role from profiles where id=$1',[id(10)])).rows[0].role,'employee');
+ await db.exec('reset role');await as(1,'update profiles set role=$1 where id=$2',['director',id(9)]);
+ });
+
+ test('Flow Force supervisors see complete production and coordinators see own assignments; marketing is excluded',async()=>{
+ await as(1,'update teams set team_type=$1 where id=$2',['project_coordination',id(100)]);
+ await as(1,'update teams set team_type=$1 where id=$2',['digital_marketing',id(104)]);
+ await as(7,'insert into task_assignments(id,task_id,employee_id,assigned_by) values($1,$2,$3,$4)',[id(999),id(401),id(210),id(7)]);
+ await db.exec('reset role');await db.exec(await readFile(new URL('../supabase/migrations/202610060023_flow_force_production_scope.sql',import.meta.url),'utf8'));
+ for(const supervisor of [2,9]){assert.equal((await as(supervisor,'select id from tasks')).rows.length,4);assert.equal((await as(supervisor,'select id from projects')).rows.length,2);assert.equal((await as(supervisor,'select id from employees where id=$1',[id(213)])).rows.length,0);assert.equal((await as(supervisor,'select id from teams where id=$1',[id(104)])).rows.length,0);}
+ assert.equal((await as(7,'select id from task_assignments')).rows.length,1);
+ assert.equal((await as(7,'select id from tasks where id=$1',[id(401)])).rows.length,1);
+ assert.equal((await as(7,'select id from tasks where id=$1',[id(402)])).rows.length,0);
+ await as(1,'update profiles set role=$1 where id=$2',['manager',id(9)]);
+ assert.equal((await as(9,'select id from tasks')).rows.length,4);
+ assert.equal((await as(1,'select id from tasks')).rows.length,5);
+ await as(1,'update profiles set role=$1 where id=$2',['director',id(9)]);
+ });

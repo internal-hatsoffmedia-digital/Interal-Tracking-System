@@ -15,6 +15,7 @@ interface TeamMemberTableProps {
 
 const ROLE_BADGE_COLORS: Record<UserRole, { bg: string; text: string; border: string }> = {
   admin: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
+  manager: { bg: "bg-yellow-50", text: "text-black", border: "border-yellow-200" },
   director: { bg: "bg-indigo-50", text: "text-indigo-700", border: "border-indigo-200" },
   associate_lead: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
   project_coordinator: { bg: "bg-cyan-50", text: "text-cyan-700", border: "border-cyan-200" },

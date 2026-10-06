@@ -5,7 +5,7 @@ import type { UserRole } from '../../types/auth';
 import { Users, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 const control = 'h-10 rounded-xl border border-slate-700 bg-slate-900/90 px-3 py-2 text-sm text-slate-100 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition';
-const roles: UserRole[] = ['admin','director','team_lead','associate_lead','project_coordinator','employee'];
+const roles: UserRole[] = ['admin','director','manager','team_lead','associate_lead','project_coordinator','employee'];
 
 export default function ProjectAdministration({people, projectId, onSaved}: {
   people: ProjectPerson[]; projectId?: string; onSaved:()=>Promise<void>;

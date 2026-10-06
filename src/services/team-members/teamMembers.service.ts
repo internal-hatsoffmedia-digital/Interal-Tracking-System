@@ -72,7 +72,7 @@ export async function createTeamMember(
       full_name: input.full_name.trim(),
       email: input.email.trim(),
       password: input.password,
-      role: input.role,
+      role: input.role === "manager" ? "director" : input.role,
       job_title: input.job_title?.trim() || undefined,
       team_id: input.team_id || undefined,
       is_active: input.is_active ?? true,
@@ -86,6 +86,16 @@ export async function createTeamMember(
 
   if (data?.error) {
     throw new Error(data.error);
+  }
+
+  // Older deployed provisioning functions know Director; promote through the audited admin RPC.
+  if (input.role === "manager") {
+    const directory = await supabase.rpc("admin_access_directory");
+    if (directory.error) throw new Error("Account created, but Manager access could not be checked. Review it in Access Management.");
+    const account = directory.data.accounts.find((a: {id:string})=>a.id===data.user.id);
+    if (!account) throw new Error("Account created, but its profile is missing. Review it in Access Management.");
+    const result = await supabase.rpc("admin_set_access", {p_account:account.id,p_role:"manager",p_team:account.team_id,p_sales:account.sales_access,p_expected:{role:account.role,team_id:account.team_id,sales_access:account.sales_access}});
+    if (result.error) throw new Error("Account created as Director; Manager access could not be saved: "+result.error.message);
   }
 
   // Refetch created member details

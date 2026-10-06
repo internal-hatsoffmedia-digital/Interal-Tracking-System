@@ -45,3 +45,10 @@ test('Supabase error objects retain their actionable message and code',()=>{
   assert.equal(errorMessage(new Error('Network failed'),'Fallback'),'Network failed');
   for(const value of [null,undefined,{}, {message:7}, {message:' '}])assert.equal(errorMessage(value,'Fallback'),'Fallback');
 });
+
+ test('new Manager uses audited access RPC and the created Auth UUID',async()=>{
+ let promoted=false;const account={id:'auth-id',role:'director',team_id:null,sales_access:null};
+ const supabase={functions:{invoke:async(name,{body})=>{assert.equal(body.role,'director');return {data:{user:{id:'auth-id'}},error:null}}},rpc:async(name,args)=>{if(name==='admin_access_directory')return {data:{accounts:[account]},error:null};assert.equal(name,'admin_set_access');assert.equal(args.p_account,'auth-id');assert.equal(args.p_role,'manager');assert.equal(args.p_expected.role,'director');promoted=true;return {error:null}},from(){return {select(){return {order:async()=>({data:[{id:'auth-id',full_name:'Manager',role:promoted?'manager':'director',created_at:'2026-10-06'}],error:null})}}}}};
+ const {createTeamMember}=load('../src/services/team-members/teamMembers.service.ts',{'../../lib/supabase':{supabase}});
+ const accountResult=await createTeamMember({full_name:'Manager',email:'manager@example.test',password:'test-only-password',role:'manager'});assert.equal(accountResult.role,'manager');assert.equal(promoted,true);
+ });

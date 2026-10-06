@@ -14,7 +14,6 @@ import { TeamsScreen } from './src/screens/TeamsScreen';
 import { EmployeesScreen } from './src/screens/EmployeesScreen';
 import { TimesheetScreen } from './src/screens/TimesheetScreen';
 import { PerformanceScreen } from './src/screens/PerformanceScreen';
-import { SalesScreen } from './src/screens/SalesScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { WorkScreen } from './src/screens/WorkScreen';
 import { ReportsScreen } from './src/screens/ReportsScreen';
@@ -38,7 +37,6 @@ type Tab =
   | 'employees'
   | 'timesheet'
   | 'performance'
-  | 'sales'
   | 'settings';
 
 export default function App() {
@@ -178,7 +176,6 @@ export default function App() {
         {activeTab === 'employees' && <EmployeesScreen />}
         {activeTab === 'timesheet' && <TimesheetScreen />}
         {activeTab === 'performance' && <PerformanceScreen />}
-        {activeTab === 'sales' && <SalesScreen />}
         {activeTab === 'settings' && <SettingsScreen />}
       </View>
 
@@ -213,10 +210,10 @@ export default function App() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.tabItem, (activeTab === 'settings' || activeTab === 'sales' || activeTab === 'timesheet') && styles.activeTabItem]}
+          style={[styles.tabItem, (activeTab === 'settings' || activeTab === 'timesheet') && styles.activeTabItem]}
           onPress={() => setShowMoreMenu(!showMoreMenu)}
         >
-          <Text style={[styles.tabLabel, (activeTab === 'settings' || activeTab === 'sales' || activeTab === 'timesheet') && styles.activeTabLabel]}>
+          <Text style={[styles.tabLabel, (activeTab === 'settings' || activeTab === 'timesheet') && styles.activeTabLabel]}>
             More ☰
           </Text>
         </TouchableOpacity>
@@ -246,9 +243,6 @@ export default function App() {
               <Text style={styles.menuItemText}>📈 Team Performance</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('sales')}>
-              <Text style={styles.menuItemText}>💼 Sales Workspace</Text>
-            </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('settings')}>
               <Text style={styles.menuItemText}>⚙️ Account Settings</Text>

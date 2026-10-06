@@ -14,6 +14,13 @@ interface TeamFormProps {
 }
 
 const teamTypes = [
+  { value: "cut_masters", label: "Video Editing · Cut Masters" },
+  { value: "creative_clan", label: "Graphic Design · Creative Clan" },
+  { value: "flow_force", label: "Project Coordination · Flow Force" },
+  { value: "digital_ninjas", label: "Digital Marketing · Digital Ninjas (legacy category)" },
+  { value: "web_development", label: "Web Development & Deployment" },
+  { value: "digital_marketing", label: "Digital Marketing" },
+  { value: "project_coordination", label: "Project Coordination" },
   { value: "editing", label: "Editing" },
   { value: "design", label: "Design" },
   { value: "social_media", label: "Social Media" },

@@ -19,6 +19,7 @@ interface CreateTeamMemberPayload {
 const ALLOWED_ROLES = [
   "admin",
   "director",
+  "manager",
   "associate_lead",
   "project_coordinator",
   "team_lead",

@@ -165,6 +165,8 @@ export default function ExecutiveBriefing({
     ? "Associate Lead"
     : userRole === "team_lead"
     ? "Team Lead"
+    : userRole === "manager"
+    ? "Manager"
     : userRole === "director"
     ? "Director"
     : "Employee";
