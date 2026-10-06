@@ -10,13 +10,13 @@ async function attachAssignedCoordinators(clients: Record<string, unknown>[]): P
   if (clients.length === 0) return [];
   const creatorIds=[...new Set(clients.map(c=>c.created_by as string).filter(Boolean))];
   const creators=creatorIds.length ? await supabase.rpc('project_people') : {data:[],error:null};
-  if(creators.error)throw creators.error;
+  if(creators.error)throw new Error(creators.error.message);
 
   // Fetch employees to map assigned_coordinator_id
   const { data: employees, error: employeesError } = await supabase
     .from("employees")
     .select("id, full_name, email");
-  if(employeesError)throw employeesError;
+  if(employeesError)throw new Error(employeesError.message);
 
   const employeeMap = new Map<string, { id: string; full_name: string; email: string | null }>();
   if (employees) {
@@ -52,7 +52,7 @@ export async function getClients(): Promise<Client[]> {
     });
 
   if (error) {
-    throw error;
+    throw new Error(error.message);
   }
 
   return attachAssignedCoordinators((data ?? []) as Record<string, unknown>[]);
@@ -72,7 +72,7 @@ export async function getActiveClients(): Promise<Client[]> {
     });
 
   if (error) {
-    throw error;
+    throw new Error(error.message);
   }
 
   return attachAssignedCoordinators((data ?? []) as Record<string, unknown>[]);
@@ -92,7 +92,7 @@ export async function getClientById(
     .maybeSingle();
 
   if (error) {
-    throw error;
+    throw new Error(error.message);
   }
 
   if (!data) return null;
@@ -130,7 +130,7 @@ export async function createClient(
     .single();
 
   if (error) {
-    throw error;
+    throw new Error(error.message);
   }
 
   const list = await attachAssignedCoordinators([data as Record<string, unknown>]);
@@ -187,7 +187,7 @@ export async function updateClient(
     .single();
 
   if (error) {
-    throw error;
+    throw new Error(error.message);
   }
 
   const list = await attachAssignedCoordinators([data as Record<string, unknown>]);

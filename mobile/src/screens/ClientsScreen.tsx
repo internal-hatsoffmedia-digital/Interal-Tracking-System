@@ -12,10 +12,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { getClients, createClient } from '../services/clients.service';
+import {supabase} from '../services/supabase';
+import {useWorkspaceProfile} from '../services/WorkspaceContext';
 import { Client } from '../types';
 import { Badge } from '../components/Badge';
 
 export const ClientsScreen: React.FC = () => {
+  const profile=useWorkspaceProfile();
+  const [canCreateClient,setCanCreateClient]=useState(false);
+  useEffect(()=>{let cancelled=false;setCanCreateClient(false);void supabase.rpc('client_creation_allowed').then(({data,error})=>{if(!cancelled)setCanCreateClient(!error&&data===true)});return()=>{cancelled=true}},[profile?.id,profile?.role,profile?.team_id]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -85,9 +90,9 @@ export const ClientsScreen: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.topHeader}>
         <Text style={styles.title}>Clients Directory</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+        {canCreateClient&&<TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
           <Text style={styles.addBtnText}>+ Add Client</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
 
       <TextInput

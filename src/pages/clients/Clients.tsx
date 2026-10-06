@@ -42,7 +42,15 @@ import { supabase } from "../../lib/supabase";
 
 function Clients() {
   const { profile } = useAuth();
-  const canCreateClient = ["admin", "director", "project_coordinator", "associate_lead", "team_lead"].includes(profile?.role ?? "");
+  const [canCreateClient, setCanCreateClient] = useState(false);
+  useEffect(() => {
+    let cancelled=false;
+    setCanCreateClient(false);
+    if(profile?.id) void supabase.rpc('client_creation_allowed').then(({data,error})=>{
+      if(!cancelled) setCanCreateClient(!error && data===true);
+    });
+    return ()=>{cancelled=true;};
+  },[profile?.id,profile?.role,profile?.team_id]);
 
   /* =======================================================
      DATA
