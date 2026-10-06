@@ -140,3 +140,18 @@ test('saving team and Sales access is atomic, audited and revokes the previous t
  assert.equal((await as(1,'select id from tasks')).rows.length,5);
  await as(1,'update profiles set role=$1 where id=$2',['director',id(9)]);
  });
+
+test('Team PC worker dropdown excludes legacy employees, inactive workers and disabled logins',async()=>{
+ await db.exec('reset role');
+ await db.exec(await readFile(new URL('../supabase/migrations/202610060025_verified_team_pc_workers.sql',import.meta.url),'utf8'));
+ await db.query('insert into employees(id,full_name,employee_code) values($1,$2,$3)',[id(9999),'Legacy duplicate','LEGACY']);
+ await db.query('update profiles set is_active=false where id=$1',[id(10)]);
+ await db.query('update employees set is_active=false where id=$1',[id(211)]);
+ const workers=(await as(1,'select * from team_pc_workers()')).rows;
+ assert.equal(workers.length,12);
+ assert.ok(!workers.some(row=>[id(9999),id(210),id(211)].includes(row.id)));
+ assert.deepEqual(Object.keys(workers[0]).sort(),['full_name','id','is_active','team_id','team_type']);
+ assert.equal((await as(7,'select * from team_pc_workers()')).rows.length,0);
+ await db.exec('reset role');
+ assert.equal((await db.query('select count(*)::int as total from task_assignments where employee_id=$1',[id(210)])).rows[0].total,3);
+});
