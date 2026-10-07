@@ -45,6 +45,7 @@ export interface TaskWithRelations
     name: string;
     series_title: string | null;
     client_id?: string | null;
+    team_id?: string | null;
     client?: {
       id: string;
       name: string;

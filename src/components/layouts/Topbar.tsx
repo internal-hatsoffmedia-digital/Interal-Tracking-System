@@ -10,7 +10,7 @@ export default function Topbar(){
  const {profile,signOut}=useAuth();const location=useLocation();const navigate=useNavigate();const [open,setOpen]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [now,setNow]=useState(new Date());const dropdown=useRef<HTMLDivElement>(null);
  useEffect(()=>{const timer=setInterval(()=>setNow(new Date()),60000);return()=>clearInterval(timer);},[]);
  useEffect(()=>{if(!open)return;const dismiss=(e:PointerEvent)=>{if(!dropdown.current?.contains(e.target as Node))setOpen(false);};const key=(e:KeyboardEvent)=>{if(e.key==='Escape')setOpen(false);};document.addEventListener('pointerdown',dismiss);document.addEventListener('keydown',key);return()=>{document.removeEventListener('pointerdown',dismiss);document.removeEventListener('keydown',key);};},[open]);
- const page=({'my-work':'My Work','task-assignments':'Task Assignments'} as Record<string,string>)[location.pathname.slice(1)]||location.pathname.slice(1).replace(/^./,c=>c.toUpperCase());
+ const page=({'my-work':'My Work','task-assignments':'Team Work'} as Record<string,string>)[location.pathname.slice(1)]||location.pathname.slice(1).replace(/^./,c=>c.toUpperCase());
  const name=profile?.full_name||'Internal User';
  async function logout(){setBusy(true);try{await signOut();navigate('/login',{replace:true});}catch{setError('Unable to sign out. Please retry.');}finally{setBusy(false);}}
  return <header className="future-topbar"><button className="future-menu-button" aria-label="Open navigation" onClick={()=>window.dispatchEvent(new CustomEvent('hatsoff:toggle-mobile-sidebar'))}><Menu size={21}/></button>

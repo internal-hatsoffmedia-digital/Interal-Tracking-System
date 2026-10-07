@@ -23,6 +23,7 @@ interface ProjectRelation {
   name: string;
   series_title: string | null;
   client_id?: string | null;
+  team_id?: string | null;
 }
 
 interface EmployeeRelation {
@@ -70,7 +71,7 @@ async function getTaskRelations() {
     supabase
       .from("projects")
       .select(
-        "id, name, series_title, client_id",
+        "id, name, series_title, client_id, team_id",
       )
       .eq("is_active", true)
       .order("name", {

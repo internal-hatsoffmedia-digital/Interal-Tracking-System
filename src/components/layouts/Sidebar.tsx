@@ -27,6 +27,7 @@ export default function Sidebar(){
    return {...g, items:g.items.filter(([label]) => {
      if(label === 'My Team') return isLead;
      if(label === 'Team PC') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director';
+     if(label === 'Team Work') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director' || isCoordinator;
      if(label === 'Teams' && isLead) return false;
      if(label === 'My Work' && isCoordinator) return false;
      if(label === 'Clients' && profile?.role === 'employee') return false;

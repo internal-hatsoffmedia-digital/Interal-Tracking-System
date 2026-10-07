@@ -9,7 +9,7 @@ const pages = [
   ["My Work", "/my-work", "Your assigned tasks"],
   ["Team PC", "/team-pc", "Coordinator activity and monthly editor delivery timing"],
   ["Tasks", "/tasks", "Manage production work"],
-  ["Task Assignments", "/task-assignments", "Assign work to employees"],
+  ["Team Work", "/task-assignments", "Assign work to employees and monitor team tasks"],
   ["Planner", "/planner", "Plan upcoming delivery"],
   ["Timesheet", "/timesheet", "Track working hours"],
   ["Projects", "/projects", "Manage projects and deadlines"],
@@ -28,7 +28,9 @@ export default function WorkspaceSearch() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const results = pages.filter(([name, , description]) =>
-    (name!=='Team PC'||['admin','manager','director','associate_lead','team_lead'].includes(profile?.role??'')) && `${name} ${description}`.toLowerCase().includes(query.trim().toLowerCase()),
+    (name !== "Team PC" || ["admin", "manager", "director", "associate_lead", "team_lead"].includes(profile?.role ?? "")) &&
+    (name !== "Team Work" || profile?.role !== "employee") &&
+    `${name} ${description}`.toLowerCase().includes(query.trim().toLowerCase()),
   );
 
   useEffect(() => {

@@ -32,6 +32,12 @@ import {
   updateTaskAssignmentStatus,
 } from "../../services/tasks/taskAssignments.service";
 
+import {
+  getTeams,
+} from "../../services/teams/teams.service";
+
+import { useAuth } from "../../context/AuthContext";
+
 import type {
   EmployeeWithTeam,
 } from "../../types/employee";
@@ -39,6 +45,10 @@ import type {
 import type {
   TaskWithRelations,
 } from "../../types/task";
+
+import type {
+  Team,
+} from "../../types/team";
 
 import type {
   CreateTaskAssignmentInput,
@@ -50,6 +60,8 @@ import type {
 ========================================================= */
 
 function TaskAssignments() {
+  const { profile } = useAuth();
+
   /* =======================================================
      DATA
   ======================================================= */
@@ -64,6 +76,9 @@ function TaskAssignments() {
 
   const [employees, setEmployees] =
     useState<EmployeeWithTeam[]>([]);
+
+  const [teams, setTeams] =
+    useState<Team[]>([]);
 
   /* =======================================================
      UI STATE
@@ -96,6 +111,64 @@ function TaskAssignments() {
   const [statusFilter, setStatusFilter] =
     useState("");
 
+  const [selectedTeamId, setSelectedTeamId] =
+    useState<string>("");
+
+  /* =======================================================
+     ROLE & TEAM RESOLUTION
+  ======================================================= */
+
+  const isLead =
+    profile?.role === "associate_lead" ||
+    profile?.role === "team_lead";
+
+  const isCoordinator =
+    profile?.role === "project_coordinator";
+
+  const isAdminOrExec =
+    profile?.role === "admin" ||
+    profile?.role === "manager" ||
+    profile?.role === "director";
+
+  const userTeamId = profile?.team_id ?? null;
+
+  const currentTeam = useMemo(() => {
+    if (!userTeamId) return null;
+    return (
+      teams.find((t) => t.id === userTeamId) ??
+      employees.find((e) => e.team_id === userTeamId)?.team ??
+      null
+    );
+  }, [teams, employees, userTeamId]);
+
+  const currentTeamName = currentTeam?.name ?? null;
+
+  const isFlowForceLead = useMemo(() => {
+    if (!isLead || !currentTeamName) return false;
+    const name = currentTeamName.toLowerCase();
+    const type = ((currentTeam as any)?.team_type || "").toLowerCase();
+    return (
+      name.includes("flow force") ||
+      name.includes("project coordinator") ||
+      name.includes("coordinator") ||
+      type === "flow_force" ||
+      type === "project_coordination"
+    );
+  }, [isLead, currentTeamName, currentTeam]);
+
+  // Operational production lead (Creative Clan, Cut Masters, Web Development, Digital Ninjas, etc.)
+  const isProductionLead = isLead && !isFlowForceLead;
+
+  // Active members of user's team
+  const userTeamEmployees = useMemo(() => {
+    if (!userTeamId) return [];
+    return employees.filter((e) => e.team_id === userTeamId);
+  }, [employees, userTeamId]);
+
+  const userTeamEmployeeIds = useMemo(() => {
+    return new Set(userTeamEmployees.map((e) => e.id));
+  }, [userTeamEmployees]);
+
   /* =======================================================
      LOAD DATA
   ======================================================= */
@@ -110,12 +183,14 @@ function TaskAssignments() {
           getTaskAssignments(),
           getTasks(),
           getActiveEmployees(),
+          getTeams(),
         ]);
 
       const [
         assignmentsResult,
         tasksResult,
         employeesResult,
+        teamsResult,
       ] = results;
 
       /* -----------------------------------------------
@@ -163,6 +238,20 @@ function TaskAssignments() {
         );
       }
 
+      /* -----------------------------------------------
+         TEAMS
+      ----------------------------------------------- */
+
+      if (
+        teamsResult &&
+        teamsResult.status ===
+        "fulfilled"
+      ) {
+        setTeams(
+          teamsResult.value,
+        );
+      }
+
       setLoading(false);
     },
     [],
@@ -177,6 +266,119 @@ function TaskAssignments() {
   }, [loadData]);
 
   /* =======================================================
+     SCOPING BY ROLE & TEAM
+  ======================================================= */
+
+  const scopedAssignments = useMemo(() => {
+    // 1. Associate lead of a specific production team: strictly see their team's work
+    if (isProductionLead && userTeamId) {
+      return assignments.filter((a) => {
+        const inTeam = a.employee_id
+          ? userTeamEmployeeIds.has(a.employee_id)
+          : false;
+        const teamMatches = a.employee?.team_id === userTeamId;
+        const assignedByMe = Boolean(profile?.id && a.assigned_by === profile.id);
+        return inTeam || teamMatches || assignedByMe;
+      });
+    }
+
+    // 2. Specific team selected by admin, manager, or coordinator
+    if (selectedTeamId) {
+      const selectedEmpIds = new Set(
+        employees.filter((e) => e.team_id === selectedTeamId).map((e) => e.id),
+      );
+      return assignments.filter((a) => {
+        const inTeam = a.employee_id ? selectedEmpIds.has(a.employee_id) : false;
+        const teamMatches = a.employee?.team_id === selectedTeamId;
+        return inTeam || teamMatches;
+      });
+    }
+
+    // 3. Coordinator view: tasks assigned by this coordinator or coordinator's team
+    if (isCoordinator) {
+      return assignments.filter((a) => {
+        return (
+          a.assigned_by === profile?.id ||
+          (userTeamId && a.employee?.team_id === userTeamId)
+        );
+      });
+    }
+
+    // 4. Employee view
+    if (profile?.role === "employee") {
+      const myEmp = employees.find((e) => e.profile_id === profile?.id);
+      return assignments.filter((a) => myEmp && a.employee_id === myEmp.id);
+    }
+
+    // 5. Default: admins, directors, managers, and flow force leads oversee all
+    return assignments;
+  }, [
+    assignments,
+    isProductionLead,
+    userTeamId,
+    userTeamEmployeeIds,
+    selectedTeamId,
+    isCoordinator,
+    profile?.id,
+    profile?.role,
+    employees,
+  ]);
+
+  const scopedEmployees = useMemo(() => {
+    if (isProductionLead && userTeamId) {
+      return userTeamEmployees;
+    }
+    if (selectedTeamId) {
+      return employees.filter((e) => e.team_id === selectedTeamId);
+    }
+    if (profile?.role === "employee") {
+      return employees.filter((e) => e.profile_id === profile?.id);
+    }
+    return employees;
+  }, [
+    employees,
+    isProductionLead,
+    userTeamId,
+    userTeamEmployees,
+    selectedTeamId,
+    profile?.role,
+    profile?.id,
+  ]);
+
+  const scopedTasks = useMemo(() => {
+    if (isProductionLead && userTeamId) {
+      return tasks.filter((t) => {
+        const projectTeamId = (t.project as any)?.team_id;
+        const matchesProject = !projectTeamId || projectTeamId === userTeamId;
+        const hasTeamAssignment =
+          t.assignments?.some((a) => userTeamEmployeeIds.has(a.employee_id)) ||
+          (t.assignment?.employee_id && userTeamEmployeeIds.has(t.assignment.employee_id));
+        return matchesProject || hasTeamAssignment;
+      });
+    }
+    if (selectedTeamId) {
+      const selectedEmpIds = new Set(
+        employees.filter((e) => e.team_id === selectedTeamId).map((e) => e.id),
+      );
+      return tasks.filter((t) => {
+        const projectTeamId = (t.project as any)?.team_id;
+        return (
+          projectTeamId === selectedTeamId ||
+          t.assignments?.some((a) => selectedEmpIds.has(a.employee_id))
+        );
+      });
+    }
+    return tasks;
+  }, [
+    tasks,
+    isProductionLead,
+    userTeamId,
+    userTeamEmployeeIds,
+    selectedTeamId,
+    employees,
+  ]);
+
+  /* =======================================================
      FILTER ASSIGNMENTS
   ======================================================= */
 
@@ -187,7 +389,7 @@ function TaskAssignments() {
           .trim()
           .toLowerCase();
 
-      return assignments.filter(
+      return scopedAssignments.filter(
         (assignment) => {
           const taskTitle =
             assignment.task?.title ||
@@ -233,7 +435,7 @@ function TaskAssignments() {
         },
       );
     }, [
-      assignments,
+      scopedAssignments,
       search,
       statusFilter,
     ]);
@@ -244,21 +446,21 @@ function TaskAssignments() {
 
   const stats = useMemo(() => {
     const assigned =
-      assignments.filter(
+      scopedAssignments.filter(
         (assignment) =>
           assignment.status ===
           "assigned",
       ).length;
 
     const inProgress =
-      assignments.filter(
+      scopedAssignments.filter(
         (assignment) =>
           assignment.status ===
           "in_progress",
       ).length;
 
     const completed =
-      assignments.filter(
+      scopedAssignments.filter(
         (assignment) =>
           assignment.status ===
           "completed",
@@ -266,20 +468,26 @@ function TaskAssignments() {
 
     const uniqueEmployees =
       new Set(
-        assignments.map(
-          (assignment) =>
-            assignment.employee_id,
-        ),
+        scopedAssignments
+          .filter(
+            (assignment) =>
+              assignment.status !==
+              "rejected",
+          )
+          .map(
+            (assignment) =>
+              assignment.employee_id,
+          ),
       ).size;
 
     return {
-      total: assignments.length,
+      total: scopedAssignments.length,
       assigned,
       inProgress,
       completed,
       uniqueEmployees,
     };
-  }, [assignments]);
+  }, [scopedAssignments]);
 
   /* =======================================================
      OPEN CREATE
@@ -444,6 +652,9 @@ function TaskAssignments() {
     () => {
       setSearch("");
       setStatusFilter("");
+      if (!isProductionLead) {
+        setSelectedTeamId("");
+      }
     };
 
   /* =======================================================
@@ -458,18 +669,26 @@ function TaskAssignments() {
 
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Production Management
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+              {isProductionLead ? "Your Team Workspace" : "Production Management"}
+            </p>
+            {isProductionLead && currentTeamName && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700 shadow-xs">
+                <Users className="h-3 w-3" />
+                {currentTeamName}
+              </span>
+            )}
+          </div>
 
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-            Task Assignments
+            Team Work
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Assign production tasks to
-            employees and track assignment
-            progress.
+            {isProductionLead && currentTeamName
+              ? `Assign and track production tasks for your team (${currentTeamName}).`
+              : "Assign production tasks to employees and track assignment progress across teams."}
           </p>
         </div>
 
@@ -510,6 +729,16 @@ function TaskAssignments() {
           </button>
         </div>
       </div>
+
+      {/* ===================================================
+          NO TEAM WARNING FOR LEAD
+      =================================================== */}
+
+      {isLead && !userTeamId && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong>No team assigned:</strong> Your account is registered as a team lead, but no team is currently linked to your profile. Please ask an administrator to assign your team in Team Members.
+        </div>
+      )}
 
       {/* ===================================================
           ERROR
@@ -585,6 +814,39 @@ function TaskAssignments() {
             />
           </div>
 
+          {/* TEAM SELECTOR (Admins, Managers, and Flow Force Leads) */}
+          {(isAdminOrExec || isFlowForceLead) && (
+            <select
+              value={selectedTeamId}
+              onChange={(event) =>
+                setSelectedTeamId(
+                  event.target.value,
+                )
+              }
+              className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+            >
+              <option value="">
+                All Teams
+              </option>
+              {teams.map((t) => (
+                <option
+                  key={t.id}
+                  value={t.id}
+                >
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          )}
+
+          {/* PRODUCTION LEAD TEAM BADGE */}
+          {isProductionLead && currentTeamName && (
+            <div className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-semibold text-slate-700">
+              <Users className="h-4 w-4 text-slate-500" />
+              <span>Team: {currentTeamName}</span>
+            </div>
+          )}
+
           {/* STATUS */}
 
           <select
@@ -624,7 +886,8 @@ function TaskAssignments() {
           {/* CLEAR */}
 
           {(search ||
-            statusFilter) && (
+            statusFilter ||
+            selectedTeamId) && (
             <button
               type="button"
               onClick={
@@ -644,9 +907,12 @@ function TaskAssignments() {
           </span>{" "}
           of{" "}
           <span className="font-semibold text-slate-600">
-            {assignments.length}
+            {scopedAssignments.length}
           </span>{" "}
           assignments
+          {isProductionLead && currentTeamName && (
+            <span> in {currentTeamName}</span>
+          )}
         </div>
       </div>
 
@@ -676,7 +942,7 @@ function TaskAssignments() {
           open={formOpen}
           loading={formLoading}
           error={errorMessage}
-          tasks={tasks.map(
+          tasks={scopedTasks.map(
             (task) => ({
               id: task.id,
               title: task.title,
@@ -692,7 +958,7 @@ function TaskAssignments() {
                 task.due_date,
             }),
           )}
-          employees={employees.map(
+          employees={scopedEmployees.map(
             (employee) => ({
               id: employee.id,
               account_role: employee.account_role,
@@ -727,7 +993,7 @@ function TaskAssignments() {
           assignment={
             editingAssignment
           }
-          employees={employees}
+          employees={scopedEmployees}
           onClose={
             handleCloseForm
           }
