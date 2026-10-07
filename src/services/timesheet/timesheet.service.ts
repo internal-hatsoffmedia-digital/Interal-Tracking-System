@@ -40,6 +40,7 @@ interface ProjectRelation {
   id: string;
   name: string;
   series_title: string | null;
+  client_id?: string | null;
 }
 
 /* =========================================================

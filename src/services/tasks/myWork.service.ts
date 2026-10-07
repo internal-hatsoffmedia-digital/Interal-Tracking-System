@@ -59,10 +59,9 @@ async function getRelations(taskIds: string[]) {
   const tasks=await rows("tasks",taskIds);
   const missing=taskIds.filter(id=>!tasks.some(t=>t.id===id));
   if(missing.length)throw new Error(`${missing.length} assigned task(s) are hidden by database access rules. Ask the administrator to run the assignment visibility repair SQL.`);
-  const [clients,projects]=await Promise.all([
-    rows("clients",tasks.map(t=>t.client_id).filter(Boolean),"id,name,short_name"),
-    rows("projects",tasks.map(t=>t.project_id).filter(Boolean),"id,name,series_title")
-  ]);
+  const projects=await rows("projects",tasks.map(t=>t.project_id).filter(Boolean),"id,name,series_title,client_id");
+  const allClientIds=[...tasks.map(t=>t.client_id),...projects.map(p=>p.client_id)].filter(Boolean);
+  const clients=await rows("clients",allClientIds,"id,name,short_name");
   return {tasks,clients,projects};
 }
 
@@ -116,7 +115,7 @@ export async function getMyWork(): Promise<
           clients.find(
             (item) =>
               item.id ===
-              task.client_id,
+              (task.client_id || project?.client_id),
           );
 
         const project =

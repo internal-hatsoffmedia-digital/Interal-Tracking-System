@@ -237,6 +237,7 @@ function Planner() {
                 ) &&
               !(
                 task.client?.name ??
+                task.project?.client?.name ??
                 ""
               )
                 .toLowerCase()
@@ -843,6 +844,7 @@ function PlannerTable({
 
                   <p className="mt-1 truncate text-xs text-slate-500">
                     {task.client?.name ??
+                      task.project?.client?.name ??
                       "No client"}
                     {" · "}
                     {task.project?.name ??
@@ -1026,8 +1028,8 @@ function PlannerTable({
 
                     <td className="px-4 py-4">
                       <p className="whitespace-nowrap text-sm font-semibold text-slate-700">
-                        {task.client
-                          ?.name ??
+                        {task.client?.name ??
+                          task.project?.client?.name ??
                           "—"}
                       </p>
                     </td>

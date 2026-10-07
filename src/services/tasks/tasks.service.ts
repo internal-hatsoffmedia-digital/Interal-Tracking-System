@@ -22,6 +22,7 @@ interface ProjectRelation {
   id: string;
   name: string;
   series_title: string | null;
+  client_id?: string | null;
 }
 
 interface EmployeeRelation {
@@ -69,7 +70,7 @@ async function getTaskRelations() {
     supabase
       .from("projects")
       .select(
-        "id, name, series_title",
+        "id, name, series_title, client_id",
       )
       .eq("is_active", true)
       .order("name", {
@@ -200,18 +201,18 @@ function attachRelations(
         })),
         creator: creatorObj ? { id: creatorObj.id, full_name: creatorObj.full_name, email: creatorObj.email } : null,
 
-        client:
-          clients.find(
-            (client) =>
-              client.id ===
-              task.client_id,
-          ) ?? null,
-
         project:
           projects.find(
             (project) =>
               project.id ===
               task.project_id,
+          ) ?? null,
+
+        client:
+          clients.find(
+            (client) =>
+              client.id ===
+              (task.client_id || projects.find((p) => p.id === task.project_id)?.client_id),
           ) ?? null,
 
         assignment:
@@ -404,16 +405,29 @@ export async function getTasksByProject(
 export async function getTasksByClient(
   clientId: string,
 ): Promise<TaskWithRelations[]> {
+  const { data: clientProjects } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("client_id", clientId);
+
+  const projectIds = (clientProjects ?? []).map((p) => p.id).filter(Boolean);
+
+  let query = supabase.from("tasks").select("*");
+
+  if (projectIds.length > 0) {
+    query = query.or(
+      `client_id.eq.${clientId},project_id.in.(${projectIds.join(",")})`,
+    );
+  } else {
+    query = query.eq("client_id", clientId);
+  }
+
   const {
     data,
     error,
-  } = await supabase
-    .from("tasks")
-    .select("*")
-    .eq("client_id", clientId)
-    .order("created_at", {
-      ascending: false,
-    });
+  } = await query.order("created_at", {
+    ascending: false,
+  });
 
 
   if (error) {
@@ -518,7 +532,7 @@ export async function createTask(
           input.project_id,
 
         client_id:
-          input.client_id,
+          input.client_id || (input.project_id ? (await supabase.from("projects").select("client_id").eq("id", input.project_id).maybeSingle()).data?.client_id : null) || null,
 
         title:
           input.title.trim(),

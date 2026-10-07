@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import {
   AlertCircle,
   BriefcaseBusiness,
@@ -22,6 +23,7 @@ import ClientTable from "../../components/clients/ClientTable";
 import {
   createClient,
   getClients,
+  getFlowForceCoordinators,
   setClientStatus,
   updateClient,
 } from "../../services/clients/clients.service";
@@ -118,19 +120,21 @@ function Clients() {
 
   const loadClients = useCallback(
     async () => {
+      if (profile?.role === "employee") {
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         setErrorMessage("");
 
-        const [data, empResult] = await Promise.all([
+        const [data, coords] = await Promise.all([
           getClients(),
-          supabase.from("employees").select("id, full_name, employee_code").order("full_name", { ascending: true })
+          getFlowForceCoordinators(),
         ]);
 
         setClients(data);
-        if (empResult.data) {
-          setCoordinators(empResult.data as { id: string; full_name: string; employee_code?: string }[]);
-        }
+        setCoordinators(coords);
       } catch (error) {
         console.error(
           "Failed to load clients:",
@@ -524,6 +528,28 @@ function Clients() {
   /* =======================================================
      PAGE
   ======================================================== */
+
+  if (profile?.role === "employee") {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center p-6 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-200">
+          <BriefcaseBusiness size={28} />
+        </div>
+        <h2 className="mt-4 text-xl font-bold text-slate-900">Access Restricted</h2>
+        <p className="mt-2 max-w-md text-sm text-slate-500">
+          Client directory and contact details are restricted to project coordinators, team leads, and administrators.
+        </p>
+        <div className="mt-6">
+          <NavLink
+            to="/my-work"
+            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition"
+          >
+            Go to My Work
+          </NavLink>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-w-0 space-y-6">

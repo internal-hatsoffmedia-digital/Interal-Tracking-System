@@ -1,7 +1,7 @@
 import ProfileAvatar from '../common/ProfileAvatar';
 import {useEffect,useRef,useState} from 'react';
 import {NavLink,useLocation,useNavigate} from 'react-router-dom';
-import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,LogOut,X,ArrowUpRight,Sparkles} from 'lucide-react';
+import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,LogOut,X,PanelLeftClose,PanelLeftOpen,ArrowUpRight,Sparkles} from 'lucide-react';
 import {useAuth} from '../../context/AuthContext';
 
 const groups=[
@@ -14,6 +14,8 @@ export default function Sidebar(){
  const location=useLocation();
  const navigate=useNavigate();
  const [open,setOpen]=useState(false);
+ const [compact,setCompact]=useState(()=>localStorage.getItem('hatsoff:compact-navigation')==='true');
+ const toggleCompact=()=>setCompact(value=>{localStorage.setItem('hatsoff:compact-navigation',String(!value));return !value;});
  const [signingOut,setSigningOut]=useState(false);
  const [error,setError]=useState('');
  const panel=useRef<HTMLElement>(null);
@@ -27,6 +29,7 @@ export default function Sidebar(){
      if(label === 'Team PC') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director';
      if(label === 'Teams' && isLead) return false;
      if(label === 'My Work' && isCoordinator) return false;
+     if(label === 'Clients' && profile?.role === 'employee') return false;
      return true;
    })}; });
 
@@ -41,9 +44,10 @@ export default function Sidebar(){
  const name=profile?.full_name||'Internal User';
 
  return <>{open&&<button tabIndex={-1} aria-label="Close navigation backdrop" className="future-nav-backdrop" onClick={close}/>}
- <aside ref={panel} className={`future-sidebar ${open?'is-open':''}`} aria-label="Main navigation">
+ <aside ref={panel} className={`future-sidebar ${open?'is-open':''} ${compact?'is-compact':''}`} aria-label="Main navigation">
  <div className="future-brand"><NavLink to="/dashboard" onClick={close} aria-label="Hatsoff home"><img src="/hatsoff-brand.svg" alt="Hatsoff Media"/><span><small>INTERNAL FORCE<span className="brand-dot"/></small></span></NavLink><button className="future-mobile-close" aria-label="Close navigation" onClick={close}><X size={19}/></button></div>
- <nav>{visibleGroups.map(group=><div className="future-nav-group" key={group.name}><p>{group.name}</p>{group.items.map(([label,path,Icon])=><NavLink to={path} onClick={close} key={path} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Icon size={18} strokeWidth={1.7}/><span>{label}</span>{location.pathname===path&&<span className="nav-active-dot"/>}</NavLink>)}</div>)}
+ <button type="button" className="studio-nav-toggle" aria-label={compact?'Expand navigation':'Compact navigation'} aria-pressed={compact} onClick={toggleCompact}>{compact?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}<span>Compact navigation</span></button>
+ <nav>{visibleGroups.map(group=><div className="future-nav-group" key={group.name}><p>{group.name}</p>{group.items.map(([label,path,Icon])=><NavLink to={path} aria-label={label} title={label} onClick={close} key={path} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Icon size={18} strokeWidth={1.7}/><span>{label}</span>{location.pathname===path&&<span className="nav-active-dot"/>}</NavLink>)}</div>)}
  <div className="future-studio-note"><Sparkles size={18}/><span>Focus. Create.<br/><strong>Deliver.</strong></span><ArrowUpRight size={17}/></div>
  </nav>
  <div className="future-sidebar-footer"><NavLink to="/settings" onClick={close} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Settings size={18}/><span>Settings</span></NavLink><div className="future-account"><span className="future-avatar"><ProfileAvatar src={profile?.avatar_url} name={name}/></span><span><strong>{name}</strong><small>{profile?.role?.replaceAll('_',' ')||'Account'}</small></span><button title="Sign out" aria-label="Sign out" disabled={signingOut} onClick={()=>void logout()}><LogOut size={17}/></button></div>{error&&<p role="alert">{error}</p>}</div>

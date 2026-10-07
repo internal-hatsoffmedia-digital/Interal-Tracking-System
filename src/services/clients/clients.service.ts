@@ -206,3 +206,166 @@ export async function setClientStatus(
     is_active: isActive,
   });
 }
+
+/* =========================================================
+   GET FLOW FORCE COORDINATORS
+========================================================= */
+
+export interface CoordinatorOption {
+  id: string;
+  full_name: string;
+  employee_code?: string;
+}
+
+export async function getFlowForceCoordinators(): Promise<CoordinatorOption[]> {
+  try {
+    const [teamsRes, empsRes, profilesRes] = await Promise.all([
+      supabase.from("teams").select("id, name, team_type"),
+      supabase
+        .from("employees")
+        .select("id, profile_id, full_name, employee_code, team_id, is_active")
+        .order("full_name", { ascending: true }),
+      supabase.from("profiles").select("id, role, team_id, is_active"),
+    ]);
+
+    if (empsRes.error) {
+      throw new Error(empsRes.error.message);
+    }
+
+    const rawTeams = (teamsRes.data ?? []) as {
+      id: string;
+      name?: string | null;
+      team_type?: string | null;
+    }[];
+
+    const isFlowForceTeam = (t: {
+      name?: string | null;
+      team_type?: string | null;
+    }) => {
+      const name = (t.name || "").toLowerCase().trim();
+      const type = (t.team_type || "").toLowerCase().trim();
+      return (
+        type === "flow_force" ||
+        type === "project_coordination" ||
+        name === "flow force" ||
+        name.includes("flow force") ||
+        name.includes("project coordinator") ||
+        name.includes("coordination") ||
+        name.includes("flow")
+      );
+    };
+
+    const flowTeamIds = new Set(
+      rawTeams.filter(isFlowForceTeam).map((t) => t.id),
+    );
+
+    let rawProfiles = (profilesRes.data ?? []) as {
+      id: string;
+      role?: string | null;
+      team_id?: string | null;
+      is_active?: boolean;
+    }[];
+
+    if (profilesRes.error || rawProfiles.length === 0) {
+      try {
+        const rpcRes = await supabase.rpc("project_people");
+        if (!rpcRes.error && rpcRes.data) {
+          rawProfiles = rpcRes.data as {
+            id: string;
+            role?: string | null;
+            team_id?: string | null;
+            is_active?: boolean;
+          }[];
+        }
+      } catch {
+        // Fallback silently if rpc is not available
+      }
+    }
+
+    const profileMap = new Map<
+      string,
+      {
+        id: string;
+        role?: string | null;
+        team_id?: string | null;
+        is_active?: boolean;
+      }
+    >();
+    for (const p of rawProfiles) {
+      profileMap.set(p.id, p);
+    }
+
+    const employees = (empsRes.data ?? []) as {
+      id: string;
+      profile_id?: string | null;
+      full_name: string;
+      employee_code?: string;
+      team_id?: string | null;
+      is_active?: boolean;
+    }[];
+
+    const flowForceEmployees = employees.filter((e) => {
+      // Must be active
+      if (e.is_active === false) return false;
+
+      // 1. Employee directly has Flow Force team_id
+      if (e.team_id && flowTeamIds.has(e.team_id)) {
+        return true;
+      }
+
+      // 2. Linked profile matches Flow Force team or coordinator role
+      if (e.profile_id && profileMap.has(e.profile_id)) {
+        const p = profileMap.get(e.profile_id)!;
+        if (p.is_active === false) return false;
+
+        if (p.team_id && flowTeamIds.has(p.team_id)) {
+          return true;
+        }
+
+        if (p.role === "project_coordinator") {
+          return true;
+        }
+
+        if (
+          flowTeamIds.size > 0 &&
+          p.team_id &&
+          flowTeamIds.has(p.team_id) &&
+          ["associate_lead", "team_lead", "manager", "director"].includes(
+            p.role || "",
+          )
+        ) {
+          return true;
+        }
+      }
+
+      // 3. Fallback: if no teams matched Flow Force criteria
+      if (flowTeamIds.size === 0) {
+        if (
+          e.profile_id &&
+          profileMap.get(e.profile_id)?.role === "project_coordinator"
+        ) {
+          return true;
+        }
+        const lowerName = (e.full_name || "").toLowerCase();
+        if (
+          lowerName.includes("esther") ||
+          lowerName.includes("lavanya") ||
+          lowerName.includes("muskan")
+        ) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    return flowForceEmployees.map((e) => ({
+      id: e.id,
+      full_name: e.full_name,
+      employee_code: e.employee_code,
+    }));
+  } catch (error) {
+    console.error("Failed to load Flow Force coordinators:", error);
+    return [];
+  }
+}

@@ -1,88 +1,185 @@
-/* Color-only brand adjustments. Keep the original layout and neutral surfaces. */
+/* Brand Palette & Studio Theme Adjustments.
+   Keeps the signature Hatsoff black and amber-yellow navigation identity
+   while preserving full contrast and color fidelity on workspace components. */
+
 :root, .future-shell {
-  --primary:#ffcc00; --accent:#ffcc00; --primary-light:#fff7d6;
-  --future-lime:#ffcc00; --studio-green:#ffcc00;
+  --primary: #ffcc00;
+  --accent: #ffcc00;
+  --primary-light: #fff7d6;
+  --future-lime: #ffcc00;
+  --studio-green: #ffcc00;
 }
-html #root :is([class*="text-emerald-"],[class*="text-green-"],[class*="text-rose-"],[class*="text-red-"],[class*="text-blue-"],[class*="text-indigo-"],[class*="text-purple-"],[class*="text-violet-"],[class*="text-amber-"],[class*="text-yellow-"],[class*="text-pink-"],[class*="text-orange-"],[class*="text-cyan-"],[class*="text-teal-"]) { color:var(--ink,#111)!important; }
-html #root :is([class*="bg-emerald-50"],[class*="bg-green-50"],[class*="bg-rose-50"],[class*="bg-red-50"],[class*="bg-indigo-50"],[class*="bg-blue-50"],[class*="bg-amber-50"],[class*="bg-purple-50"],[class*="bg-yellow-50"],[class*="bg-pink-50"],[class*="bg-orange-50"],[class*="bg-violet-50"],[class*="bg-cyan-50"],[class*="bg-teal-50"]) { background-color:#fff7d6!important; }
-html #root :is([class*="border-emerald-"],[class*="border-green-"],[class*="border-rose-"],[class*="border-red-"],[class*="border-indigo-"],[class*="border-blue-"],[class*="border-amber-"],[class*="border-purple-"],[class*="border-yellow-"],[class*="border-pink-"],[class*="border-orange-"],[class*="border-violet-"],[class*="border-cyan-"],[class*="border-teal-"]) { border-color:#ffcc00!important; }
-html #root :is([class*="bg-emerald-500"],[class*="bg-emerald-600"],[class*="bg-rose-500"],[class*="bg-rose-600"],[class*="bg-indigo-500"],[class*="bg-indigo-600"],[class*="bg-blue-500"],[class*="bg-amber-500"],[class*="bg-green-500"],[class*="bg-purple-500"],[class*="bg-violet-500"],[class*="bg-pink-500"],[class*="bg-orange-500"]) { background-color:#ffcc00!important; color:#111!important; }
-html #root :is([class*="bg-emerald-500"],[class*="bg-emerald-600"],[class*="bg-rose-500"],[class*="bg-rose-600"],[class*="bg-indigo-500"],[class*="bg-indigo-600"]) svg { color:#111!important; }
-/* Existing gradient cards retain their shape and shadow, with pale-yellow fills. */
-html #root :is([class*="from-indigo-"],[class*="from-purple-"],[class*="from-blue-"],[class*="from-emerald-"],[class*="from-green-"],[class*="from-rose-"],[class*="from-pink-"],[class*="from-violet-"]) { background-image:none!important; background-color:#fff7d6!important; }
-html #root [class*="via-"][class*="bg-gradient-"]:not([class*="from-slate-"]) { background-image:none!important; background-color:var(--surface,#fff)!important; }
-html #root [class*="from-slate-"][class*="bg-gradient-"] { background-image:none!important; background-color:#111!important; color:#ffcc00!important; }
-html #root .future-nav-link.is-active { background:#ffcc00!important; color:#111!important; }
-html #root .future-nav-link.is-active svg { color:#111!important; }
-html #root .future-nav-link.is-active::before { box-shadow:0 10px 0 0 #ffcc00; }
-html #root .future-nav-link.is-active::after { box-shadow:0 -10px 0 0 #ffcc00; }
-html #root .future-nav-link.is-active .nav-active-dot { background:#111; }
-html #root .future-primary { background:#ffcc00; color:#111; }
-html #root .future-briefing-intro { background:#fff7d6; }
-html #root .future-metric.violet { background:#111; color:#fff7d6; }
-html #root .future-metric.peach { background:#fff7d6; color:#111; }
-html #root .future-metric.lime { background:#ffcc00; color:#111; }
-html[data-theme=dark] #root :is([class*="bg-emerald-50"],[class*="bg-rose-50"],[class*="bg-indigo-50"],[class*="bg-blue-50"],[class*="bg-amber-50"],[class*="bg-purple-50"],[class*="bg-yellow-50"],[class*="bg-pink-50"]) { background-color:#111!important; color:#fff7d6!important; }
-html[data-theme=dark] #root [class*="bg-gradient-"] { background-image:none!important; background-color:var(--surface,#111)!important; }
-html[data-theme=dark] #root .future-briefing-intro { background:#fff7d6; color:#111; }
-html[data-theme=dark] #root .future-briefing-intro :is(h1,p,span,a,button) { color:#111; }
-html #root .future-primary { background:#ffcc00!important; color:#111!important; }
-html #root :is([class*="from-fuchsia-"],[class*="from-pink-"],[class*="from-cyan-"],[class*="from-teal-"],[class*="from-orange-"],[class*="from-yellow-"]) { background-image:none!important; background-color:#fff7d6!important; }
-html #root :is([class*="text-fuchsia-"],[class*="text-teal-"],[class*="text-cyan-"]) { color:var(--ink,#111)!important; }
-html #root :is([class*="bg-fuchsia-50"],[class*="bg-fuchsia-100"],[class*="bg-indigo-100"],[class*="bg-purple-100"],[class*="bg-blue-100"],[class*="bg-green-100"],[class*="bg-emerald-100"],[class*="bg-pink-100"],[class*="bg-rose-100"]) { background:#fff7d6!important; color:#111!important; }
 
-/* Reports use quiet surfaces; yellow identifies selection and progress. */
-html #root .reports-page tbody tr { background:var(--surface,#fff)!important; }
-html #root .reports-page tbody tr:hover { background:#fff7d6!important; }
-html #root .reports-page thead { background:#fff7d6!important; color:#111!important; }
-html #root .reports-page thead th { color:#111!important; }
-html #root .report-tabs button { color:var(--ink,#111)!important; }
-html #root .report-tabs button[aria-pressed=true] { background:#ffcc00!important; color:#111!important; }
-html #root .report-tabs button[aria-pressed=true] span { color:#111!important; }
-html #root .report-tabs button[aria-pressed=false] { background:transparent; }
-html #root .report-tabs button[aria-pressed=false]>div:first-child { background:#fff7d6!important; color:#111!important; }
-html #root .report-tabs button[aria-pressed=true]>div:first-child { background:#111!important; color:#ffcc00!important; }
-html #root .report-tabs button[aria-pressed=true] svg { color:#ffcc00!important; }
-html[data-theme=dark] #root .reports-page tbody tr:hover { background:#262112!important; }
+/* Active navigation links & brand accents */
+html #root .future-nav-link.is-active {
+  background: #ffcc00 !important;
+  color: #111 !important;
+  font-weight: 700;
+}
+html #root .future-nav-link.is-active svg {
+  color: #111 !important;
+}
+html #root .future-nav-link.is-active::before {
+  box-shadow: 0 10px 0 0 #ffcc00;
+}
+html #root .future-nav-link.is-active::after {
+  box-shadow: 0 -10px 0 0 #ffcc00;
+}
+html #root .future-nav-link.is-active .nav-active-dot {
+  background: #111;
+}
 
-/* Sidebar: only the menu scrolls, with the brand and account kept in view. */
+html #root .future-primary {
+  background: #ffcc00 !important;
+  color: #111 !important;
+}
+
+html #root .future-briefing-intro {
+  background: #fff7d6;
+}
+
+html #root .future-metric.violet {
+  background: #111;
+  color: #fff7d6;
+}
+html #root .future-metric.peach {
+  background: #fff7d6;
+  color: #111;
+}
+html #root .future-metric.lime {
+  background: #ffcc00;
+  color: #111;
+}
+
+/* Sidebar structure: contained menu with sticky header & footer */
 html #root .future-sidebar {
-  height:100dvh; max-height:100dvh; overflow:hidden; box-sizing:border-box;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  box-sizing: border-box;
 }
-html #root .future-brand { flex:0 0 auto; height:88px; padding:20px 18px; }
-html #root .future-brand>a { min-width:0; gap:10px; }
-html #root .future-brand img { width:56px; height:44px; flex-shrink:0; }
-html #root .future-brand small { margin-top:0; font-size:8px; letter-spacing:.12em; }
+html #root .future-brand {
+  flex: 0 0 auto;
+  height: 88px;
+  padding: 20px 18px;
+}
+html #root .future-brand > a {
+  min-width: 0;
+  gap: 10px;
+}
+html #root .future-brand img {
+  width: 56px;
+  height: 44px;
+  flex-shrink: 0;
+}
+html #root .future-brand small {
+  margin-top: 0;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}
 html #root .future-sidebar nav {
-  flex:1 1 0; min-height:0; overflow-y:auto; overflow-x:hidden;
-  padding:0 10px 12px; scrollbar-width:thin; scrollbar-color:#625728 #111;
-  overscroll-behavior:contain; scrollbar-gutter:stable;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 10px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #625728 #111;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
-html #root .future-nav-group { margin-bottom:16px; }
-html #root .future-nav-group>p { margin:12px 0 8px; padding:0 10px; }
+html #root .future-nav-group {
+  margin-bottom: 16px;
+}
+html #root .future-nav-group > p {
+  margin: 12px 0 8px;
+  padding: 0 10px;
+}
 html #root .future-nav-link {
-  min-height:42px; margin:3px 0; padding:10px 12px; gap:10px;
-  border-radius:12px!important; transform:none;
+  min-height: 42px;
+  margin: 3px 0;
+  padding: 10px 12px;
+  gap: 10px;
+  border-radius: 12px !important;
+  transform: none;
 }
-html #root .future-nav-link::before,html #root .future-nav-link::after { content:none; }
-html #root .future-nav-link:hover { transform:none; }
-html #root .future-sidebar .nav-active-dot { margin-right:0; flex-shrink:0; }
-html #root .future-studio-note { margin:18px 0 0; }
+html #root .future-nav-link::before,
+html #root .future-nav-link::after {
+  content: none;
+}
+html #root .future-nav-link:hover {
+  transform: none;
+}
+html #root .future-sidebar .nav-active-dot {
+  margin-right: 0;
+  flex-shrink: 0;
+}
+html #root .future-studio-note {
+  margin: 18px 0 0;
+}
 html #root .future-sidebar-footer {
-  flex:0 0 auto; padding:12px 16px 16px; background:#111;
+  flex: 0 0 auto;
+  padding: 12px 16px 16px;
+  background: #111;
 }
-html #root .future-account { padding:12px 0 0; }
-html #root .future-account button { flex-shrink:0; }
-html #root .future-sidebar nav::-webkit-scrollbar { width:4px; }
-html #root .future-sidebar nav::-webkit-scrollbar-track { background:#111; }
-html #root .future-sidebar nav::-webkit-scrollbar-thumb { background:#625728; border-radius:8px; }
-@media(prefers-reduced-motion:no-preference) {
-  html #root .future-nav-link { transition:background-color .18s ease,color .18s ease; }
+html #root .future-account {
+  padding: 12px 0 0;
 }
-html #root .profile-photo-editor { padding:18px; border:1px solid rgba(17,17,17,.12); border-radius:16px; }
-html #root .profile-photo-editor input { display:block; margin-top:10px; max-width:100%; font-size:13px; }
-html #root .profile-photo-editor p { font-size:12px; line-height:1.6; margin:12px 0; }
-html #root .profile-photo-options { display:flex; flex-wrap:wrap; gap:10px; }
-html #root .profile-photo-options button { display:flex; gap:8px; align-items:center; padding:8px 12px; border:1px solid #ffcc00; border-radius:12px; font-size:12px; }
-html #root .profile-photo-options button[aria-pressed=true] { background:#ffcc00; color:#111; }
-html #root .profile-photo-options img { width:32px; height:32px; border-radius:9px; }
+html #root .future-account button {
+  flex-shrink: 0;
+}
+html #root .future-sidebar nav::-webkit-scrollbar {
+  width: 4px;
+}
+html #root .future-sidebar nav::-webkit-scrollbar-track {
+  background: #111;
+}
+html #root .future-sidebar nav::-webkit-scrollbar-thumb {
+  background: #625728;
+  border-radius: 8px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html #root .future-nav-link {
+    transition: background-color 0.18s ease, color 0.18s ease;
+  }
+}
+
+html #root .profile-photo-editor {
+  padding: 18px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 16px;
+}
+html #root .profile-photo-editor input {
+  display: block;
+  margin-top: 10px;
+  max-width: 100%;
+  font-size: 13px;
+}
+html #root .profile-photo-editor p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 12px 0;
+}
+html #root .profile-photo-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+html #root .profile-photo-options button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #ffcc00;
+  border-radius: 12px;
+  font-size: 12px;
+}
+html #root .profile-photo-options button[aria-pressed="true"] {
+  background: #ffcc00;
+  color: #111;
+}
+html #root .profile-photo-options img {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+}

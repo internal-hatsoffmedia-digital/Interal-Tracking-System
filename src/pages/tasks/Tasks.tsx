@@ -365,6 +365,7 @@ function Tasks() {
               ) ||
             (
               task.client?.name ??
+              task.project?.client?.name ??
               ""
             )
               .toLowerCase()
@@ -621,18 +622,22 @@ function Tasks() {
            RELATIONS
         ================================================ */
 
-        const selectedClient =
-          clients.find(
-            (client) =>
-              client.id ===
-              newTask.client_id,
-          );
-
         const selectedProject =
           projects.find(
             (project) =>
               project.id ===
               newTask.project_id,
+          );
+
+        const effectiveClientId =
+          newTask.client_id ||
+          selectedProject?.client_id;
+
+        const selectedClient =
+          clients.find(
+            (client) =>
+              client.id ===
+              effectiveClientId,
           );
 
         const taskWithRelations: TaskWithRelations =

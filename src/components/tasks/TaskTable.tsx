@@ -333,9 +333,7 @@ function TaskCard({
             </div>
 
             <span className="truncate text-[11px] font-medium uppercase tracking-wide text-slate-400">
-              {task.client?.short_name ||
-                task.client?.name ||
-                "No client"}
+              {task.client?.short_name || task.client?.name || task.project?.client?.short_name || task.project?.client?.name || "No client"}
             </span>
 
           </div>
@@ -639,17 +637,12 @@ function TaskTable({
                         <div className="min-w-[140px]">
 
                           <p className="truncate text-sm font-medium text-slate-700">
-                            {task.client?.name ||
-                              "—"}
+                            {task.client?.name || task.project?.client?.name || "—"}
                           </p>
 
-                          {task.client?.short_name && (
+                          {(task.client?.short_name || task.project?.client?.short_name) && (
                             <p className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-400">
-                              {
-                                task
-                                  .client
-                                  .short_name
-                              }
+                              {task.client?.short_name || task.project?.client?.short_name}
                             </p>
                           )}
 

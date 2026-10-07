@@ -659,7 +659,7 @@ function TimesheetForm({
               <h2 className="text-lg font-bold text-slate-950">
                 {isEdit
                   ? "Edit Timesheet"
-                  : "Cut Masters Log"}
+                  : "Production Log"}
               </h2>
 
               <p className="mt-0.5 text-xs text-slate-400">

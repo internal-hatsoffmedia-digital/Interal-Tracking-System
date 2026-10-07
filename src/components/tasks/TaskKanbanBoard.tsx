@@ -146,7 +146,7 @@ export default function TaskKanbanBoard({
                       {/* Card Header: Client / Project + Quick Move Status + Edit Button */}
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[11px] font-semibold text-slate-500 truncate">
-                          {task.client?.short_name || task.client?.name || "No client"}
+                          {task.client?.short_name || task.client?.name || task.project?.client?.short_name || task.project?.client?.name || "No client"}
                         </span>
                         <div className="flex items-center gap-1">
                           <select

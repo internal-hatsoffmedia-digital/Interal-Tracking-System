@@ -12,6 +12,7 @@ import { supabase } from "../../lib/supabase";
 interface TaskRow {
   id: string;
   title: string;
+  project_id?: string | null;
   client_id: string | null;
   priority: string | null;
   status: string | null;

@@ -35,3 +35,37 @@ html #root #access-management form>button:disabled { background:#e8e6de!importan
 html #root .brand-login button[type=submit] { background:#ffcc00!important; color:#111!important; }
 @media(max-width:640px) { html #root .future-shell main .project-workspace { padding:16px!important; border-radius:16px!important; } html #root #access-management form { padding:16px; } }
 @media(prefers-reduced-motion:no-preference) { html #root .future-shell button { transition:background-color .15s ease,border-color .15s ease; } }
+
+/* Reference-inspired studio layout: rounded navigation island and clear work cards. */
+html #root .future-shell { background:var(--canvas); }
+html #root .radium-ambient-container { display:none; }
+@media(min-width:1024px) {
+ html #root .future-shell .future-sidebar { inset:16px auto 16px 16px; height:calc(100dvh - 32px); width:236px; border-radius:26px; border:1px solid #292929!important; box-shadow:0 14px 38px rgba(0,0,0,.08); overflow:hidden; }
+ html #root .future-shell .future-main { margin-left:268px; margin-right:16px; }
+ html #root .future-shell .future-topbar { margin-top:16px; border-radius:24px; background:var(--surface); border:1px solid var(--line); }
+ html #root .future-shell .future-content { padding:28px 12px 48px; }
+ html #root .future-shell .future-sidebar.is-compact { width:78px; }
+ html #root .future-shell:has(.future-sidebar.is-compact) .future-main { margin-left:110px; }
+ html #root .future-sidebar.is-compact .future-brand { padding:20px 12px 12px; }
+ html #root .future-sidebar.is-compact .future-brand img { width:48px; }
+ html #root .future-sidebar.is-compact :is(.future-brand small,.future-nav-group>p,.future-nav-link>span,.future-studio-note,.future-account>span:nth-child(2),.studio-nav-toggle>span) { display:none; }
+ html #root .future-sidebar.is-compact nav { padding:0 8px; }
+ html #root .future-sidebar.is-compact .future-nav-link { justify-content:center; padding:14px 8px; min-height:46px; }
+ html #root .future-sidebar.is-compact .future-sidebar-footer { padding:10px 8px; }
+ html #root .future-sidebar.is-compact .future-account { flex-wrap:wrap; justify-content:center; gap:10px; }
+}
+html #root .studio-nav-toggle { display:flex; align-items:center; justify-content:center; gap:10px; margin:0 14px 14px; min-height:38px; color:#fff7d6; background:#222; border:1px solid #38362d; border-radius:12px; font-size:11px; }
+html #root .studio-launchpad { border:1px solid var(--line); background:var(--surface); border-radius:24px; padding:24px; display:grid; gap:22px; }
+html #root .studio-launchpad h2 { font-size:23px; margin:8px 0; }
+html #root .studio-launchpad p { color:var(--muted); font-size:13px; }
+html #root .studio-shortcuts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+html #root .studio-shortcuts>a { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:20px; border:1px solid var(--line); border-radius:20px; color:var(--ink); background:var(--canvas); text-decoration:none; }
+html #root .studio-shortcuts>a:first-child { background:#fff7d6; color:#111; border-color:#ffcc00; }
+html #root .studio-shortcut-icon { display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#111; color:#ffcc00; margin-bottom:4px; }
+html #root .studio-shortcuts strong { font-size:14px; }
+html #root .studio-shortcuts small { font-size:11px; opacity:.7; }
+html #root .studio-shortcut-arrow { position:absolute; right:18px; top:20px; }
+html #root .studio-shortcuts>a:hover { border-color:#ffcc00; }
+html #root .future-shell main :is(.future-metric,.studio-progress-card,.pc-coordinator-card) { box-shadow:none; }
+@media(max-width:1023px) { html #root .studio-nav-toggle { display:none; } }
+@media(max-width:640px) { html #root .studio-launchpad { padding:18px; } html #root .studio-shortcuts { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } html #root .studio-shortcuts>a { padding:16px; } }

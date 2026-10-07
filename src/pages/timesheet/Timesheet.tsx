@@ -465,6 +465,7 @@ function Timesheet() {
 
           client_name:
             task.client?.name ??
+            task.project?.client?.name ??
             null,
 
           project_name:
@@ -964,7 +965,7 @@ function Timesheet() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            CUT MASTERS LOG
+            Production LOG
           </p>
 
           <p className="mt-1 text-sm text-slate-500">
@@ -1125,7 +1126,7 @@ function TimesheetTable({
 
         <p className="mt-1 max-w-md text-sm text-slate-500">
           Start recording production work to
-          build your Cut Masters Log.
+          build your Production Log.
         </p>
       </div>
     );

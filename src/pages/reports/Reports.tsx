@@ -360,10 +360,13 @@ export default function Reports() {
 
   // Hours by Client
   const clientHoursRows = useMemo(() => {
+    const projectMap = new Map(projects.map((p) => [p.id, p.client_id]));
     return clients
       .map((client) => {
         const clientTaskIds = new Set(
-          filteredTasks.filter((t) => t.client_id === client.id).map((t) => t.id)
+          filteredTasks
+            .filter((t) => (t.client_id || (t.project_id ? projectMap.get(t.project_id) : null)) === client.id)
+            .map((t) => t.id)
         );
         const hours = filteredTimesheets
           .filter((e) => clientTaskIds.has(e.task_id))
@@ -376,7 +379,7 @@ export default function Reports() {
       })
       .filter((r) => r.hours > 0)
       .sort((a, b) => b.hours - a.hours);
-  }, [clients, filteredTasks, filteredTimesheets]);
+  }, [clients, filteredTasks, filteredTimesheets, projects]);
 
   // Hours by Project
   const projectHoursRows = useMemo(() => {

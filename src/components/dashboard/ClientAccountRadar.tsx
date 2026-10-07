@@ -32,18 +32,20 @@ export default function ClientAccountRadar() {
     async function loadClientData() {
       try {
         setLoading(true);
-        const [clientsRes, tasksRes] = await Promise.all([
+        const [clientsRes, tasksRes, projectsRes] = await Promise.all([
           supabase.from("clients").select("id, name, short_name, industry, is_active"),
-          supabase.from("tasks").select("id, client_id, status"),
+          supabase.from("tasks").select("id, project_id, client_id, status"),
+          supabase.from("projects").select("id, client_id"),
         ]);
 
         const clientList = clientsRes.data ?? [];
         const taskList = tasksRes.data ?? [];
+        const projectMap = new Map((projectsRes.data ?? []).map((p: any) => [p.id, p.client_id]));
 
         const portfolio: ClientPortfolioCard[] = clientList
           .filter((c) => c.is_active !== false)
           .map((c) => {
-            const clientTasks = taskList.filter((t) => t.client_id === c.id);
+            const clientTasks = taskList.filter((t: any) => (t.client_id || (t.project_id ? projectMap.get(t.project_id) : null)) === c.id);
             let inProgress = 0;
             let inReview = 0;
             let completed = 0;

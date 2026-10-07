@@ -1,5 +1,5 @@
 import {Link} from 'react-router-dom';
-import {BookOpen} from 'lucide-react';
+import {BookOpen,CheckSquare,CalendarDays,Timer,FolderOpen} from 'lucide-react';
 import AssignedToYou from './AssignedToYou';
 import {useState} from 'react';
 import {useLocation,useNavigate} from 'react-router-dom';
@@ -23,6 +23,7 @@ export default function Dashboard(){
  <div className="flex justify-end py-3"><Link to="/user-guide" className="project-button flex items-center gap-2 px-4 py-2"><BookOpen size={17}/>User Guide / README</Link></div>
  <div className="future-dashboard-navigation"><div className="future-section-title"><span className="future-eyebrow">MAKE SPACE FOR GREAT WORK</span><h2>Your workspace <ArrowUpRight size={20}/></h2></div><div className="future-dashboard-tabs" aria-label="Dashboard views">{tabs.map(t=><button key={t.id} aria-pressed={active===t.id} onClick={()=>{if(location.hash)navigate(location.pathname,{replace:true});setView(t.id);}}><t.icon size={16}/>{t.label}</button>)}</div></div>
  <div className="future-dashboard-panel" key={active}>
+ {active==='today'&&<section className="studio-launchpad" aria-label="Workspace shortcuts"><div><span className="future-eyebrow">YOUR DAILY WORKSPACE</span><h2>What are you working on?</h2><p>Open your work, plan a delivery or record your time.</p></div><div className="studio-shortcuts">{[{label:'My Work',to:'/my-work',icon:CheckSquare,detail:'Your assignments'},{label:'Planner',to:'/planner',icon:CalendarDays,detail:'Upcoming deadlines'},{label:'Timesheet',to:'/timesheet',icon:Timer,detail:'Log working hours'},{label:'Projects',to:'/projects',icon:FolderOpen,detail:'Project progress'}].map(item=><Link key={item.to} to={item.to}><span className="studio-shortcut-icon"><item.icon size={22}/></span><strong>{item.label}</strong><small>{item.detail}</small><ArrowUpRight size={15} className="studio-shortcut-arrow"/></Link>)}</div></section>}
  {active==='today'&&<><AssignedToYou/><Announcements/>{mode==='executive'?<section aria-label="Agency Velocity Pipeline"><ProductionFunnel/></section>:<section aria-label="Dashboard summary"><StatsCards/></section>}<section id="attention" className="scroll-mt-24" aria-label="Tasks requiring attention"><AttentionTasks/></section>{mode==='operations'&&<ProductionAlert/>}</>}
  {active==='projects'&&<><div className="future-two-column"><section aria-label="Active projects"><ActiveProjects/></section><section aria-label="Team workload"><TeamWorkload/></section></div><section aria-label="Project health"><ProjectHealth/></section></>}
  {active==='insights'&&<><section aria-label="Client Account Radar"><ClientAccountRadar/></section><section aria-label="Production overview"><ProductionOverview/></section><section aria-label="Production alerts"><ProductionAlert/></section></>}

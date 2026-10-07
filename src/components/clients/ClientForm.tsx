@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -75,6 +76,26 @@ function ClientForm({
 
   const [validationError, setValidationError] =
     useState("");
+  const availableCoordinators = useMemo(() => {
+    if (!client?.assigned_coordinator?.id) {
+      return coordinators;
+    }
+    const alreadyExists = coordinators.some(
+      (c) => c.id === client.assigned_coordinator?.id,
+    );
+    if (alreadyExists) {
+      return coordinators;
+    }
+    return [
+      ...coordinators,
+      {
+        id: client.assigned_coordinator.id,
+        full_name: client.assigned_coordinator.full_name,
+        employee_code: undefined,
+      },
+    ].sort((a, b) => a.full_name.localeCompare(b.full_name));
+  }, [coordinators, client?.assigned_coordinator]);
+
 
 
   /* =======================================================
@@ -596,7 +617,7 @@ function ClientForm({
                         Select Project Coordinator (Unassigned)
                       </option>
 
-                      {coordinators.map((c) => (
+                      {availableCoordinators.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.full_name} {c.employee_code ? `(${c.employee_code})` : ""}
                         </option>

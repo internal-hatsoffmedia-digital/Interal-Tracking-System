@@ -451,12 +451,12 @@ export default function TaskGroupedList({
                             </div>
 
                             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                              {task.client && (
+                              {(task.client || task.project?.client) && (
                                 <span className="font-medium text-slate-600">
-                                  {task.client.short_name || task.client.name}
+                                  {(task.client || task.project?.client)?.short_name || (task.client || task.project?.client)?.name}
                                 </span>
                               )}
-                              {task.client && task.project && <span>•</span>}
+                              {(task.client || task.project?.client) && task.project && <span>•</span>}
                               {task.project && (
                                 <span className="truncate">
                                   {task.project.name}

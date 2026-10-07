@@ -300,8 +300,15 @@ function TaskForm({
     setFormError("");
 
     if (task) {
+      const initialClientId =
+        task.client_id ||
+        (task as any).client?.id ||
+        (task as any).project?.client_id ||
+        projects.find((p) => p.id === task.project_id)?.client_id ||
+        "";
+
       setClientId(
-        task.client_id ?? "",
+        initialClientId,
       );
 
       setProjectId(
@@ -678,6 +685,11 @@ function TaskForm({
       return;
     }
 
+    const effectiveClientId =
+      clientId ||
+      projects.find((p) => p.id === projectId)?.client_id ||
+      "";
+
     const payload:
       | CreateTaskInput
       | UpdateTaskInput = {
@@ -685,7 +697,7 @@ function TaskForm({
         projectId,
 
       client_id:
-        clientId,
+        effectiveClientId,
 
       title:
         cleanTitle,
