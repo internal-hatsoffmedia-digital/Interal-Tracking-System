@@ -219,13 +219,20 @@ export interface CoordinatorOption {
 
 export async function getFlowForceCoordinators(): Promise<CoordinatorOption[]> {
   try {
+    const empsQuery = supabase
+      .from("employees")
+      .select("id, profile_id, full_name, employee_code, team_id, is_active");
+    const empsWithNot = typeof (empsQuery as any).not === "function"
+      ? (empsQuery as any).not("profile_id", "is", null)
+      : empsQuery;
+    const empsPromise = typeof empsWithNot.order === "function"
+      ? empsWithNot.order("full_name", { ascending: true })
+      : empsWithNot;
+
     const [teamsRes, empsRes, profilesRes] = await Promise.all([
       supabase.from("teams").select("id, name, team_type"),
-      supabase
-        .from("employees")
-        .select("id, profile_id, full_name, employee_code, team_id, is_active")
-        .order("full_name", { ascending: true }),
-      supabase.from("profiles").select("id, role, team_id, is_active"),
+      empsPromise,
+      supabase.from("profiles").select("id, full_name, role, team_id, is_active"),
     ]);
 
     if (empsRes.error) {
@@ -261,6 +268,7 @@ export async function getFlowForceCoordinators(): Promise<CoordinatorOption[]> {
 
     let rawProfiles = (profilesRes.data ?? []) as {
       id: string;
+      full_name?: string | null;
       role?: string | null;
       team_id?: string | null;
       is_active?: boolean;
@@ -272,6 +280,7 @@ export async function getFlowForceCoordinators(): Promise<CoordinatorOption[]> {
         if (!rpcRes.error && rpcRes.data) {
           rawProfiles = rpcRes.data as {
             id: string;
+            full_name?: string | null;
             role?: string | null;
             team_id?: string | null;
             is_active?: boolean;
@@ -286,6 +295,7 @@ export async function getFlowForceCoordinators(): Promise<CoordinatorOption[]> {
       string,
       {
         id: string;
+        full_name?: string | null;
         role?: string | null;
         team_id?: string | null;
         is_active?: boolean;
@@ -304,62 +314,88 @@ export async function getFlowForceCoordinators(): Promise<CoordinatorOption[]> {
       is_active?: boolean;
     }[];
 
-    const flowForceEmployees = employees.filter((e) => {
-      // Must be active
-      if (e.is_active === false) return false;
+    // Strictly identify authentic Project Coordinator accounts from Authentication/Profiles
+    const isEligibleCoordinatorProfile = (p: {
+      id: string;
+      full_name?: string | null;
+      role?: string | null;
+      team_id?: string | null;
+      is_active?: boolean;
+    }) => {
+      if (p.is_active === false) return false;
 
-      // 1. Employee directly has Flow Force team_id
-      if (e.team_id && flowTeamIds.has(e.team_id)) {
+      // Actual authenticated project coordinator role
+      if (p.role === "project_coordinator") return true;
+
+      // Lead/supervisor role on the Flow Force team
+      if (
+        flowTeamIds.size > 0 &&
+        p.team_id &&
+        flowTeamIds.has(p.team_id) &&
+        ["associate_lead", "team_lead", "manager", "director"].includes(
+          p.role || "",
+        )
+      ) {
         return true;
       }
 
-      // 2. Linked profile matches Flow Force team or coordinator role
-      if (e.profile_id && profileMap.has(e.profile_id)) {
-        const p = profileMap.get(e.profile_id)!;
-        if (p.is_active === false) return false;
-
-        if (p.team_id && flowTeamIds.has(p.team_id)) {
-          return true;
-        }
-
-        if (p.role === "project_coordinator") {
-          return true;
-        }
-
-        if (
-          flowTeamIds.size > 0 &&
-          p.team_id &&
-          flowTeamIds.has(p.team_id) &&
-          ["associate_lead", "team_lead", "manager", "director"].includes(
-            p.role || "",
-          )
-        ) {
-          return true;
-        }
-      }
-
-      // 3. Fallback: if no teams matched Flow Force criteria
+      // Fallback if team record is not linked to Flow Force
       if (flowTeamIds.size === 0) {
+        const lowerName = (p.full_name || "").toLowerCase();
         if (
-          e.profile_id &&
-          profileMap.get(e.profile_id)?.role === "project_coordinator"
-        ) {
-          return true;
-        }
-        const lowerName = (e.full_name || "").toLowerCase();
-        if (
-          lowerName.includes("esther") ||
-          lowerName.includes("lavanya") ||
-          lowerName.includes("muskan")
+          ["associate_lead", "team_lead", "project_coordinator"].includes(
+            p.role || "",
+          ) &&
+          (lowerName.includes("muskan") ||
+            lowerName.includes("esther") ||
+            lowerName.includes("lavanya"))
         ) {
           return true;
         }
       }
 
       return false;
-    });
+    };
 
-    return flowForceEmployees.map((e) => ({
+    // Filter employees: MUST be linked to an active, authentic profile matching coordinator criteria
+    const validCoordinators: {
+      id: string;
+      profile_id: string;
+      full_name: string;
+      employee_code?: string;
+    }[] = [];
+
+    const seenProfiles = new Set<string>();
+    const seenNames = new Set<string>();
+
+    for (const e of employees) {
+      // Exclude unlinked/dummy accounts
+      if (!e.profile_id) continue;
+      if (e.is_active === false) continue;
+
+      const profile = profileMap.get(e.profile_id);
+      if (!profile) continue;
+      if (!isEligibleCoordinatorProfile(profile)) continue;
+
+      // Deduplicate by profile_id
+      if (seenProfiles.has(e.profile_id)) continue;
+
+      // Deduplicate by first name to eliminate duplicate historical employee identities
+      const normName = e.full_name.trim().toLowerCase().split(/\s+/)[0];
+      if (seenNames.has(normName)) continue;
+
+      seenProfiles.add(e.profile_id);
+      seenNames.add(normName);
+
+      validCoordinators.push({
+        id: e.id,
+        profile_id: e.profile_id,
+        full_name: e.full_name,
+        employee_code: e.employee_code,
+      });
+    }
+
+    return validCoordinators.map((e) => ({
       id: e.id,
       full_name: e.full_name,
       employee_code: e.employee_code,

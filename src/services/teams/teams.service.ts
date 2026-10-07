@@ -16,7 +16,7 @@ async function populateTeamDetails(rawTeams: Record<string, unknown>[]): Promise
   try {
     const [empRes, profileRes] = await Promise.all([
       supabase.from("employees").select("id, full_name, email, team_id, profile_id"),
-      supabase.from("profiles").select("id, full_name, role, team_id"),
+      supabase.from("profiles").select("id, full_name, role, team_id, is_active"),
     ]);
 
     employees = empRes.data ?? [];
@@ -52,9 +52,33 @@ async function populateTeamDetails(rawTeams: Record<string, unknown>[]): Promise
       leadName = teamLeadMap.get(teamId) ?? null;
     }
 
-    const teamEmployees = employees.filter((e) => e.team_id === teamId);
+    const profileMap = new Map<string, { id: string; full_name?: string | null; role?: string | null; team_id?: string | null; is_active?: boolean }>();
+    for (const p of profiles) {
+      if (p.is_active !== false) {
+        profileMap.set(p.id, p);
+      }
+    }
 
-    const members: TeamMember[] = teamEmployees.map((e) => ({
+    const teamEmployees = employees.filter((e) => {
+      if (e.team_id !== teamId) return false;
+      // Exclude unlinked dummy records when authenticated profiles are present
+      if (profileMap.size > 0 && !e.profile_id) return false;
+      if (e.profile_id && !profileMap.has(e.profile_id)) return false;
+      const prof = e.profile_id ? profileMap.get(e.profile_id) : null;
+      if (prof && prof.team_id && prof.team_id !== teamId) return false;
+      return true;
+    });
+
+    const seenMembers = new Set<string>();
+    const uniqueTeamEmployees: any[] = [];
+    for (const emp of teamEmployees) {
+      const normKey = emp.profile_id || emp.full_name.trim().toLowerCase().split(/\s+/)[0];
+      if (seenMembers.has(normKey)) continue;
+      seenMembers.add(normKey);
+      uniqueTeamEmployees.push(emp);
+    }
+
+    const members: TeamMember[] = uniqueTeamEmployees.map((e) => ({
       id: e.id,
       full_name: e.full_name,
       email: e.email ?? undefined,

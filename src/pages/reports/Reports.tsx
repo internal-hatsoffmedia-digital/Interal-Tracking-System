@@ -166,6 +166,7 @@ export default function Reports() {
         supabase
           .from("employees")
           .select("id, full_name, employee_code, job_title, team_id, is_active")
+          .not("profile_id", "is", null)
           .eq("is_active", true)
           .order("full_name"),
 

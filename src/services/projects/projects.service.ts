@@ -23,6 +23,7 @@ async function getProjectRelations() {
     supabase
       .from("employees")
       .select("id, full_name, employee_code, profile_id")
+      .not("profile_id", "is", null)
       .order("full_name", {
         ascending: true,
       }),

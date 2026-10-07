@@ -13,21 +13,31 @@ test('getFlowForceCoordinators returns only Flow Force team members and excludes
   ];
 
   const profiles = [
-    { id: 'prof-muskan', role: 'associate_lead', team_id: 'team-ff', is_active: true },
-    { id: 'prof-esther', role: 'project_coordinator', team_id: 'team-ff', is_active: true },
-    { id: 'prof-lavanya', role: 'project_coordinator', team_id: 'team-ff', is_active: true },
-    { id: 'prof-ganesh', role: 'associate_lead', team_id: 'team-cc', is_active: true },
-    { id: 'prof-sudeesh', role: 'associate_lead', team_id: 'team-cut', is_active: true },
-    { id: 'prof-janani', role: 'associate_lead', team_id: 'team-mkt', is_active: true },
-    { id: 'prof-admin', role: 'admin', team_id: null, is_active: true },
-    { id: 'prof-inactive-coord', role: 'project_coordinator', team_id: 'team-ff', is_active: false },
+    { id: 'prof-muskan', full_name: 'Muskan', role: 'associate_lead', team_id: 'team-ff', is_active: true },
+    { id: 'prof-esther', full_name: 'Esther', role: 'project_coordinator', team_id: 'team-ff', is_active: true },
+    { id: 'prof-lavanya', full_name: 'Lavanya', role: 'project_coordinator', team_id: 'team-ff', is_active: true },
+    { id: 'prof-ramkumar', full_name: 'Ramkumar', role: 'employee', team_id: 'team-ff', is_active: true },
+    { id: 'prof-ganesh', full_name: 'Ganeshkanth', role: 'associate_lead', team_id: 'team-cc', is_active: true },
+    { id: 'prof-sudeesh', full_name: 'Sudeesh', role: 'associate_lead', team_id: 'team-cut', is_active: true },
+    { id: 'prof-janani', full_name: 'Janani', role: 'associate_lead', team_id: 'team-mkt', is_active: true },
+    { id: 'prof-admin', full_name: 'Admin', role: 'admin', team_id: null, is_active: true },
+    { id: 'prof-inactive-coord', full_name: 'Old Coordinator', role: 'project_coordinator', team_id: 'team-ff', is_active: false },
   ];
 
   const employees = [
     { id: 'emp-admin', profile_id: 'prof-admin', full_name: 'Admin', employee_code: 'EMP-ADMIN01', team_id: null, is_active: true },
     { id: 'emp-muskan', profile_id: 'prof-muskan', full_name: 'Muskan', employee_code: 'EMP-135E38', team_id: 'team-ff', is_active: true },
-    { id: 'emp-esther', profile_id: 'prof-esther', full_name: 'Esther', employee_code: 'EMP-0360C6', team_id: 'team-ff', is_active: true },
-    { id: 'emp-lavanya', profile_id: 'prof-lavanya', full_name: 'Lavanya', employee_code: 'EMP-FCE8BA', team_id: 'team-ff', is_active: true },
+    // Duplicate dummy Muskan records
+    { id: 'emp-dummy-muskan1', profile_id: 'prof-fake1', full_name: 'Muskan', employee_code: 'EMP-A47354', team_id: 'team-ff', is_active: true },
+    { id: 'emp-dummy-muskan2', profile_id: null, full_name: 'Muskan', employee_code: 'EMP-F58DAB', team_id: 'team-ff', is_active: true },
+    { id: 'emp-esther', profile_id: 'prof-esther', full_name: 'Esther', employee_code: 'EMP-72CC35', team_id: 'team-ff', is_active: true },
+    // Duplicate dummy Esther record
+    { id: 'emp-dummy-esther', profile_id: null, full_name: 'Esther', employee_code: 'EMP-0360C6', team_id: 'team-ff', is_active: true },
+    { id: 'emp-lavanya', profile_id: 'prof-lavanya', full_name: 'Lavanya', employee_code: 'EMP-703335', team_id: 'team-ff', is_active: true },
+    // Duplicate dummy Lavanya record
+    { id: 'emp-dummy-lavanya', profile_id: 'prof-fake2', full_name: 'Lavanya', employee_code: 'EMP-FCE8BA', team_id: 'team-ff', is_active: true },
+    // Ramkumar (employee role, not coordinator)
+    { id: 'emp-ramkumar', profile_id: 'prof-ramkumar', full_name: 'Ramkumar', employee_code: 'EMP-AA3D1B', team_id: 'team-ff', is_active: true },
     { id: 'emp-ganesh', profile_id: 'prof-ganesh', full_name: 'Ganeshkanth', employee_code: 'EMP-52EFEE', team_id: 'team-cc', is_active: true },
     { id: 'emp-sudeesh', profile_id: 'prof-sudeesh', full_name: 'Sudeesh', employee_code: 'EMP-SUD01', team_id: 'team-cut', is_active: true },
     { id: 'emp-janani', profile_id: 'prof-janani', full_name: 'Janani', employee_code: 'EMP-D4D553', team_id: 'team-mkt', is_active: true },
@@ -49,6 +59,9 @@ test('getFlowForceCoordinators returns only Flow Force team members and excludes
       if (table === 'employees') {
         return {
           select: () => ({
+            not: () => ({
+              order: () => Promise.resolve({ data: employees, error: null }),
+            }),
             order: () => Promise.resolve({ data: employees, error: null }),
           }),
         };
@@ -70,13 +83,16 @@ test('getFlowForceCoordinators returns only Flow Force team members and excludes
     exports,
     require: () => ({ supabase: mockSupabase }),
     console,
+    Array,
+    Set,
+    Map,
   });
 
   const coordinators = await exports.getFlowForceCoordinators();
 
   assert.equal(coordinators.length, 3);
   assert.deepEqual(
-    coordinators.map((c) => c.full_name),
+    Array.from(coordinators.map((c) => c.full_name)),
     ['Muskan', 'Esther', 'Lavanya']
   );
 
@@ -85,8 +101,13 @@ test('getFlowForceCoordinators returns only Flow Force team members and excludes
   assert.ok(!coordinators.some((c) => c.full_name === 'Ganeshkanth'));
   assert.ok(!coordinators.some((c) => c.full_name === 'Sudeesh'));
   assert.ok(!coordinators.some((c) => c.full_name === 'Janani'));
+  assert.ok(!coordinators.some((c) => c.full_name === 'Ramkumar'));
   assert.ok(!coordinators.some((c) => c.full_name === 'Old Coordinator'));
 
-  // Ensure fields are populated
-  assert.equal(coordinators[0].employee_code, 'EMP-135E38');
+  // Dummy codes must not appear in any returned coordinator
+  assert.ok(!coordinators.some((c) => c.employee_code === 'EMP-0360C6'));
+  assert.ok(!coordinators.some((c) => c.employee_code === 'EMP-A47354'));
+  assert.ok(!coordinators.some((c) => c.employee_code === 'EMP-F58DAB'));
+  assert.ok(!coordinators.some((c) => c.employee_code === 'EMP-FCE8BA'));
+  assert.ok(!coordinators.some((c) => c.employee_code === 'EMP-AA3D1B'));
 });
