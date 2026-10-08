@@ -5,7 +5,9 @@
 :root, .future-shell {
   --primary: #ffcc00;
   --accent: #ffcc00;
-  --primary-light: #fff7d6;
+  --primary-hover: #e6b800;
+  --primary-light: #fff4bf;
+  --pale-yellow: #fff8ea;
   --future-lime: #ffcc00;
   --studio-green: #ffcc00;
 }
@@ -13,11 +15,11 @@
 /* Active navigation links & brand accents */
 html #root .future-nav-link.is-active {
   background: #ffcc00 !important;
-  color: #111 !important;
+  color: #000000 !important;
   font-weight: 700;
 }
 html #root .future-nav-link.is-active svg {
-  color: #111 !important;
+  color: #000000 !important;
 }
 html #root .future-nav-link.is-active::before {
   box-shadow: 0 10px 0 0 #ffcc00;
@@ -26,29 +28,32 @@ html #root .future-nav-link.is-active::after {
   box-shadow: 0 -10px 0 0 #ffcc00;
 }
 html #root .future-nav-link.is-active .nav-active-dot {
-  background: #111;
+  background: #000000;
 }
 
 html #root .future-primary {
   background: #ffcc00 !important;
-  color: #111 !important;
+  color: #000000 !important;
+}
+html #root .future-primary:hover {
+  background: #e6b800 !important;
 }
 
 html #root .future-briefing-intro {
-  background: #fff7d6;
+  background: #fff8ea;
 }
 
 html #root .future-metric.violet {
-  background: #111;
-  color: #fff7d6;
+  background: #111111;
+  color: #fff4bf;
 }
 html #root .future-metric.peach {
-  background: #fff7d6;
-  color: #111;
+  background: #fff8ea;
+  color: #0a0a0a;
 }
 html #root .future-metric.lime {
   background: #ffcc00;
-  color: #111;
+  color: #000000;
 }
 
 /* Sidebar structure: contained menu with sticky header & footer */

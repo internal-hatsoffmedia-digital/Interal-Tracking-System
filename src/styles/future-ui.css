@@ -116,47 +116,48 @@ html[data-theme=dark] .future-shell .text-slate-900{color:#f0ebfa}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 
 /* Hatsoff brand palette: supplied by the studio. */
-:root{--background:#ffffff;--foreground:#111111;--primary:#ffcc00;--primary-light:#fff7d6;--border:#e5e7eb;--muted:#6b7280;--radius:999px;--surface:#ffffff;--canvas:#fafafa;--ink:#111111;--line:#e5e7eb;--accent:#ffcc00;--future-muted:#6b7280;--future-lime:#ffcc00;--future-sidebar:#111111}
-html[data-theme=dark]{--surface:#202020;--canvas:#111111;--ink:#f5f5f5;--line:#373737;--accent:#ffcc00;--future-muted:#a3a3a3;--background:#202020;--background-subtle:#111111;--background-secondary:#292929;--foreground:#f5f5f5;--body:#d4d4d4;--border:#373737}
-.future-nav-link.is-active{background:var(--primary);color:#111111}.future-nav-link.is-active svg,.future-nav-link.is-active .nav-active-dot{color:#111111}.future-nav-link.is-active .nav-active-dot{background:#111111}
-.future-studio-note{background:#24221a;border-color:#ffcc0033;color:#fff7d6}.future-brand small,.future-nav-group>p,.future-account small,.future-account button,.future-nav-link svg{color:#a3a3a3}.future-nav-link,.future-account strong{color:#e5e5e5}.future-brand img{width:48px;height:38px;border-radius:8px;padding:3px}
-.future-avatar{background:var(--primary-light);color:#111111}.future-heading-dot{color:var(--primary)}.future-eyebrow>span{background:var(--primary)}
-.future-primary,.future-shell main button[class*="bg-slate-9"]{background:var(--primary);color:#111111;border-color:var(--primary);box-shadow:0 4px 12px #ffcc001a}
-.future-primary:hover,.future-shell main button[class*="bg-slate-9"]:hover{background:#e5b700}
-.future-metric.violet,.future-metric.pink,.future-metric.peach,.future-metric.lime,.future-shell .project-stats>div:nth-child(n){background:var(--primary-light);color:#111111}
-.future-shell .project-stats p{color:#6b7280}.future-shell .project-stats p:last-child{color:#111111}
-html[data-theme=dark] .future-metric,html[data-theme=dark] .future-shell .project-stats>div:nth-child(n){background:#302b18;color:#fff7d6}html[data-theme=dark] .future-shell .project-stats p{color:#d4d4d4}html[data-theme=dark] .future-shell .project-stats p:last-child{color:#fff7d6}
-html[data-theme=dark] .future-shell :is(.bg-slate-50,.bg-slate-100,[class*="bg-slate-50/"]){background-color:#292929}html[data-theme=dark] .future-shell .text-slate-900{color:#f5f5f5}
+/* Hatsoff brand palette: supplied by the studio. */
+:root{--background:#ffffff;--foreground:#0a0a0a;--primary:#ffcc00;--primary-light:#fff4bf;--border:#e5e5e5;--muted:#777777;--radius:999px;--surface:#ffffff;--canvas:#f8f8f6;--ink:#0a0a0a;--line:#e5e5e5;--accent:#ffcc00;--future-muted:#777777;--future-lime:#ffcc00;--future-sidebar:#111111}
+html[data-theme=dark]{--surface:#1a1a1a;--canvas:#111111;--ink:#ffffff;--line:#292929;--accent:#ffcc00;--future-muted:#777777;--background:#111111;--background-subtle:#111111;--background-secondary:#1a1a1a;--foreground:#ffffff;--body:#e5e5e5;--border:#292929}
+.future-nav-link.is-active{background:var(--primary);color:#000000}.future-nav-link.is-active svg,.future-nav-link.is-active .nav-active-dot{color:#000000}.future-nav-link.is-active .nav-active-dot{background:#000000}
+.future-studio-note{background:#1a1a1a;border-color:#ffcc0033;color:#fff4bf}.future-brand small,.future-nav-group>p,.future-account small,.future-account button,.future-nav-link svg{color:#777777}.future-nav-link,.future-account strong{color:#e5e5e5}.future-brand img{width:48px;height:38px;border-radius:8px;padding:3px}
+.future-avatar{background:var(--primary-light);color:#000000}.future-heading-dot{color:var(--primary)}.future-eyebrow>span{background:var(--primary)}
+.future-primary,.future-shell main button[class*="bg-slate-9"]{background:var(--primary);color:#000000;border-color:var(--primary);box-shadow:0 4px 12px #ffcc001a}
+.future-primary:hover,.future-shell main button[class*="bg-slate-9"]:hover{background:#e6b800}
+.future-metric.violet,.future-metric.pink,.future-metric.peach,.future-metric.lime,.future-shell .project-stats>div:nth-child(n){background:var(--primary-light);color:#0a0a0a}
+.future-shell .project-stats p{color:#777777}.future-shell .project-stats p:last-child{color:#0a0a0a}
+html[data-theme=dark] .future-metric,html[data-theme=dark] .future-shell .project-stats>div:nth-child(n){background:#1a1a1a;color:#fff4bf}html[data-theme=dark] .future-shell .project-stats p{color:#777777}html[data-theme=dark] .future-shell .project-stats p:last-child{color:#fff4bf}
+html[data-theme=dark] .future-shell :is(.bg-slate-50,.bg-slate-100,[class*="bg-slate-50/"]){background-color:#1a1a1a}html[data-theme=dark] .future-shell .text-slate-900{color:#ffffff}
 .future-shell :is(button,input:not([type=checkbox]):not([type=radio]):not([type=file]),select,.future-nav-link,.future-primary,.future-secondary,.future-search input){border-radius:var(--radius)}
-.future-shell main :is(input,textarea,select){accent-color:var(--primary)}.future-shell :focus-visible{outline:2px solid #b38f00;outline-offset:3px}
-.brand-login{color:#111111;background:#fff;color-scheme:light}.brand-login .bg-slate-950{background:#111111}.brand-login .bg-white{background:#fff!important}.brand-login .text-slate-950,.brand-login .text-slate-900{color:#111111!important}.brand-login .text-slate-500{color:#6b7280}.brand-login .text-slate-700{color:#404040}
-.brand-login img{width:76px;height:54px;object-fit:contain;background:#fff;border-radius:8px;padding:4px}
-.brand-login button[type=submit]{background:#ffcc00;color:#111111;box-shadow:0 8px 24px #ffcc0026}.brand-login button[type=submit]:hover{background:#e5b700}
-.brand-login :is(input:not([type=checkbox]),button){border-radius:var(--radius)}.brand-login input{accent-color:#ffcc00;border-color:#e5e7eb}.brand-login input:focus{border-color:#b38f00;box-shadow:0 0 0 3px #fff7d6}
-.brand-login .text-blue-600{color:#111111;text-decoration:underline;text-underline-offset:3px}.brand-login .bg-slate-100,.brand-login .bg-slate-50{background:#fff7d6}.brand-login button[type=submit] .animate-spin{border-color:#11111144;border-top-color:#111111}
+.future-shell main :is(input,textarea,select){accent-color:var(--primary)}.future-shell :focus-visible{outline:2px solid #e6b800;outline-offset:3px}
+.brand-login{color:#0a0a0a;background:#ffffff;color-scheme:light}.brand-login .bg-slate-950{background:#111111}.brand-login .bg-white{background:#ffffff!important}.brand-login .text-slate-950,.brand-login .text-slate-900{color:#0a0a0a!important}.brand-login .text-slate-500{color:#777777}.brand-login .text-slate-700{color:#4a4a4a}
+.brand-login img{width:76px;height:54px;object-fit:contain;background:#ffffff;border-radius:8px;padding:4px}
+.brand-login button[type=submit]{background:#ffcc00;color:#000000;box-shadow:0 8px 24px #ffcc0026}.brand-login button[type=submit]:hover{background:#e6b800}
+.brand-login :is(input:not([type=checkbox]),button){border-radius:var(--radius)}.brand-login input{accent-color:#ffcc00;border-color:#e5e5e5}.brand-login input:focus{border-color:#e6b800;box-shadow:0 0 0 3px #fff4bf}
+.brand-login .text-blue-600{color:#0a0a0a;text-decoration:underline;text-underline-offset:3px}.brand-login .bg-slate-100,.brand-login .bg-slate-50{background:#fff8ea}.brand-login button[type=submit] .animate-spin{border-color:#00000044;border-top-color:#000000}
 
 /* =========================================================
    RADIUM BLACK THEME & FLOATING AMBIENT BALLS
 ========================================================= */
 
 :root {
-  --radium-yellow: #fae800;
-  --radium-glow: rgba(250, 232, 0, 0.45);
-  --radium-soft: rgba(250, 232, 0, 0.12);
-  --radium-dark: #09090b;
-  --radium-surface: #121215;
+  --radium-yellow: #ffcc00;
+  --radium-glow: rgba(255, 204, 0, 0.45);
+  --radium-soft: rgba(255, 204, 0, 0.12);
+  --radium-dark: #111111;
+  --radium-surface: #1a1a1a;
 }
 
 html[data-theme=dark] {
-  --surface: #121215;
-  --canvas: #09090b;
-  --ink: #f4f4f5;
-  --line: #27272a;
-  --accent: #fae800;
-  --primary: #fae800;
-  --primary-light: #24221a;
-  --future-lime: #fae800;
-  --future-sidebar: #09090b;
+  --surface: #1a1a1a;
+  --canvas: #111111;
+  --ink: #ffffff;
+  --line: #292929;
+  --accent: #ffcc00;
+  --primary: #ffcc00;
+  --primary-light: #1a1a1a;
+  --future-lime: #ffcc00;
+  --future-sidebar: #111111;
   color-scheme: dark;
 }
 

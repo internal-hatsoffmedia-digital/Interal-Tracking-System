@@ -1,10 +1,10 @@
 /* Shared workspace surfaces and controls, loaded after legacy page themes. */
-:root { --canvas:#faf9f5; --surface:#fff; --ink:#161616; --line:#e8e6de; --accent:#ffcc00; --muted:#68665f; }
-html[data-theme=dark] { --canvas:#101010; --surface:#1a1a1a; --ink:#fff7d6; --line:#38362d; --muted:#c0bcae; --background:#1a1a1a; --foreground:#fff7d6; --body:#ded9c7; --border:#38362d; }
-html #root .future-shell { color:var(--ink); font-size:14px; }
+:root { --canvas:#f8f8f6; --surface:#ffffff; --ink:#0a0a0a; --line:#e5e5e5; --light-line:#f0f0f0; --accent:#ffcc00; --accent-hover:#e6b800; --muted:#777777; --body:#4a4a4a; }
+html[data-theme=dark] { --canvas:#111111; --surface:#1a1a1a; --ink:#ffffff; --line:#292929; --muted:#777777; --background:#111111; --foreground:#ffffff; --body:#e5e5e5; --border:#292929; }
+html #root .future-shell { color:var(--body); font-size:14px; }
 html #root .future-shell main { background:var(--canvas)!important; }
-html #root .future-shell main h1 { font-size:clamp(26px,2.5vw,36px); font-weight:650; letter-spacing:-.045em; }
-html #root .future-shell main h2 { letter-spacing:-.025em; }
+html #root .future-shell main h1 { font-size:clamp(26px,2.5vw,36px); font-weight:650; letter-spacing:-.045em; color:var(--ink); }
+html #root .future-shell main h2 { letter-spacing:-.025em; color:var(--ink); }
 html #root .future-shell main :is(.text-slate-400,.text-slate-500,.text-slate-600,.text-gray-500) { color:var(--muted)!important; }
 html #root .future-shell main :is(.text-slate-800,.text-slate-900,.text-gray-900) { color:var(--ink)!important; }
 html #root .future-shell main :is(.bg-white,.bg-slate-50,.bg-gray-50) { background-color:var(--surface)!important; }
@@ -14,25 +14,25 @@ html #root .future-shell :is(input:not([type=checkbox]):not([type=radio]):not([t
 html #root .future-shell input::placeholder,html #root .future-shell textarea::placeholder { color:var(--muted); opacity:.8; }
 html #root .future-shell :is(button,a,input,select,textarea):focus-visible { outline:2px solid #ffcc00; outline-offset:3px; }
 /* Keep white text paired with its dark surface, including nested icons. */
-html #root :is(button,a)[class*="bg-slate-900"],html #root :is(button,a)[class*="bg-black"] { background:#111!important; color:#fff7d6!important; border-color:#111!important; }
-html #root :is(button,a)[class*="bg-slate-900"] :is(span,svg),html #root :is(button,a)[class*="bg-black"] :is(span,svg) { color:#fff7d6!important; }
-html #root .future-shell button:disabled { opacity:1; background:#e8e6de!important; color:#656259!important; box-shadow:none!important; cursor:not-allowed; }
-html[data-theme=dark] #root .future-shell button:disabled { background:#36342e!important; color:#c0bcae!important; }
+html #root :is(button,a)[class*="bg-slate-900"],html #root :is(button,a)[class*="bg-black"] { background:#111111!important; color:#ffffff!important; border-color:#111111!important; }
+html #root :is(button,a)[class*="bg-slate-900"] :is(span,svg),html #root :is(button,a)[class*="bg-black"] :is(span,svg) { color:#ffffff!important; }
+html #root .future-shell button:disabled { opacity:1; background:#e5e5e5!important; color:#777777!important; box-shadow:none!important; cursor:not-allowed; }
+html[data-theme=dark] #root .future-shell button:disabled { background:#292929!important; color:#777777!important; }
 html #root .future-shell table { font-size:13px; }
 html #root .future-shell th { padding-top:15px; padding-bottom:15px; font-size:10px; letter-spacing:.075em; }
 html #root .future-shell td { padding-top:16px; padding-bottom:16px; border-color:var(--line); }
-html #root .future-shell tbody tr:hover { background:#fff7d6; color:#111; }
-html #root .future-shell .future-sidebar { background:#111; border-right:1px solid #222; }
+html #root .future-shell tbody tr:hover { background:#fff8ea; color:#0a0a0a; }
+html #root .future-shell .future-sidebar { background:#111111; border-right:1px solid #1a1a1a; }
 html #root .future-shell .future-nav-link { border-radius:12px!important; box-shadow:none; }
 html #root .future-shell .future-nav-link.is-active { box-shadow:0 4px 18px rgba(255,204,0,.14); }
-html #root .future-shell .coordinator-avatar { background:#fff7d6; color:#111; border:1px solid #ffcc00; }
+html #root .future-shell .coordinator-avatar { background:#fff8ea; color:#0a0a0a; border:1px solid #ffcc00; }
 html #root #access-management [aria-label=Accounts] { border:1px solid var(--line); background:var(--canvas); border-radius:16px; padding:10px; }
 html #root #access-management [aria-label=Accounts]>button { border-color:var(--line); border-radius:12px; padding:16px; }
-html #root #access-management [aria-label=Accounts]>button[aria-pressed=true] { border-color:#ffcc00; background:#fff7d6!important; color:#111; }
+html #root #access-management [aria-label=Accounts]>button[aria-pressed=true] { border-color:#ffcc00; background:#fff8ea!important; color:#0a0a0a; }
 html #root #access-management form { background:var(--surface)!important; border-color:var(--line); border-radius:16px; padding:22px; }
-html #root #access-management form>button { background:#ffcc00!important; color:#111!important; font-weight:650; min-height:44px; padding:12px 22px; border-radius:12px; box-shadow:none; }
-html #root #access-management form>button:disabled { background:#e8e6de!important; color:#656259!important; }
-html #root .brand-login button[type=submit] { background:#ffcc00!important; color:#111!important; }
+html #root #access-management form>button { background:#ffcc00!important; color:#000000!important; font-weight:650; min-height:44px; padding:12px 22px; border-radius:12px; box-shadow:none; }
+html #root #access-management form>button:disabled { background:#e5e5e5!important; color:#777777!important; }
+html #root .brand-login button[type=submit] { background:#ffcc00!important; color:#000000!important; }
 @media(max-width:640px) { html #root .future-shell main .project-workspace { padding:16px!important; border-radius:16px!important; } html #root #access-management form { padding:16px; } }
 @media(prefers-reduced-motion:no-preference) { html #root .future-shell button { transition:background-color .15s ease,border-color .15s ease; } }
 
@@ -54,14 +54,14 @@ html #root .radium-ambient-container { display:none; }
  html #root .future-sidebar.is-compact .future-sidebar-footer { padding:10px 8px; }
  html #root .future-sidebar.is-compact .future-account { flex-wrap:wrap; justify-content:center; gap:10px; }
 }
-html #root .studio-nav-toggle { display:flex; align-items:center; justify-content:center; gap:10px; margin:0 14px 14px; min-height:38px; color:#fff7d6; background:#222; border:1px solid #38362d; border-radius:12px; font-size:11px; }
+html #root .studio-nav-toggle { display:flex; align-items:center; justify-content:center; gap:10px; margin:0 14px 14px; min-height:38px; color:#fff4bf; background:#1a1a1a; border:1px solid #292929; border-radius:12px; font-size:11px; }
 html #root .studio-launchpad { border:1px solid var(--line); background:var(--surface); border-radius:24px; padding:24px; display:grid; gap:22px; }
-html #root .studio-launchpad h2 { font-size:23px; margin:8px 0; }
+html #root .studio-launchpad h2 { font-size:23px; margin:8px 0; color:var(--ink); }
 html #root .studio-launchpad p { color:var(--muted); font-size:13px; }
 html #root .studio-shortcuts { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
 html #root .studio-shortcuts>a { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:20px; border:1px solid var(--line); border-radius:20px; color:var(--ink); background:var(--canvas); text-decoration:none; }
-html #root .studio-shortcuts>a:first-child { background:#fff7d6; color:#111; border-color:#ffcc00; }
-html #root .studio-shortcut-icon { display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#111; color:#ffcc00; margin-bottom:4px; }
+html #root .studio-shortcuts>a:first-child { background:#fff8ea; color:#0a0a0a; border-color:#ffcc00; }
+html #root .studio-shortcut-icon { display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#000000; color:#ffcc00; margin-bottom:4px; }
 html #root .studio-shortcuts strong { font-size:14px; }
 html #root .studio-shortcuts small { font-size:11px; opacity:.7; }
 html #root .studio-shortcut-arrow { position:absolute; right:18px; top:20px; }

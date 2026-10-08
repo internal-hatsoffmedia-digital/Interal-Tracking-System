@@ -1,10 +1,10 @@
 /* Shared design system: retains page content and existing status colours. */
-:root { --surface:#fff; --canvas:#f3f5fa; --ink:#17243c; --line:#dfe5f0; --accent:#6260ee; }
-html[data-theme=dark] { color-scheme:dark; --surface:#151e30; --canvas:#0c1322; --ink:#e8eef9; --line:#2a3851; --background:#151e30; --background-subtle:#0c1322; --background-secondary:#202c41; --foreground:#e8eef9; --body:#c2cfe2; --muted:#94a5c0; --border:#2a3851; }
-body { background:var(--canvas); }
+:root { --surface:#ffffff; --canvas:#f8f8f6; --ink:#0a0a0a; --body:#4a4a4a; --line:#e5e5e5; --line-light:#f0f0f0; --accent:#ffcc00; --accent-hover:#e6b800; --muted:#777777; --success:#16a34a; --error:#dc2626; --warning:#f59e0b; }
+html[data-theme=dark] { color-scheme:dark; --surface:#1a1a1a; --canvas:#111111; --ink:#ffffff; --line:#292929; --background:#111111; --background-subtle:#111111; --background-secondary:#1a1a1a; --foreground:#ffffff; --body:#e5e5e5; --muted:#777777; --border:#292929; --accent:#ffcc00; --accent-hover:#e6b800; }
+body { background:var(--canvas); color:var(--body); }
 .workspace-shell { background:var(--canvas); color:var(--ink); }
-.workspace-shell main { background:radial-gradient(ellipse at top right,rgba(98,96,238,.055),transparent 60%),var(--canvas); }
-.workspace-shell header { background:color-mix(in srgb,var(--surface) 94%,transparent); border-color:var(--line); }
+.workspace-shell main { background:var(--canvas); }
+.workspace-shell header { background:color-mix(in srgb,var(--surface) 96%,transparent); border-color:var(--line); }
 .workspace-shell aside { border-color:var(--line); box-shadow:4px 0 30px #0f172a04; }
 .workspace-shell :is(input,select,textarea) { border-color:var(--line); border-radius:10px; }
 .workspace-shell :is(input,select,textarea):focus { outline:2px solid var(--accent); outline-offset:2px; }
@@ -14,16 +14,16 @@ body { background:var(--canvas); }
 .workspace-shell table { border-collapse:separate; border-spacing:0; }
 .workspace-shell th { font-size:11px; letter-spacing:.07em; }
 .workspace-shell td { border-color:var(--line); }
-.workspace-shell tbody tr:hover { background:color-mix(in srgb,var(--accent) 4%,transparent); }
+.workspace-shell tbody tr:hover { background:#fff8ea; color:#0a0a0a; }
 .theme-toggle { display:inline-flex; align-items:center; gap:7px; padding:9px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); font-size:12px; font-weight:600; }
 ::-webkit-scrollbar { width:6px; height:6px; }
 ::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:#a0adc3; border-radius:20px; }
+::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:20px; }
 html[data-theme=dark] :is(.bg-white,[class*="bg-white/"],.glass-surface) { background-color:var(--surface)!important; }
-html[data-theme=dark] :is(.bg-slate-50,.bg-slate-100,.bg-gray-50,.bg-gray-100,[class*="bg-slate-50/"],[class*="bg-slate-100/"]) { background-color:#1b273b; }
-html[data-theme=dark] :is(.text-slate-950,.text-slate-900,.text-slate-800,.text-gray-900,.text-gray-800,.text-black) { color:#e8eef9; }
-html[data-theme=dark] :is(.text-slate-700,.text-slate-600,.text-gray-700,.text-gray-600) { color:#c2cfe2; }
-html[data-theme=dark] :is(.text-slate-500,.text-slate-400,.text-gray-500,.text-gray-400) { color:#9dacc4; }
+html[data-theme=dark] :is(.bg-slate-50,.bg-slate-100,.bg-gray-50,.bg-gray-100,[class*="bg-slate-50/"],[class*="bg-slate-100/"]) { background-color:#1a1a1a; }
+html[data-theme=dark] :is(.text-slate-950,.text-slate-900,.text-slate-800,.text-gray-900,.text-gray-800,.text-black) { color:#ffffff; }
+html[data-theme=dark] :is(.text-slate-700,.text-slate-600,.text-gray-700,.text-gray-600) { color:#e5e5e5; }
+html[data-theme=dark] :is(.text-slate-500,.text-slate-400,.text-gray-500,.text-gray-400) { color:#777777; }
 html[data-theme=dark] :is(.border-slate-100,.border-slate-200,.border-slate-300,.border-gray-200,.border,[class*="divide-slate-"]>*) { border-color:var(--line); }
 html[data-theme=dark] :is(input,select,textarea) { background-color:var(--surface); color:var(--ink); }
 

@@ -20,6 +20,8 @@ import {
   CheckSquare,
   Timer,
   UserCheck,
+  Palette,
+  Copy,
   X,
 } from 'lucide-react';
 import guide from '../../../docs/USER_GUIDE.md?raw';
@@ -35,6 +37,7 @@ type CategoryKey =
   | 'tasks_team'
   | 'execution'
   | 'timing'
+  | 'style_colors'
   | 'faq';
 
 interface CategoryTab {
@@ -50,6 +53,7 @@ const CATEGORIES: CategoryTab[] = [
   { id: 'tasks_team', label: 'Tasks & Team Work', icon: UserCheck },
   { id: 'execution', label: 'My Work & Execution', icon: CheckSquare },
   { id: 'timing', label: 'Delivery & Timing', icon: Clock },
+  { id: 'style_colors', label: 'Brand & Style Colors', icon: Palette },
   { id: 'faq', label: 'FAQs & Troubleshooting', icon: HelpCircle },
 ];
 
@@ -192,6 +196,189 @@ const FAQ_ITEMS: FAQItem[] = [
       'In the top navigation bar, click the Sun / Moon icon next to the search and notifications. The entire interface, including all tables and text, adapts instantly.',
     category: 'quickstart',
   },
+  {
+    id: 'faq-8',
+    question: 'What are the official style colors for the Hatsoff workspace?',
+    answer:
+      'Internal Force uses a curated high-contrast palette: Primary Yellow (#FFCC00) for primary actions, Deep Yellow Hover (#E6B800) for button hover states, Off-White (#F8F8F6) for the main background canvas, Pure White (#FFFFFF) for cards, Brand Black (#000000) and Charcoal (#111111) for the sidebar, and semantic status colors (Success #16A34A, Error #DC2626, Warning #F59E0B). See the "Brand & Style Colors" tab for live swatches and copyable HEX values.',
+    category: 'style_colors',
+  },
+];
+
+/* =========================================================
+   OFFICIAL STYLE COLORS SPECIFICATION
+========================================================= */
+
+interface StyleColorItem {
+  role: string;
+  colorName: string;
+  hex: string;
+  textDark?: boolean;
+  border?: string;
+  group: 'Brand & Yellows' | 'Surfaces & Backgrounds' | 'Typography & Borders' | 'Feedback & Status';
+  description: string;
+  recommendedUse: string;
+}
+
+const STYLE_COLORS: StyleColorItem[] = [
+  {
+    role: 'Brand Black',
+    colorName: 'Black',
+    hex: '#000000',
+    textDark: false,
+    group: 'Brand & Yellows',
+    description: 'High-contrast base black for brand logos, selected icon badges, and pure black accents.',
+    recommendedUse: 'Brand logos, black buttons, active nav text, top-level accents',
+  },
+  {
+    role: 'Primary Yellow',
+    colorName: 'Brand Yellow',
+    hex: '#FFCC00',
+    textDark: true,
+    group: 'Brand & Yellows',
+    description: 'Signature Hatsoff brand primary color for primary actions, active navigation states, and highlights.',
+    recommendedUse: 'Primary buttons, active sidebar pills, brand indicators, focus rings',
+  },
+  {
+    role: 'Yellow Hover',
+    colorName: 'Deep Yellow',
+    hex: '#E6B800',
+    textDark: true,
+    group: 'Brand & Yellows',
+    description: 'Slightly deeper yellow for hover and active interactive feedback states.',
+    recommendedUse: 'Primary button hover (:hover), focus highlights, active tab presses',
+  },
+  {
+    role: 'Light Yellow',
+    colorName: 'Soft Yellow',
+    hex: '#FFF4BF',
+    textDark: true,
+    group: 'Brand & Yellows',
+    description: 'Soft pastel yellow for badge backgrounds, card highlights, and subtle callouts.',
+    recommendedUse: 'Metrics cards, badge tints, selected states, tooltip headers',
+  },
+  {
+    role: 'Pale Yellow BG',
+    colorName: 'Cream Yellow',
+    hex: '#FFF8EA',
+    textDark: true,
+    border: '#E5E5E5',
+    group: 'Brand & Yellows',
+    description: 'Very soft cream yellow background for active table rows and secondary briefing panels.',
+    recommendedUse: 'Table row hover/active backgrounds, briefing intro card, subtle alerts',
+  },
+  {
+    role: 'Main Background',
+    colorName: 'Off White',
+    hex: '#F8F8F6',
+    textDark: true,
+    border: '#E5E5E5',
+    group: 'Surfaces & Backgrounds',
+    description: 'Clean, warm off-white canvas for the entire workspace background shell.',
+    recommendedUse: 'Main shell background, dashboard canvas, canvas behind cards',
+  },
+  {
+    role: 'White',
+    colorName: 'Pure White',
+    hex: '#FFFFFF',
+    textDark: true,
+    border: '#E5E5E5',
+    group: 'Surfaces & Backgrounds',
+    description: 'Pure white surface for card containers, modals, table bodies, and inputs.',
+    recommendedUse: 'Card surfaces, input backgrounds, modal surfaces, popup menus',
+  },
+  {
+    role: 'Dark Background',
+    colorName: 'Charcoal',
+    hex: '#111111',
+    textDark: false,
+    group: 'Surfaces & Backgrounds',
+    description: 'Charcoal black foundation for the sidebar, dark mode canvas, and footer panels.',
+    recommendedUse: 'Desktop sidebar navigation, dark theme canvas, dark card backgrounds',
+  },
+  {
+    role: 'Dark Gray',
+    colorName: 'Dark Gray',
+    hex: '#1A1A1A',
+    textDark: false,
+    group: 'Surfaces & Backgrounds',
+    description: 'Subtle charcoal gray for dark mode cards, borders, elevated surfaces, and toolbars.',
+    recommendedUse: 'Dark mode card surfaces, compact navigation toggles, secondary dark containers',
+  },
+  {
+    role: 'Heading Text',
+    colorName: 'Heading Text',
+    hex: '#0A0A0A',
+    textDark: false,
+    group: 'Typography & Borders',
+    description: 'High-contrast dark ink for primary titles, section headers, and key table headings.',
+    recommendedUse: 'H1–H4 headings, bold titles, critical data numbers, modal headers',
+  },
+  {
+    role: 'Body Text',
+    colorName: 'Body Text',
+    hex: '#4A4A4A',
+    textDark: false,
+    group: 'Typography & Borders',
+    description: 'Balanced contrast neutral gray for standard body copy, labels, and regular text.',
+    recommendedUse: 'Paragraph text, form field labels, list items, description notes',
+  },
+  {
+    role: 'Muted Text',
+    colorName: 'Muted Text',
+    hex: '#777777',
+    textDark: false,
+    group: 'Typography & Borders',
+    description: 'Subdued gray for secondary metadata, timestamps, placeholders, and helper text.',
+    recommendedUse: 'Input placeholders, timestamps, status subtext, disabled hints',
+  },
+  {
+    role: 'Border',
+    colorName: 'Border',
+    hex: '#E5E5E5',
+    textDark: true,
+    border: '#D4D4D4',
+    group: 'Typography & Borders',
+    description: 'Standard container border for cards, table cells, form inputs, and dividers.',
+    recommendedUse: 'Card perimeter, table grid lines, input outlines, panel dividers',
+  },
+  {
+    role: 'Light Border',
+    colorName: 'Light Border',
+    hex: '#F0F0F0',
+    textDark: true,
+    border: '#E5E5E5',
+    group: 'Typography & Borders',
+    description: 'Ultra-subtle divider line for nested rows, soft card separators, and hairline borders.',
+    recommendedUse: 'Inner list dividers, sub-item boundaries, subtle row separators',
+  },
+  {
+    role: 'Success',
+    colorName: 'Green',
+    hex: '#16A34A',
+    textDark: false,
+    group: 'Feedback & Status',
+    description: 'Vibrant green for completed tasks, approved timesheets, and on-time delivery credits.',
+    recommendedUse: 'Status: Completed, on-time tags, success toasts, verified indicators',
+  },
+  {
+    role: 'Error',
+    colorName: 'Red',
+    hex: '#DC2626',
+    textDark: false,
+    group: 'Feedback & Status',
+    description: 'Clean red for overdue tasks, delayed delivery penalties, and destructive confirmations.',
+    recommendedUse: 'Status: Overdue, late penalties, error toasts, validation alerts',
+  },
+  {
+    role: 'Warning',
+    colorName: 'Orange',
+    hex: '#F59E0B',
+    textDark: false,
+    group: 'Feedback & Status',
+    description: 'Amber orange for in-progress reviews, pending client actions, and deadline warnings.',
+    recommendedUse: 'Status: In Review, on-hold badges, approaching deadline alerts',
+  },
 ];
 
 /* =========================================================
@@ -202,6 +389,9 @@ export default function UserGuide() {
   const [activeCategory, setActiveCategory] = useState<CategoryKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [openFaq, setOpenFaq] = useState<string | null>('faq-1');
+  const [copiedHex, setCopiedHex] = useState<string | null>(null);
+  const [copiedTokens, setCopiedTokens] = useState(false);
+  const [colorViewMode, setColorViewMode] = useState<'table' | 'cards'>('table');
 
   // Filter FAQs based on category and search query
   const filteredFaqs = useMemo(() => {
@@ -228,6 +418,38 @@ export default function UserGuide() {
         r.keyResponsibilities.some((kr) => kr.toLowerCase().includes(q)),
     );
   }, [searchQuery]);
+
+  // Filter Colors
+  const filteredColors = useMemo(() => {
+    if (!searchQuery) return STYLE_COLORS;
+    const q = searchQuery.toLowerCase();
+    return STYLE_COLORS.filter(
+      (c) =>
+        c.role.toLowerCase().includes(q) ||
+        c.colorName.toLowerCase().includes(q) ||
+        c.hex.toLowerCase().includes(q) ||
+        c.group.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q) ||
+        c.recommendedUse.toLowerCase().includes(q),
+    );
+  }, [searchQuery]);
+
+  const handleCopyHex = (hex: string) => {
+    navigator.clipboard.writeText(hex);
+    setCopiedHex(hex);
+    setTimeout(() => setCopiedHex(null), 2000);
+  };
+
+  const handleCopyCssTokens = () => {
+    const cssTokens = `:root {\n` +
+      STYLE_COLORS.map(
+        (c) => `  --${c.role.toLowerCase().replace(/\s+/g, '-')}: ${c.hex}; /* ${c.colorName} */`
+      ).join('\n') +
+      `\n}`;
+    navigator.clipboard.writeText(cssTokens);
+    setCopiedTokens(true);
+    setTimeout(() => setCopiedTokens(false), 2000);
+  };
 
   const toggleFaq = (id: string) => {
     setOpenFaq((prev) => (prev === id ? null : id));
@@ -279,7 +501,7 @@ export default function UserGuide() {
             <a
               href={`data:text/markdown;charset=utf-8,${encodeURIComponent(guide)}`}
               download="Internal-Force-User-Guide.md"
-              className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-md transition hover:bg-amber-300"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#FFCC00] px-4 py-2.5 text-xs font-bold text-[#000000] shadow-md transition hover:bg-[#E6B800]"
             >
               <Download className="h-4 w-4" />
               Download Markdown
@@ -731,7 +953,234 @@ export default function UserGuide() {
       )}
 
       {/* ===================================================
-          MODULE 6: INTERACTIVE FAQS & TROUBLESHOOTING
+          MODULE 6: BRAND STYLE & COLOR SYSTEM
+      =================================================== */}
+      {(activeCategory === 'all' || activeCategory === 'style_colors') && (
+        <section className="space-y-4">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-400">
+                <Palette className="h-4 w-4" />
+              </span>
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  Brand Style & Color Palette
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Official color tokens, hex values, and usage guidelines for Internal Force.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleCopyCssTokens}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                {copiedTokens ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Copied :root CSS!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5 text-slate-500" />
+                    <span>Copy CSS Tokens</span>
+                  </>
+                )}
+              </button>
+
+              <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100 p-0.5 text-xs dark:border-slate-800 dark:bg-slate-950">
+                <button
+                  type="button"
+                  onClick={() => setColorViewMode('table')}
+                  className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                    colorViewMode === 'table'
+                      ? 'bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Spec Table
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setColorViewMode('cards')}
+                  className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                    colorViewMode === 'cards'
+                      ? 'bg-white text-slate-900 shadow-2xs dark:bg-slate-800 dark:text-white'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Grid Cards
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Summary Pill Bar */}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="flex items-center gap-2 rounded-xl border border-amber-200/80 bg-amber-50/50 p-2.5 dark:border-amber-900/30 dark:bg-amber-950/20">
+              <span className="h-3.5 w-3.5 rounded-full bg-[#FFCC00] shadow-xs" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-amber-900 dark:text-amber-200">Signature Yellow</p>
+                <p className="font-mono text-[10px] text-amber-700 dark:text-amber-400">#FFCC00</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 dark:border-slate-800 dark:bg-slate-900">
+              <span className="h-3.5 w-3.5 rounded-full bg-[#000000] border border-slate-300 dark:border-slate-700" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">Brand Black</p>
+                <p className="font-mono text-[10px] text-slate-500">#000000</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 dark:border-slate-800 dark:bg-slate-900">
+              <span className="h-3.5 w-3.5 rounded-full bg-[#F8F8F6] border border-slate-300 dark:border-slate-700" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-slate-900 dark:text-white">Main Canvas</p>
+                <p className="font-mono text-[10px] text-slate-500">#F8F8F6</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-2.5 dark:border-emerald-900/30 dark:bg-emerald-950/20">
+              <span className="h-3.5 w-3.5 rounded-full bg-[#16A34A]" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-emerald-900 dark:text-emerald-200">Success Green</p>
+                <p className="font-mono text-[10px] text-emerald-700 dark:text-emerald-400">#16A34A</p>
+              </div>
+            </div>
+          </div>
+
+          {/* TABLE VIEW: Exactly mirrors the user's uploaded image specification */}
+          {colorViewMode === 'table' ? (
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="border-b border-slate-100 bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+                    <tr>
+                      <th className="px-5 py-3.5">Role</th>
+                      <th className="px-5 py-3.5">Color</th>
+                      <th className="px-5 py-3.5">HEX</th>
+                      <th className="px-5 py-3.5">Preview</th>
+                      <th className="px-5 py-3.5 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredColors.map((color) => {
+                      const isCopied = copiedHex === color.hex;
+                      return (
+                        <tr
+                          key={color.role}
+                          className="transition hover:bg-[#FFF8EA] dark:hover:bg-slate-800/50"
+                        >
+                          <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-white">
+                            {color.role}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">
+                            {color.colorName || '—'}
+                          </td>
+                          <td className="px-5 py-3.5 font-mono text-slate-700 dark:text-slate-300">
+                            <span className="inline-block rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                              {color.hex}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="h-6 w-10 rounded-md border shadow-2xs"
+                                style={{
+                                  backgroundColor: color.hex,
+                                  borderColor: color.border || (color.hex === '#FFFFFF' || color.hex === '#F8F8F6' || color.hex === '#FFF8EA' || color.hex === '#FFF4BF' || color.hex === '#F0F0F0' || color.hex === '#E5E5E5' ? '#D4D4D4' : 'transparent'),
+                                }}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleCopyHex(color.hex)}
+                              title={`Copy ${color.hex}`}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 shadow-2xs transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                            >
+                              {isCopied ? (
+                                <>
+                                  <Check className="h-3 w-3 text-emerald-600" />
+                                  <span className="text-emerald-600 font-semibold">Copied!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3 text-slate-400" />
+                                  <span>Copy</span>
+                                </>
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            /* GRID CARDS VIEW */
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredColors.map((color) => {
+                const isCopied = copiedHex === color.hex;
+                return (
+                  <div
+                    key={color.role}
+                    className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-2xs transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div
+                        className="h-12 w-12 shrink-0 rounded-xl border shadow-xs transition group-hover:scale-105"
+                        style={{
+                          backgroundColor: color.hex,
+                          borderColor: color.border || (color.hex === '#FFFFFF' || color.hex === '#F8F8F6' || color.hex === '#FFF8EA' || color.hex === '#FFF4BF' || color.hex === '#F0F0F0' || color.hex === '#E5E5E5' ? '#D4D4D4' : 'transparent'),
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="truncate text-xs font-bold text-slate-900 dark:text-white">
+                            {color.role}
+                          </h3>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyHex(color.hex)}
+                            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-mono text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                          >
+                            {isCopied ? (
+                              <span className="font-semibold text-emerald-600">Copied!</span>
+                            ) : (
+                              <>
+                                <span>{color.hex}</span>
+                                <Copy className="h-2.5 w-2.5 text-slate-400" />
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-[11px] font-medium text-slate-500">
+                          {color.colorName || 'Neutral'} · <span className="text-slate-400">{color.group}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 border-t border-slate-100 pt-2.5 text-[11px] leading-relaxed text-slate-600 dark:border-slate-800/80 dark:text-slate-300">
+                      <p>{color.description}</p>
+                      <p className="mt-1 text-[10px] text-slate-400">
+                        <strong className="text-slate-500 dark:text-slate-400">Usage:</strong> {color.recommendedUse}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ===================================================
+          MODULE 7: INTERACTIVE FAQS & TROUBLESHOOTING
       =================================================== */}
       {(activeCategory === 'all' || activeCategory === 'faq') && (
         <section className="space-y-4">

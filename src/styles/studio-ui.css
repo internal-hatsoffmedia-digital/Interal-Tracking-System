@@ -1,6 +1,6 @@
 /* Rounded studio cards with black, white and yellow navigation. */
-.future-shell{--surface:#fff;--canvas:#ffffff;--ink:#171717;--line:#e8e8e5;--accent:#b38f00;--future-muted:#737373;--future-lime:#ffcc00;--primary:#ffcc00;--primary-light:#fff7d6;--studio-green:#ffcc00;--radius:14px;color:var(--ink)}
-.future-sidebar{position:fixed;inset:0 auto 0 0;height:100vh;display:flex;flex-direction:column;background:#111;color:#fff;border:0!important;width:220px;z-index:60;box-shadow:4px 0 25px rgba(0,0,0,0.06);transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)}
+.future-shell{--surface:#ffffff;--canvas:#f8f8f6;--ink:#0a0a0a;--body:#4a4a4a;--line:#e5e5e5;--accent:#ffcc00;--future-muted:#777777;--future-lime:#ffcc00;--primary:#ffcc00;--primary-hover:#e6b800;--primary-light:#fff4bf;--pale-yellow:#fff8ea;--studio-green:#ffcc00;--radius:14px;color:var(--body)}
+.future-sidebar{position:fixed;inset:0 auto 0 0;height:100vh;display:flex;flex-direction:column;background:#111111;color:#ffffff;border:0!important;width:220px;z-index:60;box-shadow:4px 0 25px rgba(0,0,0,0.06);transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)}
 .future-main{margin-left:220px;transition:margin 0.25s cubic-bezier(0.16, 1, 0.3, 1)}
 .future-brand>a,.future-account strong{color:#fff}
 .future-brand small,.future-nav-group>p,.future-account small,.future-account button,.future-nav-link svg{color:#aaa}

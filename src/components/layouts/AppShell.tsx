@@ -14,7 +14,7 @@ function AppShell() {
   }, [location]);
 
   return (
-    <div className="workspace-shell future-shell relative min-h-screen w-full bg-slate-50 dark:bg-[#09090b] dark:text-[#f4f4f5] overflow-x-hidden">
+    <div className="workspace-shell future-shell relative min-h-screen w-full bg-[#F8F8F6] text-[#4A4A4A] dark:bg-[#111111] dark:text-[#FFFFFF] overflow-x-hidden">
       {/* Floating Radium Ambient Balls Background */}
       <div className="radium-ambient-container pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div className="radium-ball radium-ball-1" />
