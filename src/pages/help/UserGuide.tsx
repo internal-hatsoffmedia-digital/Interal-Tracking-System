@@ -25,6 +25,7 @@ import {
   X,
 } from 'lucide-react';
 import guide from '../../../docs/USER_GUIDE.md?raw';
+import './UserGuide.css';
 
 /* =========================================================
    TOPIC CATEGORIES
@@ -456,55 +457,54 @@ export default function UserGuide() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 pb-16">
+    <div className="user-guide-container">
       {/* ===================================================
           HERO BANNER
       =================================================== */}
-      <section className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 p-6 sm:p-10 text-white shadow-xl">
-        <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
-        <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+      <section className="user-guide-hero">
+        <div className="user-guide-hero-glow" />
 
         <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3.5 py-1 text-xs font-semibold tracking-wide text-amber-300">
-              <Sparkles className="h-3.5 w-3.5" />
+            <div className="user-guide-hero-badge">
+              <Sparkles className="h-3.5 w-3.5 text-[#FFCC00]" />
               <span>HATSOFF INTERNAL FORCE · KNOWLEDGE BASE</span>
             </div>
 
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-white">
+            <h1 className="user-guide-hero-title">
               Workspace User Guide
             </h1>
 
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
+            <p className="user-guide-hero-desc">
               A comprehensive handbook explaining daily workflows, role-based visibility, squad assignments, and delivery timing formulas.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="user-guide-hero-actions">
             <Link
               to="/dashboard"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-xs font-semibold text-slate-200 shadow-sm transition hover:bg-slate-700 hover:text-white"
+              className="user-guide-btn-glass"
             >
               <ArrowLeft className="h-4 w-4" />
-              Dashboard
+              <span>Dashboard</span>
             </Link>
 
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-xs font-semibold text-slate-200 shadow-sm transition hover:bg-slate-700 hover:text-white"
+              className="user-guide-btn-glass"
             >
               <Printer className="h-4 w-4" />
-              Print Guide
+              <span>Print Guide</span>
             </button>
 
             <a
               href={`data:text/markdown;charset=utf-8,${encodeURIComponent(guide)}`}
               download="Internal-Force-User-Guide.md"
-              className="inline-flex items-center gap-2 rounded-xl bg-[#FFCC00] px-4 py-2.5 text-xs font-bold text-[#000000] shadow-md transition hover:bg-[#E6B800]"
+              className="user-guide-btn-primary"
             >
               <Download className="h-4 w-4" />
-              Download Markdown
+              <span>Download Markdown</span>
             </a>
           </div>
         </div>
@@ -515,20 +515,20 @@ export default function UserGuide() {
       =================================================== */}
       <section className="space-y-4">
         {/* Search Input */}
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+        <div className="user-guide-search-wrapper">
+          <Search className="user-guide-search-icon" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search topics, roles, workflows (e.g. 'Associate Lead', 'Timesheet', 'Delay formula', 'Team Work')..."
-            className="h-13 w-full rounded-2xl border border-slate-200 bg-white pl-12 pr-10 text-sm text-slate-900 shadow-xs outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+            className="user-guide-search-input"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
               <X className="h-4 w-4" />
             </button>
@@ -536,7 +536,7 @@ export default function UserGuide() {
         </div>
 
         {/* Category Filter Pills */}
-        <div className="flex flex-wrap gap-2">
+        <div className="user-guide-categories" role="tablist" aria-label="User Guide Topics">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             const active = activeCategory === cat.id;
@@ -545,13 +545,10 @@ export default function UserGuide() {
                 key={cat.id}
                 type="button"
                 onClick={() => setActiveCategory(cat.id)}
-                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition ${
-                  active
-                    ? 'bg-slate-900 text-white shadow-xs dark:bg-amber-400 dark:text-slate-950'
-                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
-                }`}
+                className={`guide-category-pill ${active ? 'is-active' : ''}`}
+                aria-pressed={active}
               >
-                <Icon className="h-3.5 w-3.5" />
+                <Icon className="h-4 w-4 shrink-0" />
                 <span>{cat.label}</span>
               </button>
             );
@@ -580,57 +577,63 @@ export default function UserGuide() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* Step 1 */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center justify-between">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-xs font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-400">
-                  01
-                </span>
-                <span className="text-xs font-medium text-slate-400">Morning (09:30 AM)</span>
+            <div className="user-guide-step-card">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-xs font-bold text-blue-700 dark:bg-blue-950/60 dark:text-blue-400">
+                    01
+                  </span>
+                  <span className="text-xs font-medium text-slate-400">Morning (09:30 AM)</span>
+                </div>
+                <h3 className="mt-3 text-base font-bold text-slate-900 dark:text-white">
+                  Check Dashboard & Assignments
+                </h3>
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Review your delivery queue in <strong>My Work</strong> (or <strong>Team Work</strong> for Associate Leads). Acknowledge incoming tasks by clicking <strong>Accept</strong>.
+                </p>
               </div>
-              <h3 className="mt-3 text-base font-bold text-slate-900 dark:text-white">
-                Check Dashboard & Assignments
-              </h3>
-              <p className="mt-2 text-xs leading-5 text-slate-500">
-                Review your delivery queue in <strong>My Work</strong> (or <strong>Team Work</strong> for Associate Leads). Acknowledge incoming tasks by clicking <strong>Accept</strong>.
-              </p>
               <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/60 p-2.5 text-[11px] text-blue-800 dark:border-blue-900/40 dark:bg-blue-950/40 dark:text-blue-300">
                 💡 <strong>Pro-Tip:</strong> Accepting tasks early flags to your coordinator that you have reviewed the brief.
               </div>
             </div>
 
             {/* Step 2 */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center justify-between">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-xs font-bold text-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
-                  02
-                </span>
-                <span className="text-xs font-medium text-slate-400">Production Hours</span>
+            <div className="user-guide-step-card">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFCC00] text-xs font-bold text-black shadow-xs">
+                    02
+                  </span>
+                  <span className="text-xs font-medium text-slate-400">Production Hours</span>
+                </div>
+                <h3 className="mt-3 text-base font-bold text-slate-900 dark:text-white">
+                  Execute & Update Status
+                </h3>
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Click <strong>Start</strong> when beginning work. When the deliverable is uploaded and ready for review, click <strong>Complete</strong> immediately.
+                </p>
               </div>
-              <h3 className="mt-3 text-base font-bold text-slate-900 dark:text-white">
-                Execute & Update Status
-              </h3>
-              <p className="mt-2 text-xs leading-5 text-slate-500">
-                Click <strong>Start</strong> when beginning work. When the deliverable is uploaded and ready for review, click <strong>Complete</strong> immediately.
-              </p>
-              <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50/60 p-2.5 text-[11px] text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-300">
+              <div className="user-guide-callout-yellow">
                 ⏱️ <strong>Timestamp Rule:</strong> Your completion timestamp is recorded live. Don’t delay clicking Complete!
               </div>
             </div>
 
             {/* Step 3 */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-              <div className="flex items-center justify-between">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-                  03
-                </span>
-                <span className="text-xs font-medium text-slate-400">Wrap-Up (06:30 PM)</span>
+            <div className="user-guide-step-card">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+                    03
+                  </span>
+                  <span className="text-xs font-medium text-slate-400">Wrap-Up (06:30 PM)</span>
+                </div>
+                <h3 className="mt-3 text-base font-bold text-slate-900 dark:text-white">
+                  Log Timesheet & Check Planner
+                </h3>
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  Open <strong>Timesheet</strong> to log your hours spent per task for the day. Check the <strong>Planner</strong> for tomorrow’s upcoming deliverables.
+                </p>
               </div>
-              <h3 className="mt-3 text-base font-bold text-slate-900 dark:text-white">
-                Log Timesheet & Check Planner
-              </h3>
-              <p className="mt-2 text-xs leading-5 text-slate-500">
-                Open <strong>Timesheet</strong> to log your hours spent per task for the day. Check the <strong>Planner</strong> for tomorrow’s upcoming deliverables.
-              </p>
               <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/60 p-2.5 text-[11px] text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">
                 ✅ <strong>Zero Missed Days:</strong> Always submit daily timesheets to maintain accurate resource metrics.
               </div>
@@ -824,14 +827,14 @@ export default function UserGuide() {
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900">
             {/* The Formula Card */}
-            <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-5 dark:border-amber-900/40 dark:bg-amber-950/30">
-              <p className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
+            <div className="user-guide-formula-box">
+              <p className="user-guide-formula-tag">
                 The Golden Formula
               </p>
-              <p className="mt-1 font-mono text-lg font-bold text-slate-900 dark:text-white">
+              <p className="user-guide-formula-eq">
                 Net Timing = Total Minutes Late — Total Minutes Early
               </p>
-              <p className="mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
+              <p className="text-xs leading-5 text-slate-700 dark:text-slate-300">
                 Calculated per employee per calendar month based on assignment deadlines in <strong>Asia/Kolkata (IST)</strong>.
               </p>
             </div>
@@ -1209,14 +1212,14 @@ export default function UserGuide() {
                 return (
                   <div
                     key={faq.id}
-                    className="overflow-hidden rounded-2xl border border-slate-200 bg-white transition shadow-2xs dark:border-slate-800 dark:bg-slate-900"
+                    className={`user-guide-faq-item ${isOpen ? 'user-guide-faq-open' : ''}`}
                   >
                     <button
                       type="button"
                       onClick={() => toggleFaq(faq.id)}
-                      className="flex w-full items-center justify-between p-4 text-left text-sm font-bold text-slate-900 hover:bg-slate-50/50 dark:text-white dark:hover:bg-slate-800/50"
+                      className="user-guide-faq-btn"
                     >
-                      <span>{faq.question}</span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">{faq.question}</span>
                       <ChevronDown
                         className={`h-4 w-4 text-slate-400 transition-transform ${
                           isOpen ? 'rotate-180 text-amber-500' : ''
@@ -1224,7 +1227,7 @@ export default function UserGuide() {
                       />
                     </button>
                     {isOpen && (
-                      <div className="border-t border-slate-100 px-4 pb-4 pt-3 text-xs leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
+                      <div className="border-t border-slate-100 px-5 pb-5 pt-3 text-xs leading-relaxed text-slate-600 dark:border-slate-800 dark:text-slate-300">
                         {faq.answer}
                       </div>
                     )}

@@ -1,45 +1,275 @@
-html #root .team-pc { --pc-surface:#fff; --pc-ink:#111; --pc-border:rgba(17,17,17,.12); display:grid; gap:24px; color:var(--pc-ink); }
-html #root .team-pc header { padding:8px 0 4px; }
-html #root .team-pc h1 { font-size:30px; line-height:1.2; letter-spacing:-.04em; margin:8px 0 0; }
-html #root .team-pc h2 { font-size:18px; letter-spacing:-.025em; margin:0; }
-html #root .team-pc .pc-eyebrow { font-size:10px; font-weight:700; letter-spacing:.18em; }
-html #root .team-pc header>div>p { font-size:13px; opacity:.65; color:inherit; }
-html #root .team-pc header>button { background:#ffcc00; color:#111; border:0; padding:11px 20px; font-size:13px; font-weight:600; border-radius:12px; cursor:pointer; }
-html #root .team-pc button:disabled { opacity:.5; cursor:wait; }
-html #root .team-pc .pc-coordinators,html #root .team-pc .pc-timing { background:var(--pc-surface); border:1px solid var(--pc-border); border-radius:20px; padding:24px; box-shadow:0 4px 18px rgba(0,0,0,.025); min-width:0; }
-html #root .team-pc .pc-coordinators>h2 { margin-bottom:18px; }
-html #root .team-pc .pc-coordinator-card { margin-top:12px; padding:20px; border-radius:14px; background:#fff7d6; color:#111; border:1px solid rgba(17,17,17,.08); }
-html #root .team-pc .pc-coordinator-card h3 { font-size:16px; }
-html #root .team-pc .pc-coordinator-card p { font-size:13px; line-height:1.8; }
-html #root .team-pc .pc-coordinator-card summary { font-size:12px; padding:10px 0; border-top:1px solid rgba(17,17,17,.12); }
-html #root .team-pc .pc-empty { text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 20px; background:var(--pc-surface); border:1px dashed var(--pc-border); border-radius:14px; margin-top:18px; }
-html #root .team-pc .pc-empty-symbol { display:grid; place-items:center; width:46px; height:46px; background:#fff7d6; color:#111; border-radius:14px; font-size:26px; margin-bottom:12px; }
-html #root .team-pc .pc-empty h3 { font-size:15px; font-weight:600; margin:0 0 7px; }
-html #root .team-pc .pc-empty p { font-size:12px; line-height:1.7; opacity:.6; max-width:420px; margin:0; }
-html #root .team-pc .pc-timing>div:first-child { align-items:center; padding-bottom:18px; }
-html #root .team-pc label { font-size:12px; font-weight:500; display:flex; align-items:center; gap:12px; }
-html #root .team-pc :is(input,select) { background:var(--pc-surface); color:var(--pc-ink); border:1px solid var(--pc-border); border-radius:10px; font-size:13px; padding:10px 12px; margin-left:0; min-height:40px; }
-html #root .team-pc :is(input,select,button,summary):focus-visible { outline:2px solid #ffcc00; outline-offset:3px; }
-html #root .team-pc .pc-explainer { padding:12px 16px; background:#fff7d6; color:#111; border-radius:10px; margin-bottom:18px; font-size:12px; }
-html #root .team-pc .pc-explainer summary { cursor:pointer; font-weight:600; }
-html #root .team-pc .pc-explainer p { line-height:1.8; margin:10px 0 0; }
-html #root .team-pc .pc-table-wrap { overflow-x:auto; border:1px solid var(--pc-border); border-radius:12px; }
-html #root .team-pc table { width:100%; border-collapse:collapse; font-size:12px; }
-html #root .team-pc thead { background:#111; color:#fff7d6; }
-html #root .team-pc th { padding:14px 16px; font-size:10px; text-transform:uppercase; letter-spacing:.06em; border:0; white-space:nowrap; }
-html #root .team-pc td { padding:16px; border-bottom:1px solid var(--pc-border); }
-html #root .team-pc tbody tr:last-child td { border-bottom:0; }
-html #root .team-pc .pc-editor-filter { margin:20px 0 0; }
-html #root .team-pc .pc-assignment-list { display:grid; gap:12px; margin-top:18px; }
-html #root .team-pc .pc-assignment-list:empty { display:none; }
-html #root .team-pc .pc-assignment-card { font-size:12px; line-height:1.8; padding:18px; border:1px solid var(--pc-border); border-radius:12px; }
-html[data-theme=dark] #root .team-pc { --pc-surface:#171717; --pc-ink:#fff7d6; --pc-border:rgba(255,247,214,.16); }
-@media(max-width:640px) { html #root .team-pc { gap:16px; } html #root .team-pc :is(.pc-coordinators,.pc-timing) { padding:16px; border-radius:16px; } html #root .team-pc h1 { font-size:26px; } html #root .team-pc .pc-timing>div:first-child { flex-direction:column; align-items:stretch; gap:16px; } html #root .team-pc label { flex-wrap:wrap; } html #root .team-pc input { flex:1; min-width:150px; } }
-html #root .team-pc .pc-team-filters { display:flex; flex-wrap:wrap; gap:16px; margin-top:20px; }
-html #root .team-pc .pc-team-filters .pc-editor-filter { margin:0; }
-html #root .team-pc .pc-team-name { display:block; font-size:11px; opacity:.65; margin-top:4px; }
+/* =========================================================
+   TEAM PC - MODERN STUDIO DESIGN
+   ========================================================= */
 
-html #root .team-pc .pc-coordinator-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; }
-html #root .team-pc .pc-directory-help { font-size:12px; opacity:.65; margin:12px 0; }
-html #root .team-pc .pc-coordinator-toolbar select { max-width:100%; }
-@media(max-width:640px) { html #root .team-pc .pc-coordinator-toolbar label { width:100%; } html #root .team-pc .pc-coordinator-toolbar select { flex:1; min-width:0; } }
+html #root .team-pc {
+  --pc-surface: #ffffff;
+  --pc-canvas: #f8f8f6;
+  --pc-ink: #0a0a0a;
+  --pc-body: #4a4a4a;
+  --pc-muted: #777777;
+  --pc-border: #e5e5e5;
+  --pc-border-light: #f0f0f0;
+  --pc-accent: #ffcc00;
+  --pc-accent-hover: #e6b800;
+  --pc-pale: #fff8ea;
+  --pc-light: #fff4bf;
+  color: var(--pc-body);
+}
+
+html[data-theme=dark] #root .team-pc {
+  --pc-surface: #1a1a1a;
+  --pc-canvas: #111111;
+  --pc-ink: #ffffff;
+  --pc-body: #e5e5e5;
+  --pc-muted: #777777;
+  --pc-border: #292929;
+  --pc-border-light: #222222;
+  --pc-pale: #2a2412;
+  --pc-light: #332b14;
+}
+
+html #root .team-pc h1 {
+  color: var(--pc-ink);
+  letter-spacing: -0.035em;
+}
+
+html #root .team-pc h2 {
+  color: var(--pc-ink);
+  letter-spacing: -0.02em;
+}
+
+html #root .team-pc .pc-coordinators,
+html #root .team-pc .pc-timing {
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.025);
+  min-width: 0;
+}
+
+html #root .team-pc .pc-coordinator-card {
+  margin-top: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+html #root .team-pc .pc-coordinator-card:hover {
+  border-color: var(--pc-accent);
+}
+
+html #root .team-pc .pc-coordinator-card h3 {
+  font-size: 15px;
+  color: var(--pc-ink);
+}
+
+html #root .team-pc .pc-coordinator-card summary {
+  font-size: 12px;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--pc-border-light);
+  color: var(--pc-ink);
+}
+
+html #root .team-pc .pc-empty {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: var(--pc-surface);
+  border: 1px dashed var(--pc-border);
+  border-radius: 16px;
+  margin-top: 18px;
+}
+
+html #root .team-pc .pc-empty-symbol {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  background: var(--pc-pale);
+  color: var(--pc-ink);
+  border-radius: 14px;
+  font-size: 22px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 204, 0, 0.35);
+}
+
+html #root .team-pc .pc-empty h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--pc-ink);
+}
+
+html #root .team-pc .pc-empty p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--pc-muted);
+  max-width: 440px;
+  margin: 0;
+}
+
+html #root .team-pc label {
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--pc-body);
+}
+
+html #root .team-pc :is(input, select) {
+  background: var(--pc-surface);
+  color: var(--pc-ink);
+  border: 1px solid var(--pc-border);
+  border-radius: 12px;
+  font-size: 13px;
+  padding: 8px 12px;
+  min-height: 40px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+html #root .team-pc :is(input, select):focus {
+  border-color: var(--pc-accent);
+  box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.2);
+  outline: none;
+}
+
+html #root .team-pc .pc-explainer {
+  padding: 14px 18px;
+  background: var(--pc-pale);
+  color: var(--pc-ink);
+  border: 1px solid rgba(255, 204, 0, 0.4);
+  border-radius: 14px;
+  margin-bottom: 18px;
+  font-size: 12px;
+}
+
+html #root .team-pc .pc-explainer summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--pc-ink);
+}
+
+html #root .team-pc .pc-explainer p {
+  line-height: 1.8;
+  margin: 10px 0 0;
+  color: var(--pc-body);
+}
+
+html #root .team-pc .pc-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--pc-border);
+  border-radius: 14px;
+}
+
+html #root .team-pc table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+html #root .team-pc thead {
+  background: #000000;
+  color: #ffffff;
+}
+
+html #root .team-pc th {
+  padding: 13px 16px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 0;
+  white-space: nowrap;
+}
+
+html #root .team-pc td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--pc-border);
+  vertical-align: middle;
+}
+
+html #root .team-pc tbody tr {
+  transition: background-color 0.12s ease;
+}
+
+html #root .team-pc tbody tr:hover {
+  background: var(--pc-pale);
+}
+
+html #root .team-pc tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+html #root .team-pc .pc-team-name {
+  display: block;
+  font-size: 11px;
+  color: var(--pc-muted);
+  margin-top: 3px;
+}
+
+html #root .team-pc .pc-assignment-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+html #root .team-pc .pc-assignment-list:empty {
+  display: none;
+}
+
+html #root .team-pc .pc-assignment-card {
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 16px 20px;
+  background: var(--pc-surface);
+  border: 1px solid var(--pc-border);
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+html #root .team-pc .pc-coordinator-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+html #root .team-pc .pc-directory-help {
+  font-size: 12px;
+  color: var(--pc-muted);
+  margin: 8px 0 16px;
+}
+
+html #root .team-pc .pc-team-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  background: var(--pc-canvas);
+  border: 1px solid var(--pc-border);
+  border-radius: 14px;
+}
+
+@media (max-width: 640px) {
+  html #root .team-pc :is(.pc-coordinators, .pc-timing) {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  html #root .team-pc .pc-timing > div:first-child {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+}

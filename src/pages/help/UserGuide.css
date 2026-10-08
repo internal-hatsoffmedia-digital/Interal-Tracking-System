@@ -1,0 +1,466 @@
+/* =========================================================
+   WORKSPACE USER GUIDE - MODERN STUDIO STYLES
+   Using Official Hatsoff Brand Style Colors
+========================================================= */
+
+.user-guide-container {
+  max-width: 1140px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-bottom: 64px;
+}
+
+/* 1. HERO BANNER */
+.user-guide-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #111111 0%, #1a1a1a 60%, #0d0d0d 100%);
+  border: 1px solid #292929;
+  padding: 32px 36px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.user-guide-hero-glow {
+  position: absolute;
+  top: -60px;
+  right: -40px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(255, 204, 0, 0.15) 0%, rgba(255, 204, 0, 0) 70%);
+  pointer-events: none;
+}
+
+.user-guide-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 204, 0, 0.12);
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #ffcc00;
+  text-transform: uppercase;
+}
+
+.user-guide-hero-title {
+  color: #ffffff !important;
+  font-size: clamp(28px, 3.2vw, 38px) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.04em !important;
+  margin: 12px 0 8px !important;
+  line-height: 1.2 !important;
+}
+
+.user-guide-hero-desc {
+  color: #d4d4d4 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  max-width: 620px;
+}
+
+.user-guide-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-guide-btn-glass {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid #333333;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e5e5;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.user-guide-btn-glass:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-color: #4a4a4a;
+}
+
+.user-guide-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: #ffcc00;
+  color: #000000 !important;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+  border: none;
+  box-shadow: 0 4px 14px rgba(255, 204, 0, 0.28);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.user-guide-btn-primary:hover {
+  background: #e6b800;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 204, 0, 0.38);
+}
+
+.user-guide-btn-primary svg {
+  color: #000000 !important;
+}
+
+/* 2. SEARCH BAR */
+.user-guide-search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.user-guide-search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #777777;
+  pointer-events: none;
+}
+
+.user-guide-search-input {
+  width: 100%;
+  height: 50px;
+  border-radius: 16px;
+  border: 1px solid #e5e5e5;
+  background: #ffffff;
+  padding-left: 48px;
+  padding-right: 44px;
+  font-size: 14px;
+  color: #0a0a0a;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.15s ease;
+}
+
+.user-guide-search-input:focus {
+  border-color: #ffcc00;
+  box-shadow: 0 0 0 3px #fff4bf;
+}
+
+.user-guide-search-input::placeholder {
+  color: #777777;
+}
+
+html[data-theme='dark'] .user-guide-search-input {
+  background: #1a1a1a;
+  border-color: #292929;
+  color: #ffffff;
+}
+
+html[data-theme='dark'] .user-guide-search-input:focus {
+  border-color: #ffcc00;
+  box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.25);
+}
+
+/* 3. CATEGORY FILTER PILLS - EXPLICIT HIGH CONTRAST */
+.user-guide-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.guide-category-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 9px 16px !important;
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.16s ease !important;
+  border: 1px solid #e5e5e5 !important;
+  background: #ffffff !important;
+  color: #4a4a4a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+.guide-category-pill svg {
+  width: 15px !important;
+  height: 15px !important;
+  color: #777777 !important;
+  transition: color 0.15s ease !important;
+}
+
+.guide-category-pill span {
+  color: #4a4a4a !important;
+  font-weight: 600 !important;
+  transition: color 0.15s ease !important;
+}
+
+.guide-category-pill:hover {
+  background: #fff8ea !important;
+  border-color: #ffcc00 !important;
+  color: #0a0a0a !important;
+  transform: translateY(-1px);
+}
+
+.guide-category-pill:hover svg {
+  color: #e6b800 !important;
+}
+
+.guide-category-pill:hover span {
+  color: #0a0a0a !important;
+}
+
+/* Active State: Signature Brand Yellow */
+.guide-category-pill.is-active {
+  background: #ffcc00 !important;
+  border-color: #ffcc00 !important;
+  color: #000000 !important;
+  font-weight: 750 !important;
+  box-shadow: 0 4px 14px rgba(255, 204, 0, 0.25) !important;
+}
+
+.guide-category-pill.is-active svg {
+  color: #000000 !important;
+}
+
+.guide-category-pill.is-active span {
+  color: #000000 !important;
+  font-weight: 750 !important;
+}
+
+/* Dark theme for pills */
+html[data-theme='dark'] .guide-category-pill {
+  background: #1a1a1a !important;
+  border-color: #292929 !important;
+  color: #e5e5e5 !important;
+}
+
+html[data-theme='dark'] .guide-category-pill svg {
+  color: #999999 !important;
+}
+
+html[data-theme='dark'] .guide-category-pill span {
+  color: #e5e5e5 !important;
+}
+
+html[data-theme='dark'] .guide-category-pill:hover {
+  background: #242424 !important;
+  border-color: #ffcc00 !important;
+}
+
+html[data-theme='dark'] .guide-category-pill.is-active {
+  background: #ffcc00 !important;
+  border-color: #ffcc00 !important;
+  color: #000000 !important;
+}
+
+html[data-theme='dark'] .guide-category-pill.is-active svg,
+html[data-theme='dark'] .guide-category-pill.is-active span {
+  color: #000000 !important;
+}
+
+/* 4. SECTION CARDS & MODULES */
+.user-guide-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.user-guide-icon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.user-guide-section-title {
+  font-size: 20px !important;
+  font-weight: 750 !important;
+  color: #0a0a0a !important;
+  letter-spacing: -0.02em !important;
+  margin: 0 !important;
+}
+
+.user-guide-section-subtitle {
+  font-size: 13px !important;
+  color: #777777 !important;
+  margin: 2px 0 0 !important;
+}
+
+html[data-theme='dark'] .user-guide-section-title {
+  color: #ffffff !important;
+}
+
+/* 5. WORKFLOW STEP CARDS */
+.user-guide-step-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.user-guide-step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  border-color: #d4d4d4;
+}
+
+html[data-theme='dark'] .user-guide-step-card {
+  background: #1a1a1a;
+  border-color: #292929;
+}
+
+/* Callout box inside cards */
+.user-guide-callout-yellow {
+  background: #fff8ea;
+  border: 1px solid rgba(255, 204, 0, 0.4);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #0a0a0a;
+  margin-top: 16px;
+}
+
+html[data-theme='dark'] .user-guide-callout-yellow {
+  background: rgba(255, 204, 0, 0.08);
+  border-color: rgba(255, 204, 0, 0.25);
+  color: #fff4bf;
+}
+
+/* 6. FORMULA BANNER */
+.user-guide-formula-box {
+  background: #fff8ea;
+  border: 1px solid #ffcc00;
+  border-radius: 16px;
+  padding: 22px 24px;
+}
+
+.user-guide-formula-tag {
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  color: #b38600;
+  text-transform: uppercase;
+}
+
+.user-guide-formula-eq {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 18px;
+  font-weight: 750;
+  color: #0a0a0a;
+  margin: 6px 0 8px;
+}
+
+html[data-theme='dark'] .user-guide-formula-box {
+  background: rgba(255, 204, 0, 0.06);
+  border-color: rgba(255, 204, 0, 0.35);
+}
+
+html[data-theme='dark'] .user-guide-formula-eq {
+  color: #fff4bf;
+}
+
+/* 7. COLOR SYSTEM SPEC TABLE */
+.user-guide-color-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.user-guide-color-table th {
+  padding: 14px 20px;
+  background: #f8f8f6;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #777777;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.user-guide-color-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.user-guide-color-table tr:hover td {
+  background: #fff8ea;
+}
+
+html[data-theme='dark'] .user-guide-color-table th {
+  background: #111111;
+  border-color: #292929;
+  color: #888888;
+}
+
+html[data-theme='dark'] .user-guide-color-table td {
+  border-color: #292929;
+}
+
+html[data-theme='dark'] .user-guide-color-table tr:hover td {
+  background: #242424;
+}
+
+/* 8. FAQ ACCORDION */
+.user-guide-faq-item {
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: all 0.16s ease;
+}
+
+.user-guide-faq-btn {
+  width: 100%;
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.user-guide-faq-item:hover {
+  border-color: #d4d4d4;
+}
+
+.user-guide-faq-open {
+  border-color: #ffcc00 !important;
+  box-shadow: 0 4px 16px rgba(255, 204, 0, 0.08);
+}
+
+html[data-theme='dark'] .user-guide-faq-item {
+  background: #1a1a1a;
+  border-color: #292929;
+}
+
+html[data-theme='dark'] .user-guide-faq-open {
+  border-color: #ffcc00 !important;
+}

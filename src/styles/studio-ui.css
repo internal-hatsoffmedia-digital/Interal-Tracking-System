@@ -71,8 +71,8 @@
 .future-shell .project-stats>div:nth-child(n):hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.05)}
 .future-shell .project-stats>div:nth-child(3n){background:#fff4c2;border-color:rgba(255,204,0,0.2)}
 .future-shell .project-stats p:last-child{color:var(--ink)}
-.future-shell main button[class*="bg-slate-9"]{background:#171717;color:white;border-color:#171717;box-shadow:0 4px 14px rgba(0,0,0,0.15);border-radius:24px;transition:all 0.2s ease}
-.future-shell main button[class*="bg-slate-9"]:hover{background:#333333;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.2)}
+.future-shell main button[class~="bg-slate-900"],.future-shell main button[class~="bg-slate-950"]{background:#171717;color:white;border-color:#171717;box-shadow:0 4px 14px rgba(0,0,0,0.15);border-radius:24px;transition:all 0.2s ease}
+.future-shell main button[class~="bg-slate-900"]:hover,.future-shell main button[class~="bg-slate-950"]:hover{background:#333333;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.2)}
 .future-shell :focus-visible{outline-color:var(--accent)}
 .future-mobile-close{color:#fff}
 

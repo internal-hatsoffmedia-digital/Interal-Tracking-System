@@ -4,6 +4,8 @@ html[data-theme=dark] { --canvas:#111111; --surface:#1a1a1a; --ink:#ffffff; --li
 html #root .future-shell { color:var(--body); font-size:14px; }
 html #root .future-shell main { background:var(--canvas)!important; }
 html #root .future-shell main h1 { font-size:clamp(26px,2.5vw,36px); font-weight:650; letter-spacing:-.045em; color:var(--ink); }
+html #root .future-shell main :is(.text-white,[class*="from-slate-9"],[class*="bg-slate-900"],[class*="bg-slate-950"],[class*="bg-black"]) h1,
+html #root .future-shell main h1:is(.text-white,[class*="text-white"],.user-guide-hero-title) { color:#ffffff!important; }
 html #root .future-shell main h2 { letter-spacing:-.025em; color:var(--ink); }
 html #root .future-shell main :is(.text-slate-400,.text-slate-500,.text-slate-600,.text-gray-500) { color:var(--muted)!important; }
 html #root .future-shell main :is(.text-slate-800,.text-slate-900,.text-gray-900) { color:var(--ink)!important; }
@@ -14,8 +16,10 @@ html #root .future-shell :is(input:not([type=checkbox]):not([type=radio]):not([t
 html #root .future-shell input::placeholder,html #root .future-shell textarea::placeholder { color:var(--muted); opacity:.8; }
 html #root .future-shell :is(button,a,input,select,textarea):focus-visible { outline:2px solid #ffcc00; outline-offset:3px; }
 /* Keep white text paired with its dark surface, including nested icons. */
-html #root :is(button,a)[class*="bg-slate-900"],html #root :is(button,a)[class*="bg-black"] { background:#111111!important; color:#ffffff!important; border-color:#111111!important; }
-html #root :is(button,a)[class*="bg-slate-900"] :is(span,svg),html #root :is(button,a)[class*="bg-black"] :is(span,svg) { color:#ffffff!important; }
+html #root :is(button,a)[class~="bg-slate-900"]:not([class~="bg-white"]):not([class~="bg-transparent"]):not(.guide-category-pill),
+html #root :is(button,a)[class~="bg-black"]:not([class~="bg-white"]):not([class~="bg-transparent"]):not(.guide-category-pill) { background:#111111!important; color:#ffffff!important; border-color:#111111!important; }
+html #root :is(button,a)[class~="bg-slate-900"]:not([class~="bg-white"]):not([class~="bg-transparent"]):not(.guide-category-pill) :is(span,svg),
+html #root :is(button,a)[class~="bg-black"]:not([class~="bg-white"]):not([class~="bg-transparent"]):not(.guide-category-pill) :is(span,svg) { color:#ffffff!important; }
 html #root .future-shell button:disabled { opacity:1; background:#e5e5e5!important; color:#777777!important; box-shadow:none!important; cursor:not-allowed; }
 html[data-theme=dark] #root .future-shell button:disabled { background:#292929!important; color:#777777!important; }
 html #root .future-shell table { font-size:13px; }
