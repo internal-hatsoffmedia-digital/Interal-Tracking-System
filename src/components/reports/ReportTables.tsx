@@ -305,3 +305,159 @@ export function WorkloadTable({ rows }: { rows: WorkloadRow[] }) {
     </div>
   );
 }
+
+
+/* ============================================================
+   CATEGORY REPORT TABLE
+============================================================ */
+
+export interface CategoryReportRow {
+  category: string;
+  category_label: string;
+  total_tasks: number;
+  completed_tasks: number;
+  delayed_tasks: number;
+  estimated_hours: number;
+  actual_hours: number;
+  completion_rate: number;
+}
+
+export function CategoryReportTable({ rows }: { rows: CategoryReportRow[] }) {
+  if (rows.length === 0) return <EmptyReportState message="No task deliverables found for the selected filter." />;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-xs">
+        <thead className="border-b border-slate-200 bg-slate-900 text-slate-200 uppercase tracking-wider">
+          <tr>
+            <th className="px-4 py-3 rounded-l-xl">Deliverable Category</th>
+            <th className="px-4 py-3 text-center">Total Tasks</th>
+            <th className="px-4 py-3 text-center">Completed</th>
+            <th className="px-4 py-3 text-center">Delayed / Overdue</th>
+            <th className="px-4 py-3 text-center">Logged Hours</th>
+            <th className="px-4 py-3 text-right rounded-r-xl">Completion Rate</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100 text-slate-700">
+          {rows.map((row) => (
+            <tr key={row.category} className="transition hover:bg-indigo-50/30">
+              <td className="px-4 py-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 font-bold text-indigo-600 border border-indigo-100">
+                    {row.category_label.charAt(0)}
+                  </div>
+                  <span className="font-bold text-slate-900">{row.category_label}</span>
+                </div>
+              </td>
+              <td className="px-4 py-3.5 text-center font-bold text-slate-900">{row.total_tasks}</td>
+              <td className="px-4 py-3.5 text-center">
+                <span className="inline-flex items-center gap-1 font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                  {row.completed_tasks}
+                </span>
+              </td>
+              <td className="px-4 py-3.5 text-center font-bold text-rose-600">
+                {row.delayed_tasks > 0 ? (
+                  <span className="inline-flex items-center gap-1 text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200/60">
+                    {row.delayed_tasks}
+                  </span>
+                ) : (
+                  <span className="text-slate-400">0</span>
+                )}
+              </td>
+              <td className="px-4 py-3.5 text-center font-semibold text-indigo-700">{row.actual_hours.toFixed(1)}h</td>
+              <td className="px-4 py-3.5 text-right">
+                <div className="inline-flex items-center gap-2">
+                  <span className="font-bold text-slate-900">{row.completion_rate.toFixed(0)}%</span>
+                  <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-indigo-600"
+                      style={{ width: `${Math.min(100, row.completion_rate)}%` }}
+                    />
+                  </div>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ============================================================
+   EMPLOYEE CATEGORY DELIVERABLES TABLE
+============================================================ */
+
+export interface EmployeeCategoryRow {
+  employee_id: string;
+  employee_name: string;
+  employee_code: string;
+  category_counts: Record<string, number>;
+  total_completed: number;
+}
+
+export function EmployeeCategoryTable({
+  rows,
+  categories,
+}: {
+  rows: EmployeeCategoryRow[];
+  categories: { value: string; label: string }[];
+}) {
+  if (rows.length === 0) return <EmptyReportState message="No employee deliverables recorded." />;
+
+  const activeCategories = categories.filter((c) =>
+    rows.some((r) => (r.category_counts[c.value] || 0) > 0)
+  );
+
+  const displayCategories = activeCategories.length > 0 ? activeCategories : categories.slice(0, 6);
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-xs">
+        <thead className="border-b border-slate-200 bg-slate-900 text-slate-200 uppercase tracking-wider">
+          <tr>
+            <th className="px-4 py-3 rounded-l-xl">Employee</th>
+            {displayCategories.map((c) => (
+              <th key={c.value} className="px-3 py-3 text-center whitespace-nowrap">
+                {c.label}
+              </th>
+            ))}
+            <th className="px-4 py-3 text-right rounded-r-xl">Total Completed</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100 text-slate-700">
+          {rows.map((row) => (
+            <tr key={row.employee_id} className="transition hover:bg-indigo-50/30">
+              <td className="px-4 py-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white shadow-xs">
+                    {row.employee_name.slice(0, 1).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-950">{row.employee_name}</p>
+                    <p className="font-mono text-[10px] text-slate-400">{row.employee_code}</p>
+                  </div>
+                </div>
+              </td>
+              {displayCategories.map((c) => {
+                const count = row.category_counts[c.value] || 0;
+                return (
+                  <td key={c.value} className="px-3 py-3.5 text-center font-medium">
+                    {count > 0 ? (
+                      <span className="inline-flex items-center justify-center h-6 min-w-[24px] px-1.5 rounded-md bg-indigo-50 text-indigo-700 font-bold border border-indigo-100">
+                        {count}
+                      </span>
+                    ) : (
+                      <span className="text-slate-300">-</span>
+                    )}
+                  </td>
+                );
+              })}
+              <td className="px-4 py-3.5 text-right font-bold text-emerald-600 text-sm">{row.total_completed}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

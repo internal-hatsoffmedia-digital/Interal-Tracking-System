@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Target,
   Users,
+  Layers,
 } from "lucide-react";
 
 import ReportHeader from "../../components/reports/ReportHeader";
@@ -18,6 +19,10 @@ import {
 } from "../../components/reports/ReportCharts";
 import ReportOverviewKpis from "../../components/reports/ReportOverviewKpis";
 import {
+  CategoryReportRow,
+  CategoryReportTable,
+  EmployeeCategoryRow,
+  EmployeeCategoryTable,
   EmployeeTaskTable,
   EmptyReportState,
   ProjectReportTable,
@@ -26,6 +31,27 @@ import {
 } from "../../components/reports/ReportTables";
 import ReportTabNav, { type ReportTab } from "../../components/reports/ReportTabNav";
 import { supabase } from "../../lib/supabase";
+
+
+export const TASK_CATEGORY_MAP: Record<string, string> = {
+  shorts_reels: "Shorts / Reels",
+  long_video: "Long Video",
+  smp: "Social Media Post (SMP)",
+  graphic_design: "Graphic Design & Creatives",
+  social_media_handling: "Social Media Handling",
+  content_writing: "Content Writing",
+  reel_story_writing: "Story Writer for Reels",
+  ads_management: "Ads Management",
+  wordpress_development: "WordPress Development",
+  custom_coding: "Custom Coding & Development",
+  website_deployment: "Website Deployment & Hosting",
+  website_maintenance: "Website Maintenance",
+};
+
+export const TASK_CATEGORY_LIST = Object.entries(TASK_CATEGORY_MAP).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 /* ============================================================
    TYPES
@@ -521,6 +547,11 @@ export default function Reports() {
               <PriorityDistributionCards rows={priorityRows} />
             </ReportCard>
 
+            {/* Category Deliverables Breakdown */}
+            <ReportCard title="Deliverables by Category" subtitle="Task completion breakdown by work type (Reels, SMP, Website, etc.)" icon={Layers}>
+              <CategoryReportTable rows={categoryRows} />
+            </ReportCard>
+
             {/* Top Projects Progress */}
             <ReportCard title="Active Projects Deliverables" subtitle="Top project asset completion progress" icon={FolderKanban}>
               <ProjectReportTable rows={projectReportRows.slice(0, 5)} />
@@ -542,6 +573,14 @@ export default function Reports() {
                 <PriorityDistributionCards rows={priorityRows} />
               </ReportCard>
             </div>
+
+            <ReportCard title="Deliverables & Tasks by Category" subtitle="Categorized work items created and completed" icon={Layers}>
+              <CategoryReportTable rows={categoryRows} />
+            </ReportCard>
+
+            <ReportCard title="Per-Employee Category Deliverables" subtitle="Deliverables completed by team members per category" icon={Users}>
+              <EmployeeCategoryTable rows={employeeCategoryRows} categories={TASK_CATEGORY_LIST} />
+            </ReportCard>
 
             <ReportCard title="Tasks by Employee" subtitle="Completion metrics and estimated vs actual hours" icon={Users}>
               <EmployeeTaskTable rows={employeeTaskRows} />
