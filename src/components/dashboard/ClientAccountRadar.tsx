@@ -169,7 +169,7 @@ Status: ${c.healthLabel}
         <button
           type="button"
           onClick={() => navigate("/clients")}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 hover:text-amber-900 font-semibold transition"
         >
           View All Accounts
           <ArrowRight size={13} />
@@ -201,18 +201,18 @@ Status: ${c.healthLabel}
             return (
               <div
                 key={c.id}
-                className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-gradient-to-b from-white to-slate-50/50 p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md"
+                className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-gradient-to-b from-white to-slate-50/50 p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-md"
               >
                 {/* Top: Avatar & Name + Health Badge */}
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 text-sm font-black text-white shadow-sm">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 text-slate-950 text-sm font-black text-white shadow-sm">
                         {getInitials(c.name)}
                       </div>
 
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-indigo-600 transition">
+                        <h4 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-amber-600 transition">
                           {c.name}
                         </h4>
                         <span className="text-[11px] font-medium text-slate-400">
@@ -258,7 +258,7 @@ Status: ${c.healthLabel}
                     </div>
                     <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500"
+                        className="h-full rounded-full bg-gradient-to-r from-amber-400 to-emerald-500 transition-all duration-500"
                         style={{ width: `${completionRate}%` }}
                       />
                     </div>
@@ -270,7 +270,7 @@ Status: ${c.healthLabel}
                   <button
                     type="button"
                     onClick={() => handleCopyClientStatus(c)}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 hover:text-indigo-600 transition"
+                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 hover:text-amber-700 transition"
                     title="Copy formatted status digest for WhatsApp or email"
                   >
                     <Copy size={12} />
@@ -280,7 +280,7 @@ Status: ${c.healthLabel}
                   <button
                     type="button"
                     onClick={() => navigate(`/clients`)}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 hover:text-amber-900 font-semibold transition"
                   >
                     Account File
                     <ExternalLink size={11} />

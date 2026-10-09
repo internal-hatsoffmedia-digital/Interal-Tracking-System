@@ -69,14 +69,14 @@ html[data-theme=dark] .dark-heading-gradient { background-image:linear-gradient(
 .project-input { width:100%; min-width:0; min-height:40px; border-color:var(--line); color:var(--ink); }
 .project-table-wrap { border:1px solid #1e293b; border-radius:14px; }
 .project-table-wrap table { min-width:850px; }
-.project-table-wrap th { background:#090d16; padding:15px!important; white-space:nowrap; }
+.project-table-wrap th { background:#0a0a0a; color:#ffcc00; font-weight:700; padding:15px!important; white-space:nowrap; }
 .project-table-wrap td { padding:18px 15px!important; vertical-align:middle; border-bottom:1px solid #1e293b; }
 .project-table-wrap tr:last-child td { border-bottom:0; }
 .project-table-wrap td p { margin-top:5px; }
-.project-status { display:inline-flex; border-radius:7px; padding:4px 9px; color:#a5b4fc; background:rgba(99, 102, 241, 0.15); border:1px solid rgba(99, 102, 241, 0.25); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
-.project-status[data-status=completed] { color:#6ee7b7; background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.25); }
-.project-status[data-status=on_hold] { color:#fde047; background:rgba(234, 179, 8, 0.15); border-color:rgba(234, 179, 8, 0.25); }
-.project-status[data-status=planning] { color:#93c5fd; background:rgba(59, 130, 246, 0.15); border-color:rgba(59, 130, 246, 0.25); }
+.project-status { display:inline-flex; border-radius:7px; padding:4px 9px; color:#b45309; background:#fef3c7; border:1px solid #fde68a; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+.project-status[data-status=completed] { color:#047857; background:#d1fae5; border-color:#a7f3d0; }
+.project-status[data-status=on_hold] { color:#b45309; background:#fef3c7; border-color:#fde68a; }
+.project-status[data-status=planning] { color:#334155; background:#f1f5f9; border-color:#cbd5e1; }
 .workspace-dialog-backdrop { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:24px; background:rgba(9, 14, 26, 0.85); backdrop-filter:blur(12px); }
 .workspace-dialog { width:min(920px,100%); max-height:calc(100dvh - 48px); display:flex; flex-direction:column; overflow:hidden; background:#0f172a; color:#f8fafc; border:1px solid #1e293b; border-radius:24px; box-shadow:0 30px 100px -10px rgba(0,0,0,0.85); outline:none; }
 .workspace-dialog-header { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:20px 28px; border-bottom:1px solid #1e293b; background:rgba(15, 23, 42, 0.9); flex-shrink:0; }

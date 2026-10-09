@@ -4,7 +4,7 @@ import type { ProjectPerson } from '../../types/projectAccess';
 import type { UserRole } from '../../types/auth';
 import { Users, Save, AlertCircle, CheckCircle2 } from 'lucide-react';
 
-const control = 'h-10 rounded-xl border border-slate-700 bg-slate-900/90 px-3 py-2 text-sm text-slate-100 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition';
+const control = 'h-10 rounded-xl border border-slate-700 bg-slate-900/90 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition';
 const roles: UserRole[] = ['admin','director','manager','team_lead','associate_lead','project_coordinator','employee'];
 
 export default function ProjectAdministration({people, projectId, onSaved}: {
@@ -53,7 +53,7 @@ export default function ProjectAdministration({people, projectId, onSaved}: {
     <details className="group rounded-2xl border border-slate-800 bg-slate-900/60 p-4 transition-all">
       <summary className="flex cursor-pointer items-center justify-between font-semibold text-sm text-slate-200 hover:text-white select-none">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-400">
             <Users size={16} />
           </div>
           <span>{projectId ? 'Map Project Team' : 'Administrator: Account Roles & Teams'}</span>
@@ -95,7 +95,7 @@ export default function ProjectAdministration({people, projectId, onSaved}: {
 
           <button
             type="button"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold shadow-amber-400/20 hover:from-amber-300 hover:to-amber-400 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
             disabled={busy || !team || (!projectId && !account)}
             onClick={()=>void save()}
           >

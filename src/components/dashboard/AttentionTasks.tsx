@@ -252,14 +252,14 @@ function statusClasses(type: AttentionTask["type"]) {
   }
 
   if (type === "purple") {
-    return "bg-violet-50 text-violet-700 ring-violet-600/10";
+    return "bg-amber-100 text-amber-900 border border-amber-300 font-bold";
   }
 
   if (type === "orange") {
-    return "bg-amber-50 text-amber-700 ring-amber-600/10";
+    return "bg-amber-100 text-amber-900 border border-amber-300 font-bold";
   }
 
-  return "bg-blue-50 text-blue-700 ring-blue-600/10";
+  return "bg-amber-100 text-amber-900 border border-amber-300 font-bold";
 }
 
 function AttentionTasks() {
@@ -601,7 +601,7 @@ function AttentionTasks() {
             <div className="flex items-center gap-2">
               <CheckCircle2
                 size={15}
-                className="text-violet-500"
+                className="text-amber-600"
               />
 
               <span className="text-xs font-medium text-slate-500">

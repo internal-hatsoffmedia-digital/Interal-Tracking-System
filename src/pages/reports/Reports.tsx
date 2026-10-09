@@ -606,7 +606,7 @@ export default function Reports() {
                           <p className="font-semibold text-slate-900">{r.employee_name}</p>
                           <p className="text-[10px] text-slate-400">{r.employee_code}</p>
                         </div>
-                        <span className="font-bold text-indigo-700">{formatHours(r.hours)}h</span>
+                        <span className="font-bold text-amber-700 font-semibold">{formatHours(r.hours)}h</span>
                       </div>
                     ))
                   )}
@@ -638,7 +638,7 @@ export default function Reports() {
                     projectHoursRows.map((r) => (
                       <div key={r.project_id} className="flex items-center justify-between border-b border-slate-100 pb-2 text-xs">
                         <span className="font-semibold text-slate-800">{r.project_name}</span>
-                        <span className="font-bold text-indigo-700">{formatHours(r.hours)}h</span>
+                        <span className="font-bold text-amber-700 font-semibold">{formatHours(r.hours)}h</span>
                       </div>
                     ))
                   )}
@@ -677,9 +677,9 @@ export default function Reports() {
         ====================================================== */}
         {activeTab === "workload" && (
           <div className="space-y-6">
-            <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50/80 via-purple-50/40 to-white p-5 shadow-xs">
+            <div className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-yellow-50/40 to-white p-5 shadow-xs">
               <div className="flex items-start gap-3">
-                <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" />
+                <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">Workload Capacity Standard (40h Weekly Baseline)</h3>
                   <p className="mt-1 text-xs text-slate-600">
@@ -699,7 +699,7 @@ export default function Reports() {
       {/* FLOATING LOADING BADGE */}
       {loading && (
         <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-2xl border border-slate-200 bg-white/95 px-4 py-3 text-xs font-semibold text-slate-800 shadow-xl backdrop-blur-md">
-          <RefreshCw size={15} className="animate-spin text-indigo-600" />
+          <RefreshCw size={15} className="animate-spin text-amber-600" />
           Updating Analytics Engine...
         </div>
       )}

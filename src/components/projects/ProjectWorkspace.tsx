@@ -95,14 +95,14 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
       const a = document.createElement('a'); a.href = url; a.download = 'project-report.csv'; a.click(); URL.revokeObjectURL(url);
     } catch (e) { setError(e instanceof Error ? e.message : 'Export failed'); }
   }
-  if (!error && !schemaReady) return <section className="space-y-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-5" aria-label="Existing projects">
+  if (!error && !schemaReady) return <section className="space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-5" aria-label="Existing projects">
     <div className="flex justify-between gap-3"><h2 className="text-xl font-semibold text-white">Existing projects</h2><button className={button} onClick={()=>void load()}><RefreshCw size={14} />Refresh</button></div>
     <p className="rounded-xl bg-amber-950/40 border border-amber-500/30 p-3.5 text-xs text-amber-200">Administrator view using the current database. Assignment history and sharing controls will be enabled after the project-access update is verified and applied. Existing database permissions still apply.</p>
     {loading ? <p className="text-slate-400">Loading projects…</p> : <><p className="text-sm text-slate-400">{projects.length} projects</p><div className="project-table-wrap overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead><tr>{['Project','Client','Recorded lead','Status','Progress','Deadline'].map(h=><th className="p-3 text-slate-400" key={h}>{h}</th>)}</tr></thead><tbody>{projects.map(p=><tr key={p.id} className="border-t border-slate-800"><td className="p-3 font-medium text-slate-200">{p.name}</td><td className="p-3 text-slate-300">{p.client?.name ?? 'Client unavailable'}</td><td className="p-3 text-slate-300">{p.lead_employee?.full_name ?? 'Not recorded'}</td><td className="p-3">{label(p.status)}</td><td className="p-3 text-slate-300">{p.completed_assets} / {p.total_assets_required}</td><td className="p-3 text-slate-300">{p.target_deadline ?? 'Not set'}</td></tr>)}</tbody></table></div></>}
   </section>;
   if (error) {
     const setupPending = /project_members|project_people|schema cache/i.test(error);
-    return <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-6" aria-label="Project visibility and reporting">
+    return <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6" aria-label="Project visibility and reporting">
       <h2 className="text-xl font-semibold text-white">{setupPending ? 'Project access setup is incomplete' : 'Project overview is unavailable'}</h2>
       <p role="alert" className="text-sm text-slate-400">{setupPending
         ? 'The database does not yet expose the required project access structure. Project counts and reports are unavailable until setup is completed.'
@@ -112,7 +112,7 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
       <button className={button} disabled={loading} onClick={() => void load()}>{loading ? 'Checking…' : 'Retry'}</button>
     </section>;
   }
-  return <section className="project-workspace space-y-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 sm:p-6" aria-label="Project visibility and reporting">
+  return <section className="project-workspace space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-6" aria-label="Project visibility and reporting">
     <div className="flex flex-wrap items-center justify-between gap-3"><div>
       <h2 className="text-xl font-semibold text-white">{mode === 'reports' ? 'Project distribution & completion' : 'Project overview'}</h2>
       <p className="mt-1 text-sm text-slate-400">Projects available to your account · {label(profile?.role ?? '')}</p>
@@ -135,21 +135,21 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
       <label className="grid gap-1 text-xs font-medium text-slate-400">Created through<input type="date" className={input} value={to} min={from} onChange={e => setTo(e.target.value)} /></label>
     </div>
     <div className="flex flex-wrap items-center gap-5 text-xs text-slate-300">
-      <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-violet-600" checked={incomplete} onChange={e => setIncomplete(e.target.checked)} /> Incomplete information</label>
-      <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-violet-600" checked={associateOnly} onChange={e => setAssociateOnly(e.target.checked)} /> Assigned by Associate Lead</label>
-      <button className="text-violet-400 hover:text-violet-300 underline font-medium" onClick={() => { setSearch('');setStatus('');setMember('');setAssigner('');setDeadline('');setFrom('');setTo('');setIncomplete(false);setAssociateOnly(false); }}>Clear filters</button>
+      <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-amber-400" checked={incomplete} onChange={e => setIncomplete(e.target.checked)} /> Incomplete information</label>
+      <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-amber-400" checked={associateOnly} onChange={e => setAssociateOnly(e.target.checked)} /> Assigned by Associate Lead</label>
+      <button className="text-amber-400 hover:text-amber-300 font-semibold underline font-medium" onClick={() => { setSearch('');setStatus('');setMember('');setAssigner('');setDeadline('');setFrom('');setTo('');setIncomplete(false);setAssociateOnly(false); }}>Clear filters</button>
     </div>
     {loading ? <p role="status" className="text-slate-400 text-sm">Loading projects…</p> : !error && <>
-      {visible.length === 0 ? <p className="py-6 text-slate-500 text-sm">No accessible projects match these filters.</p> : <div className="overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead className="border-b border-slate-800 bg-slate-950/60 text-xs text-slate-400 font-semibold uppercase tracking-wider"><tr>{['Project / client','Assignments','Status / progress','Deadline','Information','Actions'].map(h=><th key={h} className="p-3.5">{h}</th>)}</tr></thead><tbody>
-        {visible.map(p => <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-800/30 transition align-top"><td className="p-3.5"><button className="text-left font-semibold text-slate-100 hover:text-violet-400 transition" onClick={() => setSelected(p.id)}>{p.name}</button><p className="text-xs text-slate-400">{p.client?.name ?? (p.client_id ? 'Client unavailable' : 'Missing client')}</p><p className="mt-1 text-[11px] text-slate-500">Updated {new Date(p.updated_at).toLocaleDateString()}</p></td>
+      {visible.length === 0 ? <p className="py-6 text-slate-500 text-sm">No accessible projects match these filters.</p> : <div className="overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead className="border-b border-slate-800 bg-slate-950 text-xs text-amber-400 font-bold font-semibold uppercase tracking-wider"><tr>{['Project / client','Assignments','Status / progress','Deadline','Information','Actions'].map(h=><th key={h} className="p-3.5">{h}</th>)}</tr></thead><tbody>
+        {visible.map(p => <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-800/30 transition align-top"><td className="p-3.5"><button className="text-left font-semibold text-slate-100 hover:text-amber-400 transition" onClick={() => setSelected(p.id)}>{p.name}</button><p className="text-xs text-slate-400">{p.client?.name ?? (p.client_id ? 'Client unavailable' : 'Missing client')}</p><p className="mt-1 text-[11px] text-slate-500">Updated {new Date(p.updated_at).toLocaleDateString()}</p></td>
           <td className="p-3.5 text-slate-300">{p.project_members.filter(m => m.access_kind === 'assignee').map(m => name(m.profile_id)).join(', ') || 'Unassigned'}<p className="text-xs text-slate-500">By {name(p.assigned_by)}</p></td>
           <td className="p-3.5 capitalize"><span className="project-status text-xs font-semibold px-2.5 py-0.5 rounded-md" data-status={p.status}>{label(p.status)}</span><p className="text-xs text-slate-400 mt-1">{p.completed_assets} / {p.total_assets_required} assets{!p.is_active && ' · Archived'}</p></td>
           <td className={`p-3.5 ${isOverdue(p) ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>{p.target_deadline ?? 'Not set'}{isOverdue(p) && <p className="text-xs text-rose-500 font-medium">Overdue</p>}</td>
           <td className="max-w-48 p-3.5 text-xs text-amber-400">{missingFields(p).join(', ') || <span className="text-emerald-400 font-medium">Complete</span>}</td>
-          <td className="p-3.5">{onEdit && canEdit(p) ? <button className={button} onClick={() => onEdit(p)}>Edit details</button> : <Link className="text-xs font-semibold text-violet-400 hover:text-violet-300 underline" to={`/projects?project=${p.id}`}>Details</Link>}</td></tr>)}
+          <td className="p-3.5">{onEdit && canEdit(p) ? <button className={button} onClick={() => onEdit(p)}>Edit details</button> : <Link className="text-xs font-semibold text-amber-400 hover:text-amber-300 font-semibold underline" to={`/projects?project=${p.id}`}>Details</Link>}</td></tr>)}
       </tbody></table></div>}
       {mode === 'reports' && <div className="space-y-3 pt-4 border-t border-slate-800"><p className="text-xs text-slate-400">Completion rate: <strong className="text-white">{stats.completionRate}%</strong>. Completed projects ÷ all filtered projects. Date filters use project creation dates (UTC). Active workload includes uncompleted, active projects, including on-hold projects. Each project counts once in totals and once per assignee in workload.</p>
-        <div className="overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead className="bg-slate-950/60 text-xs text-slate-400"><tr><th className="p-3">Team member</th><th>Total assigned</th><th>Active workload</th><th>Completed</th><th>Completion rate</th></tr></thead><tbody>{people.map(u => {
+        <div className="overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead className="bg-slate-950 text-xs text-amber-400 font-bold"><tr><th className="p-3">Team member</th><th>Total assigned</th><th>Active workload</th><th>Completed</th><th>Completion rate</th></tr></thead><tbody>{people.map(u => {
           const assigned = visible.filter(p => p.project_members.some(m => m.access_kind === 'assignee' && m.profile_id === u.id));
           return assigned.length ? <tr key={u.id} className="border-t border-slate-800 text-slate-300"><td className="p-3 font-medium text-slate-200">{u.full_name ?? u.id}</td><td>{assigned.length}</td><td>{assigned.filter(isOngoing).length}</td><td>{assigned.filter(isCompleted).length}</td><td>{summarizeProjects(assigned).completionRate}%</td></tr> : null;
         })}</tbody></table></div></div>}
@@ -190,7 +190,7 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
       {/* HEADER */}
       <div className="workspace-dialog-header border-b border-slate-800 bg-slate-900/90 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 border border-violet-500/20 text-amber-400">
             <FolderKanban size={20} />
           </div>
           <div className="min-w-0">
@@ -236,7 +236,7 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
               Deadline: project.target_deadline ?? 'Not set',
               Status: label(project.status)
             }).map(([k, v]) => (
-              <div key={k} className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-2.5">
+              <div key={k} className="rounded-xl bg-slate-900 border border-slate-800/80 p-2.5">
                 <dt className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{k}</dt>
                 <dd className="mt-1 text-xs font-medium text-slate-200 truncate">{v}</dd>
               </div>
@@ -247,7 +247,7 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
               onClick={onEdit}
               className="inline-flex items-center gap-2 rounded-xl bg-slate-800 border border-slate-700 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition"
             >
-              <Edit3 size={14} className="text-violet-400" />
+              <Edit3 size={14} className="text-amber-400" />
               <span>Edit project details</span>
             </button>
           )}
@@ -267,7 +267,7 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <Users size={18} className="text-violet-400" />
+                  <Users size={18} className="text-amber-400" />
                   <h3 className="font-bold text-base text-white">Assignments & Shared Access</h3>
                 </div>
                 {manager && (assignees.length > 0 || shared.length > 0) && (
@@ -317,7 +317,7 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
                                   checked={isSelected}
                                   disabled={saving || ((!u.is_active || u.role!=='project_coordinator' || u.team_id!==project.team_id) && !isSelected)}
                                   onChange={e=>set(e.target.checked ? [...values,u.id] : values.filter(id=>id!==u.id))}
-                                  className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-violet-600 focus:ring-violet-500 accent-violet-600"
+                                  className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-violet-600 focus:ring-violet-500 accent-amber-400"
                                 />
                                 <span className="coordinator-avatar flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-500/20 border border-violet-500/30 text-xs font-bold text-violet-300">
                                   {(u.full_name ?? "?").slice(0,1)}
@@ -370,7 +370,7 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
             {/* RECENT HISTORY */}
             <div className="space-y-3 pt-4 border-t border-slate-800">
               <div className="flex items-center gap-2">
-                <History size={18} className="text-violet-400" />
+                <History size={18} className="text-amber-400" />
                 <h3 className="font-bold text-base text-white">Recent History <span className="text-xs font-normal text-slate-400">(Latest 100 events)</span></h3>
               </div>
 

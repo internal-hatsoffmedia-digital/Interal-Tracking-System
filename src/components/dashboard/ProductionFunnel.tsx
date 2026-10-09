@@ -37,11 +37,11 @@ export default function ProductionFunnel() {
       subtitle: "Footage received & queued",
       count: 0,
       icon: Film,
-      color: "text-purple-600",
-      bgGrad: "from-purple-500/10 to-indigo-500/5",
-      borderColor: "border-purple-200 hover:border-purple-400",
-      textColor: "text-purple-700",
-      badgeBg: "bg-purple-100 text-purple-700",
+      color: "text-amber-600",
+      bgGrad: "from-amber-500/10 to-yellow-500/5",
+      borderColor: "border-amber-200/80 hover:border-amber-400",
+      textColor: "text-amber-900",
+      badgeBg: "bg-amber-100 text-amber-900 border border-amber-200",
       taskStatus: "raw_footage_received",
     },
     {
@@ -50,11 +50,11 @@ export default function ProductionFunnel() {
       subtitle: "Active video & sound cuts",
       count: 0,
       icon: Layers,
-      color: "text-blue-600",
-      bgGrad: "from-blue-500/10 to-cyan-500/5",
-      borderColor: "border-blue-200 hover:border-blue-400",
-      textColor: "text-blue-700",
-      badgeBg: "bg-blue-100 text-blue-700",
+      color: "text-amber-600",
+      bgGrad: "from-amber-500/10 to-yellow-500/5",
+      borderColor: "border-amber-200/80 hover:border-amber-400",
+      textColor: "text-amber-900",
+      badgeBg: "bg-amber-100 text-amber-900 border border-amber-200",
       taskStatus: "editing_in_progress",
     },
     {
@@ -63,11 +63,11 @@ export default function ProductionFunnel() {
       subtitle: "Creative director review",
       count: 0,
       icon: Sparkles,
-      color: "text-fuchsia-600",
-      bgGrad: "from-fuchsia-500/10 to-pink-500/5",
-      borderColor: "border-fuchsia-200 hover:border-fuchsia-400",
-      textColor: "text-fuchsia-700",
-      badgeBg: "bg-fuchsia-100 text-fuchsia-700",
+      color: "text-amber-600",
+      bgGrad: "from-amber-500/10 to-yellow-500/5",
+      borderColor: "border-amber-200/80 hover:border-amber-400",
+      textColor: "text-amber-900",
+      badgeBg: "bg-amber-100 text-amber-900 border border-amber-200",
       taskStatus: "internal_review",
     },
     {
@@ -185,7 +185,7 @@ export default function ProductionFunnel() {
             <h2 className="text-base font-bold tracking-tight text-slate-900">
               Agency Velocity Pipeline
             </h2>
-            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 border border-indigo-100">
+            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900 border border-amber-300">
               Live Asset Funnel
             </span>
           </div>
@@ -201,7 +201,7 @@ export default function ProductionFunnel() {
           <button
             type="button"
             onClick={() => navigate("/tasks")}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 hover:text-amber-900 font-bold transition"
           >
             Manage Pipeline
             <ArrowRight size={13} />
@@ -256,7 +256,7 @@ export default function ProductionFunnel() {
               {/* Mini stage status line */}
               <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
                 <span className="text-slate-500 font-medium">Stage {idx + 1}</span>
-                <span className="font-semibold text-slate-700 group-hover:text-indigo-600 transition flex items-center gap-1">
+                <span className="font-semibold text-slate-700 group-hover:text-amber-600 transition flex items-center gap-1">
                   Inspect
                   <ArrowRight size={11} />
                 </span>
@@ -281,7 +281,7 @@ export default function ProductionFunnel() {
         <button
           type="button"
           onClick={() => navigate("/planner")}
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
+          className="text-xs font-semibold text-amber-700 hover:text-amber-900 font-bold transition"
         >
           Open Weekly Planner ➔
         </button>

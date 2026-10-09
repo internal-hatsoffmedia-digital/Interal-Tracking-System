@@ -121,7 +121,7 @@ export function EmployeeTaskTable({ rows }: { rows: EmployeeTaskRow[] }) {
         </thead>
         <tbody className="divide-y divide-slate-100 text-slate-700">
           {rows.map((row) => (
-            <tr key={row.employee_id} className="transition hover:bg-indigo-50/30">
+            <tr key={row.employee_id} className="transition hover:bg-amber-50/30">
               <td className="px-4 py-3.5">
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white shadow-xs">
@@ -137,7 +137,7 @@ export function EmployeeTaskTable({ rows }: { rows: EmployeeTaskRow[] }) {
               <td className="px-4 py-3.5 text-center font-bold text-emerald-600">{row.completed_tasks}</td>
               <td className="px-4 py-3.5 text-center font-bold text-rose-600">{row.delayed_tasks}</td>
               <td className="px-4 py-3.5 text-center text-slate-600">{row.estimated_hours.toFixed(1)}h</td>
-              <td className="px-4 py-3.5 text-center font-semibold text-indigo-700">{row.actual_hours.toFixed(1)}h</td>
+              <td className="px-4 py-3.5 text-center font-semibold text-amber-700 font-semibold">{row.actual_hours.toFixed(1)}h</td>
               <td className="px-4 py-3.5 text-right">
                 <div className="inline-flex items-center gap-2">
                   <span className="font-bold text-slate-900">{row.completion_rate.toFixed(0)}%</span>
@@ -191,7 +191,7 @@ export function ProjectReportTable({ rows }: { rows: ProjectReportRow[] }) {
         </thead>
         <tbody className="divide-y divide-slate-100 text-slate-700">
           {rows.map((row) => (
-            <tr key={row.id} className="transition hover:bg-indigo-50/30">
+            <tr key={row.id} className="transition hover:bg-amber-50/30">
               <td className="px-4 py-3.5">
                 <div>
                   <p className="font-bold text-slate-950">{row.name}</p>
@@ -201,7 +201,7 @@ export function ProjectReportTable({ rows }: { rows: ProjectReportRow[] }) {
               <td className="px-4 py-3.5 text-center font-medium text-slate-800">
                 <span className="font-bold text-emerald-600">{row.completed_assets}</span> / {row.total_assets_required}
               </td>
-              <td className="px-4 py-3.5 text-center font-semibold text-indigo-700">{row.hours.toFixed(1)}h</td>
+              <td className="px-4 py-3.5 text-center font-semibold text-amber-700 font-semibold">{row.hours.toFixed(1)}h</td>
               <td className="px-4 py-3.5 text-center">
                 <ReportStatusBadge status={row.health || row.status || "on_track"} />
               </td>
@@ -265,7 +265,7 @@ export function WorkloadTable({ rows }: { rows: WorkloadRow[] }) {
               : "bg-emerald-500";
 
             return (
-              <tr key={row.employee_id} className="transition hover:bg-indigo-50/30">
+              <tr key={row.employee_id} className="transition hover:bg-amber-50/30">
                 <td className="px-4 py-3.5">
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white shadow-xs">
@@ -279,7 +279,7 @@ export function WorkloadTable({ rows }: { rows: WorkloadRow[] }) {
                 </td>
                 <td className="px-4 py-3.5 text-center font-bold text-slate-900">{row.active_tasks}</td>
                 <td className="px-4 py-3.5 text-center font-semibold text-slate-800">{row.allocated_hours.toFixed(1)}h</td>
-                <td className="px-4 py-3.5 text-center font-semibold text-indigo-700">{row.actual_hours.toFixed(1)}h</td>
+                <td className="px-4 py-3.5 text-center font-semibold text-amber-700 font-semibold">{row.actual_hours.toFixed(1)}h</td>
                 <td className="px-4 py-3.5 text-right">
                   <div className="inline-flex items-center gap-3">
                     <span
@@ -340,10 +340,10 @@ export function CategoryReportTable({ rows }: { rows: CategoryReportRow[] }) {
         </thead>
         <tbody className="divide-y divide-slate-100 text-slate-700">
           {rows.map((row) => (
-            <tr key={row.category} className="transition hover:bg-indigo-50/30">
+            <tr key={row.category} className="transition hover:bg-amber-50/30">
               <td className="px-4 py-3.5">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50 font-bold text-indigo-600 border border-indigo-100">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 font-bold text-amber-900 border border-amber-300">
                     {row.category_label.charAt(0)}
                   </div>
                   <span className="font-bold text-slate-900">{row.category_label}</span>
@@ -364,13 +364,13 @@ export function CategoryReportTable({ rows }: { rows: CategoryReportRow[] }) {
                   <span className="text-slate-400">0</span>
                 )}
               </td>
-              <td className="px-4 py-3.5 text-center font-semibold text-indigo-700">{row.actual_hours.toFixed(1)}h</td>
+              <td className="px-4 py-3.5 text-center font-semibold text-amber-700 font-semibold">{row.actual_hours.toFixed(1)}h</td>
               <td className="px-4 py-3.5 text-right">
                 <div className="inline-flex items-center gap-2">
                   <span className="font-bold text-slate-900">{row.completion_rate.toFixed(0)}%</span>
                   <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className="h-full rounded-full bg-indigo-600"
+                      className="h-full rounded-full bg-[#ffcc00]"
                       style={{ width: `${Math.min(100, row.completion_rate)}%` }}
                     />
                   </div>
@@ -427,7 +427,7 @@ export function EmployeeCategoryTable({
         </thead>
         <tbody className="divide-y divide-slate-100 text-slate-700">
           {rows.map((row) => (
-            <tr key={row.employee_id} className="transition hover:bg-indigo-50/30">
+            <tr key={row.employee_id} className="transition hover:bg-amber-50/30">
               <td className="px-4 py-3.5">
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-xs font-bold text-white shadow-xs">
@@ -444,7 +444,7 @@ export function EmployeeCategoryTable({
                 return (
                   <td key={c.value} className="px-3 py-3.5 text-center font-medium">
                     {count > 0 ? (
-                      <span className="inline-flex items-center justify-center h-6 min-w-[24px] px-1.5 rounded-md bg-indigo-50 text-indigo-700 font-bold border border-indigo-100">
+                      <span className="inline-flex items-center justify-center h-6 min-w-[24px] px-1.5 rounded-md bg-indigo-50 text-amber-700 font-semibold font-bold border border-indigo-100">
                         {count}
                       </span>
                     ) : (

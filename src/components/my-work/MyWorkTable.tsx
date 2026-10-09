@@ -119,7 +119,7 @@ function getStatusClasses(
       return "border-blue-200 bg-blue-50 text-blue-700";
 
     case "accepted":
-      return "border-violet-200 bg-violet-50 text-violet-700";
+      return "border-amber-300 bg-amber-100 text-amber-900 font-semibold";
 
     case "assigned":
     default:
