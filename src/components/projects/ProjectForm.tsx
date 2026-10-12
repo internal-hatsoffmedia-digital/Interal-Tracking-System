@@ -23,10 +23,12 @@ import type { EmployeeWithTeam } from "../../types/employee";
 
 interface ProjectFormProps {
   open: boolean;
+  selfCoordinator?:boolean;
 
   project?: ProjectWithRelations | null;
 
   clients: Client[];
+  teams: {id:string;name:string}[];
 
   employees: EmployeeWithTeam[];
 
@@ -52,6 +54,7 @@ interface ProjectFormProps {
 
 
 interface ProjectFormState {
+  production_team_ids: string[];
   project_code: string;
   category: string;
   final_link: string;
@@ -76,6 +79,7 @@ interface ProjectFormState {
 
 
 const EMPTY_FORM: ProjectFormState = {
+  production_team_ids: [],
   project_code: "",
   category: "",
   final_link: "",
@@ -112,8 +116,10 @@ function formatOption(
 
 function ProjectForm({
   open,
+  selfCoordinator=false,
   project = null,
   clients,
+  teams,
   employees,
   statusOptions,
   healthOptions,
@@ -153,6 +159,7 @@ function ProjectForm({
 
     if (project) {
       setForm({
+        production_team_ids: project.production_team_ids ?? [],
         project_code: String(project.project_code ?? ""),
         category: String(project.category ?? ""),
         final_link: String(project.final_link ?? ""),
@@ -487,6 +494,7 @@ function ProjectForm({
           total - completed,
         ),
 
+      production_team_ids: form.production_team_ids,
       ...(isEditing ? {} : { lead_employee_id: form.lead_employee_id || null }),
 
       start_date:
@@ -989,6 +997,7 @@ function ProjectForm({
 
               <div className="grid gap-4 sm:grid-cols-2">
 
+                <fieldset className="sm:col-span-2 rounded-xl border p-4"><legend className="px-2 text-sm font-semibold">Production teams</legend><p className="mb-3 text-xs text-slate-500">Select every team working on this project. Assign individual employees through Tasks / Team Work.</p><div className="flex flex-wrap gap-4">{teams.map(t=><label key={t.id} className="flex items-center gap-2 text-sm"><input type="checkbox" disabled={loading} checked={form.production_team_ids.includes(t.id)} onChange={e=>setForm({...form,production_team_ids:e.target.checked?[...form.production_team_ids,t.id]:form.production_team_ids.filter(id=>id!==t.id)})}/>{t.name}</label>)}</div></fieldset>
                 {/* LEAD ARTIST */}
 
                 <div>
@@ -1008,7 +1017,7 @@ function ProjectForm({
                       className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                     />}
 
-                    {isEditing ? <div className="space-y-2"><p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Project coordinators are managed in Assignments & Shared Access. Assign production work to staff from Tasks.</p><button type="button" disabled={loading || !onManageAssignments} onClick={onManageAssignments} className="rounded-xl bg-yellow-300 px-4 py-2 text-sm font-semibold text-slate-900">Manage project assignees</button><p className="text-xs text-slate-500">Opening assignments closes this form without saving unsaved detail changes.</p></div> : <select
+                    {selfCoordinator ? <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-700">You are the project coordinator for projects you create. Your Associate Lead manages coordinator assignments.</p> : isEditing ? <div className="space-y-2"><p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Project coordinators are managed in Assignments & Shared Access. Assign production work to staff from Tasks.</p><button type="button" disabled={loading || !onManageAssignments} onClick={onManageAssignments} className="rounded-xl bg-yellow-300 px-4 py-2 text-sm font-semibold text-slate-900">Manage project assignees</button><p className="text-xs text-slate-500">Opening assignments closes this form without saving unsaved detail changes.</p></div> : <select
                       id="project-lead"
                       aria-describedby={!isEditing && employees.length === 0 ? 'project-coordinator-setup' : undefined}
                       value={
@@ -1050,7 +1059,7 @@ function ProjectForm({
 
                     </select>}
 
-                    {!isEditing && employees.length === 0 && (
+                    {!selfCoordinator && !isEditing && employees.length === 0 && (
                       <p id="project-coordinator-setup" role="status" className="mt-2 text-sm text-amber-800">
                         No eligible project coordinators are available. In Settings → Access Management, verify an active Project Coordinator profile and team, then link that profile to its employee record in Employees. Reopen this form after updating the mapping.
                       </p>

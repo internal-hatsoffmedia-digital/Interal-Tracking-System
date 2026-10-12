@@ -962,6 +962,8 @@ function TaskAssignments() {
             (employee) => ({
               id: employee.id,
               account_role: employee.account_role,
+              team_id: employee.team_id,
+              team: employee.team,
               full_name:
                 employee.full_name,
               employee_code:

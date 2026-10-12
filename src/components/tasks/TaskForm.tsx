@@ -25,6 +25,7 @@ interface SelectOption {
 }
 
 interface ProjectOption {
+  rate?:number|null;
   project_code?: string | null;
   id: string;
   name: string;
@@ -444,6 +445,7 @@ function TaskForm({
       setAssignedEmployeeId("");
 
       setAssignmentNotes("");
+      setAssignmentTeam("");
     }
   }, [
     open,
@@ -516,6 +518,11 @@ function TaskForm({
      FILTER PROJECTS BY CLIENT
   ======================================================== */
 
+  const [assignmentTeam,setAssignmentTeam]=useState('');
+  const selectedAssignmentTeam=assignmentTeam||employees.find(e=>e.id===assignedEmployeeId)?.team_id||'';
+  const assignmentTeams=[...new Map(employees.filter(e=>e.is_active&&e.team_id).map(e=>[e.team_id!,{id:e.team_id!,name:e.team?.name||'Team name unavailable'}])).values()].sort((a,b)=>a.name.localeCompare(b.name));
+  const eligibleArtists=employees.filter(e=>e.is_active&&(!selectedAssignmentTeam||e.team_id===selectedAssignmentTeam));
+  const projectDetails=projects.find(p=>p.id===projectId);
   const filteredProjects =
     useMemo(() => {
       if (!clientId) {
@@ -689,6 +696,7 @@ function TaskForm({
     }
 
     if(assignedEmployeeId&&!task?.assignment?.id&&(!commitmentConfirmed||!dueDate||new Date(dueDate+':00+05:30').getTime()<=Date.now())){setFormError('Set a future delivery deadline and confirm the agreed completion time with the assignee.');return;}
+    if(assignedEmployeeId&&!eligibleArtists.some(e=>e.id===assignedEmployeeId)){setFormError('Choose an active artist from the selected team.');return;}
     const effectiveClientId =
       clientId ||
       projects.find((p) => p.id === projectId)?.client_id ||
@@ -925,7 +933,7 @@ function TaskForm({
 
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Client{" "}
+                    Client Name{" "}
                     <span className="text-red-500">
                       *
                     </span>
@@ -980,7 +988,7 @@ function TaskForm({
 
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Project{" "}
+                    Project Title{" "}
                     <span className="text-red-500">
                       *
                     </span>
@@ -1047,6 +1055,11 @@ function TaskForm({
                     )}
                 </div>
 
+                <div className="md:col-span-2 grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
+                  <label className="text-xs font-semibold">Project ID<input readOnly value={projectDetails?.project_code||'Select a project'} className={inputClass}/></label>
+                  <label className="text-xs font-semibold">Project rate (INR)<input readOnly value={!projectDetails?'Select a project':projectDetails.rate==null?'Not set':new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(Number(projectDetails.rate))} className={inputClass}/></label>
+                  <p className="md:col-span-2 text-xs text-slate-500">The rate belongs to the project and is not charged again for this task. Sales counts it when the project is completed.</p>
+                </div>
                 {/* TITLE */}
 
                 <div className="md:col-span-2">
@@ -1181,7 +1194,7 @@ function TaskForm({
 
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Revision Status{" "}
+                    File Status{" "}
                     <span className="text-red-500">
                       *
                     </span>
@@ -1348,11 +1361,12 @@ function TaskForm({
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div><label className="mb-1.5 block text-xs font-semibold text-slate-600">Team</label><select value={selectedAssignmentTeam} onChange={e=>{setAssignmentTeam(e.target.value);setAssignedEmployeeId('');setCommitmentConfirmed(false);}} disabled={loading} className={inputClass}><option value="">All teams · choose an artist</option>{assignmentTeams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
                   {/* ASSIGNED TO */}
 
                   <div>
                     <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                      Assigned To
+                      Artist
                       {!isEdit && (
                         <span className="ml-1 text-red-500">
                           *
@@ -1373,10 +1387,10 @@ function TaskForm({
                       }
                     >
                       <option value="">
-                        Select team member
+                        Select artist
                       </option>
 
-                      {employees.map(
+                      {eligibleArtists.map(
                         (
                           employee,
                         ) => (
@@ -1447,9 +1461,7 @@ function TaskForm({
                   />
 
                   <p className="text-[11px] leading-5 text-slate-500">
-                    Only Admin and Project
-                    Coordinator should assign
-                    production tasks. The
+                    Assignment access follows your account permissions. The
                     assigned team member will
                     see this task in{" "}
                     <span className="font-semibold text-slate-700">
@@ -1538,7 +1550,7 @@ function TaskForm({
 
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Delivery Deadline / committed completion (IST)
+                    Committed Time (IST)
                   </label>
 
                   <input
@@ -1561,7 +1573,7 @@ function TaskForm({
 
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Estimated Hours
+                    Estimated Effort (hours)
                   </label>
 
                   <input
@@ -1588,36 +1600,11 @@ function TaskForm({
                   />
                 </div>
 
-                {/* ACTUAL */}
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Actual Hours
-                  </label>
-
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={
-                      actualHours
-                    }
-                    onChange={(
-                      event,
-                    ) =>
-                      setActualHours(
-                        event.target
-                          .value,
-                      )
-                    }
-                    disabled={
-                      loading
-                    }
-                    className={
-                      inputClass
-                    }
-                  />
-                </div>
+                {isEdit && <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Recorded task hours</label>
+                  <input type="number" value={actualHours} readOnly className={inputClass} />
+                  <p className="mt-1 text-xs text-slate-500">Daily Total Hours is calculated from recorded work entries.</p>
+                </div>}
               </div>
             </section>
 
@@ -1625,6 +1612,7 @@ function TaskForm({
                 ASSETS & NOTES
             ============================================== */}
 
+            <p className="rounded-xl bg-[#fff7cc] p-3 text-sm text-black">Start Time, End Time and Total Hours are recorded when the artist works on the task; they are not entered during task creation.</p>
             <section>
               <SectionHeader
                 icon={
@@ -1632,7 +1620,7 @@ function TaskForm({
                     size={16}
                   />
                 }
-                title="Assets & Notes"
+                title="File / Asset & Notes"
               />
 
               <div className="grid grid-cols-1 gap-4">
@@ -1640,7 +1628,7 @@ function TaskForm({
 
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Footage / Asset Link
+                    File / Asset Link
                   </label>
 
                   <input

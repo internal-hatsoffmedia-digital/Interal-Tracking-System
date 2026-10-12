@@ -19,6 +19,7 @@ interface ClientRelation {
 }
 
 interface ProjectRelation {
+  status?:string;
   project_code?: string | null;
   rate?: number | null;
   id: string;
@@ -45,6 +46,8 @@ interface AssignmentRelation {
   status: string;
   notes: string | null;
   assigned_at: string;
+  deadline_at?:string|null;
+  committed_at?:string|null;
 }
 
 
@@ -73,7 +76,7 @@ async function getTaskRelations() {
     supabase
       .from("projects")
       .select(
-        "id, name, series_title, client_id, team_id, project_code, rate",
+        "id, name, status, series_title, client_id, team_id, project_code, rate",
       )
       .eq("is_active", true)
       .order("name", {
@@ -83,7 +86,7 @@ async function getTaskRelations() {
     supabase
       .from("task_assignments")
       .select(
-        "id, task_id, employee_id, assigned_by, status, notes, assigned_at, deadline_at",
+        "id, task_id, employee_id, assigned_by, status, notes, assigned_at, deadline_at, committed_at",
       )
       .order("assigned_at", {
         ascending: false,
@@ -222,6 +225,8 @@ function attachRelations(
           taskAssignment
             ? {
                 id: taskAssignment.id,
+                deadline_at:taskAssignment.deadline_at,
+                committed_at:taskAssignment.committed_at,
                 status:
                   taskAssignment.status,
                 notes:

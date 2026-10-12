@@ -188,3 +188,11 @@ html #root .profile-photo-options img {
   height: 32px;
   border-radius: 9px;
 }
+/* Pale studio cards need their own ink, independent of the surrounding theme. */
+html #root .future-briefing-intro{--ink:#0a0a0a;--body:#4a4a4a;--future-muted:#555;color:#0a0a0a}
+html #root .future-briefing-intro h1{color:#0a0a0a!important}
+html #root .future-briefing-intro>p,html #root .future-briefing-intro .future-eyebrow{color:#555!important}
+html #root .future-briefing-intro .future-briefing-context>span{background:#fff4bf;color:#0a0a0a!important}
+html #root .future-briefing-intro .future-secondary{background:#fff8ea;color:#0a0a0a!important;border-color:#b9b19c}
+html #root .future-briefing-intro .future-text-link{color:#0a0a0a!important}
+html #root .future-metric:is(.peach,.lime) :is(p,strong,span){color:#0a0a0a!important}

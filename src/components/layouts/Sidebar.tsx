@@ -12,7 +12,7 @@ const groups=[
 
 export default function Sidebar(){
  const {profile,signOut}=useAuth();
- const financeAccess=useProjectFinanceAccess();
+ const financeAccess=useProjectFinanceAccess('sales');
  const location=useLocation();
  const navigate=useNavigate();
  const [open,setOpen]=useState(false);

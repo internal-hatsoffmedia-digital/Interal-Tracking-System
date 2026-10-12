@@ -1,4 +1,5 @@
 export interface Project {
+  production_team_ids?: string[];
   project_code?: string | null;
   category?: string | null;
   final_link?: string | null;
@@ -69,6 +70,7 @@ export interface ProjectWithRelations
 
 
 export interface CreateProjectInput {
+  production_team_ids?: string[];
   project_code?: string | null;
   category?: string | null;
   final_link?: string | null;
@@ -106,6 +108,7 @@ export interface CreateProjectInput {
 
 
 export interface UpdateProjectInput {
+  production_team_ids?: string[];
   project_code?: string | null;
   category?: string | null;
   final_link?: string | null;

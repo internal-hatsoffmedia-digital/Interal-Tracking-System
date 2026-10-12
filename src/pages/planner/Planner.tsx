@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 
+import {indiaDay,plannerDay} from '../../lib/plannerCarryForward';
 import { getTasks } from "../../services/tasks/tasks.service";
 
 import type { TaskWithRelations } from "../../types/task";
@@ -125,6 +126,8 @@ function getStatusClasses(
 ========================================================= */
 
 function Planner() {
+  const [today,setToday]=useState(indiaDay);
+  useEffect(()=>{const timer=window.setInterval(()=>setToday(indiaDay()),30000);return()=>window.clearInterval(timer);},[]);
   const [tasks, setTasks] =
     useState<TaskWithRelations[]>(
       [],
@@ -211,8 +214,8 @@ function Planner() {
           Boolean(
             task.planned_date,
           ),
-      );
-    }, [tasks]);
+      ).map(task=>({...task,planner_date:plannerDay(task,today)}));
+    }, [tasks, today]);
 
   /* =======================================================
      FILTERED TASKS
@@ -258,7 +261,7 @@ function Planner() {
 
             if (
               dateFilter &&
-              task.planned_date !==
+              task.planner_date !==
                 dateFilter
             ) {
               return false;
@@ -286,11 +289,11 @@ function Planner() {
         .sort(
           (a, b) => {
             const dateA =
-              a.planned_date ??
+              a.planner_date ??
               "";
 
             const dateB =
-              b.planned_date ??
+              b.planner_date ??
               "";
 
             return dateA.localeCompare(
@@ -312,23 +315,21 @@ function Planner() {
 
   const stats =
     useMemo(() => {
-      let today = 0;
+      let todayCount = 0;
       let highPriority = 0;
       let inProgress = 0;
       let estimatedHours = 0;
 
       const todayString =
-        new Date()
-          .toISOString()
-          .split("T")[0];
+        today;
 
       plannedTasks.forEach(
         (task) => {
           if (
-            task.planned_date ===
+            task.planner_date ===
             todayString
           ) {
-            today++;
+            todayCount++;
           }
 
           if (
@@ -363,12 +364,12 @@ function Planner() {
 
       return {
         total: plannedTasks.length,
-        today,
+        today:todayCount,
         highPriority,
         inProgress,
         estimatedHours,
       };
-    }, [plannedTasks]);
+    }, [plannedTasks,today]);
 
   /* =======================================================
      CLEAR FILTERS
@@ -725,6 +726,7 @@ function Planner() {
           TABLE
       ================================================== */}
 
+      <p className="rounded-xl bg-[#fff7cc] p-3 text-sm text-black">Unfinished tasks carry forward to today automatically (IST). Original planned dates and committed deadlines stay unchanged.</p>
       <PlannerTable
         tasks={filteredTasks}
         loading={loading}
@@ -866,9 +868,7 @@ function PlannerTable({
               <div className="mt-4 grid grid-cols-2 gap-3">
                 <InfoItem
                   label="Planned"
-                  value={formatDate(
-                    task.planned_date,
-                  )}
+                  value={formatDate(task.planner_date??task.planned_date)+(task.planner_date!==task.planned_date?` · Carried from ${formatDate(task.planned_date)}`:"")}
                 />
 
                 <InfoItem
@@ -998,8 +998,8 @@ function PlannerTable({
 
                         <span className="whitespace-nowrap text-sm font-semibold text-slate-700">
                           {formatDate(
-                            task.planned_date,
-                          )}
+                            task.planner_date??task.planned_date,
+                          )}{task.planner_date!==task.planned_date&&<small className="block">Carried from {formatDate(task.planned_date)}</small>}
                         </span>
                       </div>
                     </td>

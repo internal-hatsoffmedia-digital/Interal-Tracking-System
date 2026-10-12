@@ -1,4 +1,5 @@
 export interface Task {
+  planner_date?:string|null;
   id: string;
 
   project_id: string;
@@ -41,6 +42,7 @@ export interface TaskWithRelations
   } | null;
 
   project?: {
+    status?:string;
     id: string;
     name: string;
     series_title: string | null;
@@ -68,6 +70,7 @@ export interface TaskWithRelations
     status: string;
     notes: string | null;
     assigned_at: string;
+    committed_at?:string|null;
     deadline_at?: string | null;
     employee_id: string;
     employee?: {

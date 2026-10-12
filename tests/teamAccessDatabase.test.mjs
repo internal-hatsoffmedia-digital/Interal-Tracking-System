@@ -178,11 +178,105 @@ test('project finance coexists with production RLS and the approved reset preser
  assert.equal(sales.projects.length,2);assert.equal(sales.items.length,1);
  assert.ok(sales.projects.every(p=>!p.can_edit));
  await assert.rejects(as(12,"select save_project_finance_item($1,'Expense','expense',7000,'once','2026-10-01')",[id(301)]),/cannot change/);
+ await db.exec('reset role');
+ await db.exec(await readFile(new URL('../supabase/migrations/202610120001_team_sales_visibility.sql',import.meta.url),'utf8'));
+ await db.exec("select set_config('request.jwt.claim.sub','',false)");
+ await db.query('update profiles set is_active=true where id=$1',[id(10)]);
+ await db.query('update employees set is_active=true where id=$1',[id(211)]);
+ for(const lead of [1,2,9]){
+  const data=(await as(lead,'select team_sales_data() as data')).rows[0].data;
+  assert.equal(data.projects.length,2);
+ }
+ for(const lead of [3,4,5,6]){
+  const data=(await as(lead,'select team_sales_data() as data')).rows[0].data;
+  assert.deepEqual(data.projects.map(p=>p.id),[id(301)]);
+  assert.ok(data.items.every(i=>i.project_id===id(301)));
+  assert.ok(data.projects.every(p=>!p.can_edit));
+ }
+ for(const denied of [7,8,10,12]){
+  assert.equal((await as(denied,'select team_sales_access() as allowed')).rows[0].allowed,false);
+  await assert.rejects(as(denied,'select team_sales_data()'),/Sales is available only/);
+ }
+ await assert.rejects(as(12,'select project_finance_data()'),/access is unavailable/);
+ assert.ok((await as(7,'select project_finance_data() as data')).rows[0].data.projects.some(p=>p.id===id(301)));
+ await db.exec('reset role');
+ await as(1,"update profiles set role='team_lead' where id=$1",[id(4)]);
+ assert.deepEqual((await as(4,'select team_sales_data() as data')).rows[0].data.projects.map(p=>p.id),[id(301)]);
+ await db.exec('reset role');
+ await as(1,"update profiles set role='manager' where id=$1",[id(9)]);
+ assert.equal((await as(9,'select team_sales_data() as data')).rows[0].data.projects.length,2);
+ await db.exec('reset role');
+ await as(1,'update profiles set is_active=false where id=$1',[id(4)]);
+ await assert.rejects(as(4,'select team_sales_data()'),/Sales is available only/);
+ await db.exec('reset role');
+ await db.exec(await readFile(new URL('../supabase/migrations/202610120002_job_titles_and_project_teams.sql',import.meta.url),'utf8'));
+ const directory=(await as(1,'select admin_access_directory() as data')).rows[0].data;
+ const account=directory.accounts.find(p=>p.id===id(7));
+ const expected={role:account.role,team_id:account.team_id,sales_access:account.sales_access};
+ await as(1,'select admin_set_access_profile($1,$2,$3,$4,$5,$6,$7)',[id(7),account.role,account.team_id,account.sales_access,expected,'Project Coordinator',account.job_title]);
+ assert.equal((await as(1,'select job_title from profiles where id=$1',[id(7)])).rows[0].job_title,'Project Coordinator');
+ assert.equal((await as(1,'select job_title from employees where profile_id=$1',[id(7)])).rows[0].job_title,'Project Coordinator');
+ await assert.rejects(as(7,'select admin_set_access_profile($1,$2,$3,$4,$5,$6,$7)',[id(7),account.role,account.team_id,null,expected,'Other','Project Coordinator']),/Administrator/);
+ await assert.rejects(as(1,'select admin_set_access_profile($1,$2,$3,$4,$5,$6,$7)',[id(7),account.role,account.team_id,null,expected,'Other',null]),/Job title changed/);
+ await as(1,'update profiles set is_active=true where id=$1',[id(4)]);
+ await as(1,'update projects set production_team_ids=$1 where id=$2',[[id(102)],id(302)]);
+ assert.equal((await as(4,'select team_sales_data() as data')).rows[0].data.projects.length,2);
+ assert.deepEqual((await as(5,'select team_sales_data() as data')).rows[0].data.projects.map(p=>p.id),[id(301)]);
+ assert.equal((await as(4,'update projects set production_team_ids=$1 where id=$2 returning id',[[id(103)],id(301)])).rows.length,0);
+ await assert.rejects(as(1,'update projects set production_team_ids=$1 where id=$2',[[id(99999)],id(301)]),/active production teams/);
+ await db.exec("reset role;select set_config('request.jwt.claim.sub','',false)");
+ await db.query("insert into sales_leads(id,name,source,owner_id,created_by,project_id) values($1,'Reset test','Website',$2,$2,$3)",[id(99001),id(1),id(301)]);
+ await db.query("insert into sales_activities(lead_id,actor_id,kind,notes) values($1,$2,'note','Reset test')",[id(99001),id(1)]);
+ await db.query("insert into sales_targets(month,amount,updated_by) values('2026-10-01',100,$1)",[id(1)]);
  await db.exec("reset role;select set_config('request.jwt.claim.sub','',false)");
  const clients=(await db.query('select count(*)::int n from clients')).rows[0].n;
  const profiles=(await db.query('select count(*)::int n from profiles')).rows[0].n;
- await db.exec(await readFile(new URL('../scripts/reset-project-work.sql',import.meta.url),'utf8'));
- for(const table of ['projects','tasks','task_assignments','timesheets','project_activity','project_finance_items'])assert.equal((await db.query(`select count(*)::int n from ${table}`)).rows[0].n,0);
+ await db.exec(await readFile(new URL('../scripts/reset-project-sales.sql',import.meta.url),'utf8'));
+ for(const table of ['projects','tasks','task_assignments','timesheets','project_activity','project_finance_items','sales_leads','sales_activities','sales_targets'])assert.equal((await db.query(`select count(*)::int n from ${table}`)).rows[0].n,0);
  assert.equal((await db.query('select count(*)::int n from clients')).rows[0].n,clients);
  assert.equal((await db.query('select count(*)::int n from profiles')).rows[0].n,profiles);
+});
+test('latest policy restricts Sales to coordinator AL and senior management, preserving team work',async()=>{
+ await db.exec('reset role');
+ await db.exec(await readFile(new URL('../supabase/migrations/202610120003_opening_sales.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/202610120004_sales_leadership_only.sql',import.meta.url),'utf8'));
+ for(const n of [1,2,9]){
+  assert.equal((await as(n,'select team_sales_access() as allowed')).rows[0].allowed,true);
+  const result=(await as(n,'select team_sales_data() as data')).rows[0].data;
+  assert.ok(Array.isArray(result.teams));
+  await as(n,'select opening_sales_data()');
+ }
+ for(const n of [3,4,5,6,7,8,10,11,12,13,14]){
+  assert.equal((await as(n,'select team_sales_access() as allowed')).rows[0].allowed,false);
+  await assert.rejects(as(n,'select team_sales_data()'),/restricted/);
+  await assert.rejects(as(n,'select opening_sales_data()'),/unavailable/);
+ }
+ for(const n of [3,4,5,6])await assert.rejects(as(n,'select project_finance_data()'),/unavailable/);
+ for(const n of [7,8])await as(n,'select project_finance_data()');
+ for(const n of [3,4,5,6])await as(n,'select team_pc_workers()');
+});
+test('coordinator lead receives eligible assignment options; PC sees only self; production sees none',async()=>{
+ await db.exec('reset role');
+ await db.exec(await readFile(new URL('../supabase/migrations/202610120005_project_coordinator_options.sql',import.meta.url),'utf8'));
+ const lead=(await as(2,'select * from project_coordinator_options()')).rows;
+ assert.deepEqual(lead.map(r=>r.profile_id).sort(),[id(7),id(8)]);
+ assert.ok(lead.every(r=>r.id===id(r.profile_id===id(7)?207:208)));
+ assert.deepEqual((await as(7,'select * from project_coordinator_options()')).rows.map(r=>r.profile_id),[id(7)]);
+ for(const n of [3,4,5,6,10,11])assert.equal((await as(n,'select * from project_coordinator_options()')).rows.length,0);
+ await db.exec('reset role;begin');
+ try{
+  const created=(await as(2,"insert into projects(name,client_id,lead_employee_id) values('Coordinator selection test',$1,$2) returning id",[id(50),id(207)])).rows[0];
+  assert.ok((await as(2,'select * from project_members where project_id=$1 and profile_id=$2',[created.id,id(7)])).rows.length);
+ }finally{await db.exec('reset role;rollback');}
+});
+test('project completion timestamp is server-controlled and appears in finance RPCs',async()=>{
+ await db.exec('reset role');await db.exec(await readFile(new URL('../supabase/migrations/202610120006_completed_project_sales.sql',import.meta.url),'utf8'));
+ await db.exec('begin');try{
+ const p=(await as(2,"insert into projects(name,client_id,lead_employee_id,rate) values('Sales completion test',$1,$2,7000) returning id,sales_completed_at",[id(50),id(207)])).rows[0];assert.equal(p.sales_completed_at,null);
+ await as(7,"update projects set status='completed' where id=$1",[p.id]);
+ const finance=(await as(2,'select team_sales_data() as data')).rows[0].data.projects.find(x=>x.id===p.id);assert.ok(finance.sales_completed_at);assert.equal(finance.status,'completed');
+ await as(7,"update projects set sales_completed_at='2000-01-01' where id=$1",[p.id]);
+ const retained=(await as(2,'select team_sales_data() as data')).rows[0].data.projects.find(x=>x.id===p.id);assert.equal(retained.sales_completed_at,finance.sales_completed_at);
+ await as(7,"update projects set status='in_progress' where id=$1",[p.id]);assert.equal((await as(2,'select team_sales_data() as data')).rows[0].data.projects.find(x=>x.id===p.id).sales_completed_at,null);
+ }finally{await db.exec('reset role;rollback');}
 });

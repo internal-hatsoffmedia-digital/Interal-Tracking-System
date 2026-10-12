@@ -16,6 +16,7 @@ export default function ProjectFinanceCharts({data,month,client,project,onClient
   const y=(n:number)=>210-n/max*160;
   const path=(key:'revenue'|'expenses')=>trend.map((t,i)=>`${i?'L':'M'}${x(i)},${y(t[key])}`).join(' ');
   const active=trend.find(t=>t.month===selected)??trend[5];
+  const chargeShare=summary.revenue?summary.charges/summary.revenue*100:0;
   const baseShare=summary.revenue?summary.projectRevenue/summary.revenue*100:0;
   return <div className="finance-diagrams">
     <section className="finance-card finance-line-card">
@@ -29,13 +30,14 @@ export default function ProjectFinanceCharts({data,month,client,project,onClient
         {trend.map((t,i)=><g key={t.month}><circle cx={x(i)} cy={y(t.revenue)} r="5" fill="#ffcc00"/><text x={x(i)} y="238" textAnchor="middle">{monthLabel(t.month)}</text></g>)}
       </svg>
       <div className="finance-chart-months" aria-label="Explore monthly amounts">{trend.map(t=><button key={t.month} aria-pressed={active.month===t.month} onClick={()=>setSelected(t.month)}>{monthLabel(t.month)}</button>)}</div>
-      <div className="finance-chart-legend"><span><i/>Expected revenue</span><span><i/>Company expenses</span></div>
+      <div className="finance-chart-legend"><span><i/>Completed sales</span><span><i/>Company expenses</span></div>
       {!trend.some(t=>t.revenue||t.expenses)&&<p className="finance-chart-note">No financial activity in this period. Project rates and cost entries will build this chart automatically.</p>}
     </section>
     <section className="finance-card finance-composition"><div className="finance-card-heading"><div><p className="finance-chart-kicker">REVENUE MIX</p><h2>What brings revenue</h2></div></div>
-      <div className="finance-donut" role="img" aria-label={`Base project rates ${financeMoney(summary.projectRevenue)}, additional charges ${financeMoney(summary.charges)}`} style={{background:summary.revenue?`conic-gradient(#ffcc00 0 ${baseShare}%, #fff7cc ${baseShare}% 100%)`:'conic-gradient(#e5e5e5 0 100%)'}}><div><span>Total expected</span><strong>{financeMoney(summary.revenue)}</strong><small>{summary.revenue?'Selected month':'No revenue booked yet'}</small></div></div>
+      <div className="finance-donut" role="img" aria-label={`Base project rates ${financeMoney(summary.projectRevenue)}, additional charges ${financeMoney(summary.charges)}, opening sales ${financeMoney(summary.openingRevenue)}`} style={{background:summary.revenue?`conic-gradient(#ffcc00 0 ${baseShare}%, #fff7cc ${baseShare}% ${baseShare+chargeShare}%, #111 ${baseShare+chargeShare}% 100%)`:'conic-gradient(#e5e5e5 0 100%)'}}><div><span>Completed sales</span><strong>{financeMoney(summary.revenue)}</strong><small>{summary.revenue?'Selected month':'No revenue booked yet'}</small></div></div>
       <div className="finance-mix-row"><span><i/>Base project rates</span><strong>{financeMoney(summary.projectRevenue)}</strong></div><div className="finance-mix-row"><span><i/>Additional charges</span><strong>{financeMoney(summary.charges)}</strong></div>
-      <p className="finance-chart-note">One project rate, counted once. Additional client charges are shown separately.</p>
+      <div className="finance-mix-row"><span>Opening sales · Unattributed</span><strong>{financeMoney(summary.openingRevenue)}</strong></div>
+      <p className="finance-chart-note">Opening sales have no client allocation yet. One project rate, counted once. Additional client charges are shown separately.</p>
     </section>
     <section className="finance-card finance-ranking"><div className="finance-card-heading"><div><p className="finance-chart-kicker">CLIENT PORTFOLIO</p><h2>Revenue by client</h2></div><span>{clients.length} clients · select to filter</span></div>
       {!clients.length?<p className="finance-chart-note">No clients available to your account.</p>:<div className="finance-ranking-list">{clients.map((c,i)=><button key={c.id} onClick={()=>onClient(c.id)} aria-label={`Filter ${c.name}, revenue ${financeMoney(c.revenue)}`}><span className="finance-ranking-number">{String(i+1).padStart(2,'0')}</span><div><span>{c.name}</span><span className="finance-bar-track"><span style={{width:`${c.revenue/Math.max(1,...clients.map(v=>v.revenue))*100}%`}}/></span><small>{c.projects.length} {c.projects.length===1?'project':'projects'}{!c.revenue?' · No revenue booked this month':''}</small></div><strong>{financeMoney(c.revenue)}</strong><ArrowUpRight size={16}/></button>)}</div>}

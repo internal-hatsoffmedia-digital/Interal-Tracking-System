@@ -1,5 +1,5 @@
 export interface FinanceProject {
-  id: string; project_code: string; name: string; client_id: string; client_name: string;
+  sales_completed_at?:string|null; team_id?:string|null; production_team_ids?:string[]; id: string; project_code: string; name: string; client_id: string; client_name: string;
   status: string; rate: number | string | null; created_at: string; is_active: boolean; can_edit: boolean;
 }
 export interface FinanceItem {
@@ -8,5 +8,7 @@ export interface FinanceItem {
   created_by: string; creator_name: string; created_at: string; updated_at: string;
 }
 export interface FinanceClient { id: string; name: string }
-export interface ProjectFinanceData { clients?: FinanceClient[]; projects: FinanceProject[]; items: FinanceItem[] }
+export interface OpeningSale { month:string; category:string; team_name:string; amount:number|string; salesperson:string }
+export interface OpeningPeriod { month:string; target:number|string; tracking_starts_on:string; source_note:string }
+export interface ProjectFinanceData { teams?:{id:string;name:string}[]; opening_sales?:OpeningSale[]; opening_periods?:OpeningPeriod[]; clients?: FinanceClient[]; projects: FinanceProject[]; items: FinanceItem[] }
 export type FinanceInput = Pick<FinanceItem,'project_id'|'label'|'kind'|'frequency'|'start_month'|'end_month'|'notes'> & {amount: number; id?:string; updated_at?:string};

@@ -8,7 +8,7 @@ const js=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext
 const {financeSummary,financeMonth,trailingFinanceMonths,financeClients}=await import('data:text/javascript;base64,'+Buffer.from(js).toString('base64'));
 
 test('project sales count each rate once, monthly charges recur, and expenses reduce net',()=>{
- const data={projects:[{id:'p',client_id:'c',rate:5000,created_at:'2026-09-30T20:00:00Z'},{id:'q',client_id:'other',rate:null,created_at:'2026-10-02T00:00:00Z'}],items:[
+ const data={projects:[{id:'p',client_id:'c',rate:5000,status:'completed',sales_completed_at:'2026-09-30T20:00:00Z',created_at:'2026-09-30T20:00:00Z'},{id:'q',client_id:'other',rate:null,status:'completed',sales_completed_at:'2026-10-02T00:00:00Z',created_at:'2026-10-02T00:00:00Z'}],items:[
   {project_id:'p',kind:'charge',amount:10000,frequency:'monthly',start_month:'2026-10-01',end_month:'2026-11-01'},
   {project_id:'p',kind:'expense',amount:7000,frequency:'once',start_month:'2026-10-01',end_month:null},
  ]};
@@ -69,4 +69,10 @@ test('sales client catalog includes clients without work and prefers current dir
  assert.deepEqual(financeClients(data),[['a','Actual name'],['d','Actual name'],['b','Finance-only client'],['c','No project client']]);
  assert.deepEqual(financeClients({...data,projects:[]}),[['a','Actual name'],['d','Actual name'],['c','No project client']]);
  assert.equal(financeSummary(data,'2026-10','c').revenue,0);
+});
+test('sales count completion month, not creation or task dates; unfinished charges wait',()=>{
+ const d={projects:[{id:'p',client_id:'c',rate:7000,status:'in_progress',created_at:'2026-10-01T00:00:00Z',sales_completed_at:null}],items:[{project_id:'p',kind:'charge',amount:1000,frequency:'once',start_month:'2026-10-01'}]};
+ assert.equal(financeSummary(d,'2026-10').revenue,0);
+ d.projects[0].status='completed';d.projects[0].sales_completed_at='2026-10-31T20:00:00Z';
+ assert.equal(financeSummary(d,'2026-10').revenue,0);assert.equal(financeSummary(d,'2026-11').revenue,8000);assert.equal(financeSummary(d,'2026-12').revenue,0);
 });

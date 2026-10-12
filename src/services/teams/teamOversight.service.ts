@@ -1,7 +1,7 @@
 import {coordinatorDirectory} from '../../lib/coordinatorDirectory';
 import {supabase} from '../../lib/supabase';
 export const oversightRoles=['admin','manager','director','associate_lead','team_lead'];
-export async function getTeamOversight() {
+export async function getTeamOversight(ownTeam=false) {
   const auth=await supabase.auth.getUser();
   if(auth.error || !auth.data.user)throw new Error('Please sign in.');
   const result=await supabase.from('profiles').select('id,role,team_id,is_active').eq('id',auth.data.user.id).single();
@@ -27,22 +27,27 @@ export async function getTeamOversight() {
   const teams=await rows('teams','id,name,team_type');
   const coordinators=coordinatorDirectory(people,teams as {id:string;name:string;team_type:string}[],profile);
   const coordinatorIds=coordinators.map(p=>p.id);
-  const [projects,clients,createdTasks,assignments,employees]=await Promise.all([
+  const [projects,clients,createdTasks,assignments,workers]=await Promise.all([
     rows('projects','id,name,created_by,status,created_at,project_members(profile_id)'),
     rows('clients','id,name,created_by,created_at','created_by',coordinatorIds),
-    rows('tasks','id,title,created_by,status,created_at','created_by',coordinatorIds),
+    rows('tasks','id,title,project_id,created_by,status,created_at','created_by',coordinatorIds),
     rows('task_assignments','id,task_id,employee_id,assigned_by,assigned_at,status,deadline_at,completed_at'),
     (async()=>{const response=await supabase.rpc('team_pc_workers');if(response.error)throw new Error(response.error.message);return response.data as Record<string,any>[];})(),
 
   ]);
+  const workerDetails=await rows('employees','id,profile_id,job_title','id',workers.map(w=>w.id));
+  const employees=workers.map(w=>({...w,...workerDetails.find(e=>e.id===w.id)}));
   // RLS remains authoritative. Flow Force leads see work assigned by their own coordinators;
   // production leads see their own team members, administrators see all permitted work.
   const flowForce=teams.some(t=>t.id===profile.team_id&&(t.team_type==='flow_force'||t.team_type==='project_coordination'||t.name.toLowerCase()==='flow force'));
   const productionSupervisor=flowForce&&['manager','director','associate_lead'].includes(profile.role);
-  const teamMembers=employees.filter(e=>(productionSupervisor || ['admin','manager','director'].includes(profile.role) || coordinatorIds.length>0 || e.team_id===profile.team_id));
+  const teamMembers=employees.filter(e=>(!ownTeam||e.team_id===profile.team_id)&&(productionSupervisor || ['admin','manager','director'].includes(profile.role) || coordinatorIds.length>0 || e.team_id===profile.team_id));
   const memberIds=teamMembers.map(e=>e.id);
   const teamAssignments=assignments.filter(a=>memberIds.includes(a.employee_id) && (productionSupervisor || ['admin','manager','director'].includes(profile.role) || a.employee_id && teamMembers.find(e=>e.id===a.employee_id)?.team_id===profile.team_id || coordinatorIds.includes(a.assigned_by)));
   const taskIds=[...new Set(assignments.map(a=>a.task_id))];
-  const tasks=await rows('tasks','id,title,status,due_date','id',taskIds);
-  return {coordinators,projects,clients,createdTasks,assignments:assignments.filter(a=>coordinatorIds.includes(a.assigned_by)),teamMembers,teamAssignments,tasks,people,employees,teams};
+  const tasks=await rows('tasks','id,title,project_id,status,due_date','id',taskIds);
+  const memberProfiles=new Set(teamMembers.map(e=>e.profile_id).filter(Boolean));
+  const activity=await rows('project_activity','id,project_id,actor_id,action,created_at','actor_id',[...memberProfiles] as string[]);
+  const visibleProjects=ownTeam?projects.filter(p=>tasks.some(t=>t.project_id===p.id&&teamAssignments.some(a=>a.task_id===t.id))||memberProfiles.has(p.created_by)):projects;
+  return {activity,coordinators,projects:visibleProjects,clients:ownTeam?clients.filter(c=>memberProfiles.has(c.created_by)):clients,createdTasks:ownTeam?createdTasks.filter(t=>memberProfiles.has(t.created_by)):createdTasks,assignments:assignments.filter(a=>coordinatorIds.includes(a.assigned_by)),teamMembers,teamAssignments,tasks,people,employees,teams};
 }

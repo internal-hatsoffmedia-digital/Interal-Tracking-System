@@ -30,6 +30,8 @@ interface TaskOption {
 }
 
 interface EmployeeOption {
+  team_id?:string|null;
+  team?:{id:string;name:string}|null;
   account_role?: string | null;
   id: string;
   full_name: string;
@@ -107,6 +109,9 @@ function TaskAssignmentForm({
   const [taskId, setTaskId] =
     useState("");
 
+  const [teamId,setTeamId]=useState('');
+  const teamOptions=[...new Map(employees.filter(e=>e.team).map(e=>[e.team!.id,e.team!])).values()];
+  const teamEmployees=employees.filter(e=>!teamId||e.team_id===teamId);
   const [employeeId, setEmployeeId] =
     useState("");
 
@@ -128,7 +133,7 @@ function TaskAssignmentForm({
 
     setCommitted('');setConfirmed(false);
     setTaskId("");
-    setEmployeeId("");
+    setEmployeeId("");setTeamId('');
     setNotes("");
     setValidationError("");
   }, [open]);
@@ -226,7 +231,7 @@ function TaskAssignmentForm({
         return;
       }
 
-      if (!employeeId) {
+      if (!employeeId || !teamEmployees.some(e=>e.id===employeeId)) {
         setValidationError(
           "Please select an employee.",
         );
@@ -456,6 +461,7 @@ function TaskAssignmentForm({
             ============================================= */}
 
             <div>
+              <label className="mb-2 block text-sm font-semibold">Assign to team<select aria-label="Assign to team" className="project-input mt-2 w-full rounded-xl border p-3" disabled={loading} value={teamId} onChange={e=>{setTeamId(e.target.value);setEmployeeId('');}}><option value="">All available teams</option>{teamOptions.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
               <label
                 htmlFor="assignment-employee"
                 className="mb-2 block text-sm font-semibold text-slate-700"
@@ -482,13 +488,13 @@ function TaskAssignmentForm({
                   Select an employee
                 </option>
 
-                {employees.map(
+                {teamEmployees.map(
                   (employee) => (
                     <option
                       key={employee.id}
                       value={employee.id}
                     >
-                      {employee.full_name}{" "}
+                      {employee.full_name}{employee.job_title?` · ${employee.job_title}`:""}{" "}
                       —{" "}
                       {
                         employee.employee_code
@@ -498,7 +504,7 @@ function TaskAssignmentForm({
                 )}
               </select>
 
-              {employees.length ===
+              {teamEmployees.length ===
                 0 && (
                 <p className="mt-2 text-xs text-amber-600">
                   No active employees

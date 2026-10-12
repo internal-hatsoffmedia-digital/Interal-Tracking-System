@@ -1,10 +1,15 @@
 import {supabase} from '../../lib/supabase';
 import type {FinanceInput, ProjectFinanceData} from '../../types/projectFinance';
 import {isFinanceMonth} from '../../lib/projectFinanceMetrics';
-export async function loadProjectFinance(): Promise<ProjectFinanceData> {
-  const {data,error}=await supabase.rpc('project_finance_data');
+export async function loadProjectFinance(mode:'sales'|'costs'='costs'): Promise<ProjectFinanceData> {
+  const {data,error}=await supabase.rpc(mode==='sales'?'team_sales_data':'project_finance_data');
   if(error)throw new Error(error.message);
   if(!data || !Array.isArray(data.projects) || !Array.isArray(data.items))throw new Error('Project finance returned an invalid response.');
+  if(mode==='sales'){
+    const opening=await supabase.rpc('opening_sales_data');
+    if(opening.error)throw new Error(opening.error.message);
+    return {...data,...opening.data} as ProjectFinanceData;
+  }
   // Read the client directory under the caller's existing RLS, independently of projects.
   const clients: {id:string;name:string}[]=[];
   for(let offset=0;;offset+=500){

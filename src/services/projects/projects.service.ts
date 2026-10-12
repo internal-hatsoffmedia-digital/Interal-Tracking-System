@@ -296,6 +296,7 @@ export async function createProject(
   const { data, error } = await supabase
     .from("projects")
     .insert({
+      production_team_ids: input.production_team_ids ?? [],
       category: input.category || null,
       final_link: input.final_link || null,
       remarks: input.remarks || null,
@@ -370,6 +371,7 @@ export async function updateProject(
   if (input.remarks !== undefined) updates.remarks = input.remarks || null;
   if (input.started_at !== undefined) updates.started_at = input.started_at || null;
   if (input.ended_at !== undefined) updates.ended_at = input.ended_at || null;
+  if (input.production_team_ids !== undefined) updates.production_team_ids = input.production_team_ids;
   if (input.rate !== undefined) updates.rate = input.rate;
 
   if (input.client_id !== undefined) {

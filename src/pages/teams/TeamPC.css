@@ -273,3 +273,31 @@ html #root .team-pc .pc-team-filters {
     gap: 14px;
   }
 }
+/* Tables remain legible in both themes and scroll inside their card on mobile. */
+html #root .team-pc.pc-workspace{display:grid;gap:24px;min-width:0}
+html #root .team-pc .pc-page-header,html #root .team-pc .pc-section-head{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+html #root .team-pc .pc-page-header h1{font-size:32px;font-weight:700;margin:8px 0}
+html #root .team-pc .pc-page-header p{color:var(--pc-muted);font-size:14px}
+html #root .team-pc .pc-eyebrow{font-size:10px;letter-spacing:.18em;font-weight:700;color:var(--pc-ink)}
+html #root .team-pc .pc-refresh{display:flex;align-items:center;gap:8px;background:#ffcc00;color:#000;border:0;padding:12px 18px;border-radius:12px;font-weight:700}
+html #root .team-pc .pc-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+html #root .team-pc .pc-overview article{position:relative;border:1px solid var(--pc-border);background:var(--pc-surface);border-radius:18px;padding:22px;display:grid;gap:12px}
+html #root .team-pc .pc-overview svg{position:absolute;right:18px;top:20px;color:var(--pc-muted)}
+html #root .team-pc .pc-overview span{font-size:12px;padding-right:24px;color:var(--pc-body)}
+html #root .team-pc .pc-overview strong{font-size:30px;color:var(--pc-ink)}
+html #root .team-pc .pc-filters{display:flex;align-items:end;flex-wrap:wrap;gap:16px;background:var(--pc-surface);border:1px solid var(--pc-border);padding:20px;border-radius:18px}
+html #root .team-pc .pc-filters label{flex:1 1 180px;display:grid;gap:8px;min-width:0}
+html #root .team-pc .pc-filters select{width:100%;min-width:0}
+html #root .team-pc .pc-reset{background:var(--pc-canvas);border:1px solid var(--pc-border);color:var(--pc-ink);border-radius:12px;padding:10px 14px;min-height:40px}
+html #root .team-pc .pc-tabs{display:flex;flex-wrap:wrap;padding:4px;background:var(--pc-canvas);border:1px solid var(--pc-border);border-radius:12px;gap:4px}
+html #root .team-pc .pc-tabs button{padding:9px 12px;background:transparent;color:var(--pc-body);border-radius:8px;font-size:12px;border:0}
+html #root .team-pc .pc-tabs button[aria-pressed=true]{background:#ffcc00;color:#000;font-weight:700}
+html #root .team-pc .pc-local-filter{margin:18px 0}
+html #root .team-pc .pc-status{display:inline-block;white-space:nowrap;padding:5px 9px;border:1px solid var(--pc-border);background:var(--pc-pale);color:var(--pc-ink);border-radius:7px;text-transform:capitalize;font-size:11px}
+html #root .team-pc td{color:var(--pc-body);line-height:1.65;min-width:90px}
+html #root .team-pc td strong{color:var(--pc-ink)}
+html #root .team-pc th{color:#fff4bf}
+html #root .team-pc .pc-no-results{text-align:center;padding:36px;color:var(--pc-muted)}
+html #root .team-pc .pc-error{padding:18px;background:var(--pc-pale);color:var(--pc-ink);border:1px solid #ffcc00;border-radius:14px}
+html[data-theme=dark] #root .team-pc{--pc-muted:#b0b0b0}
+@media(max-width:700px){html #root .team-pc .pc-overview{grid-template-columns:repeat(2,minmax(0,1fr))}html #root .team-pc .pc-overview article{padding:16px}html #root .team-pc .pc-tabs{width:100%}html #root .team-pc .pc-tabs button{flex:1}html #root .team-pc .pc-local-filter{display:grid;width:100%}}
