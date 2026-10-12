@@ -44,6 +44,8 @@ export interface TaskWithRelations
     id: string;
     name: string;
     series_title: string | null;
+    project_code?: string | null;
+    rate?: number | null;
     client_id?: string | null;
     team_id?: string | null;
     client?: {
@@ -66,6 +68,7 @@ export interface TaskWithRelations
     status: string;
     notes: string | null;
     assigned_at: string;
+    deadline_at?: string | null;
     employee_id: string;
     employee?: {
       id: string;

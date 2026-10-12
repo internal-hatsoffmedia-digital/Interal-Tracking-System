@@ -1,4 +1,6 @@
 import {useNavigate} from 'react-router-dom';
+import ProjectFinanceDashboard from '../sales/ProjectFinanceDashboard';
+import {useProjectFinanceAccess} from '../../hooks/useProjectFinanceAccess';
 import {useProjectManagement} from "../../hooks/useProjectManagement";
 import {supabase} from "../../lib/supabase";
 import { useState } from 'react';
@@ -26,6 +28,8 @@ export default function Projects() {
   const [revision, setRevision] = useState(0);
   const [schemaReady,setSchemaReady]=useState(false);
   const manager = useProjectManagement();
+  const financeAccess = useProjectFinanceAccess();
+  const [tab,setTab]=useState<'projects'|'costs'>('projects');
   async function openForm(project: ManagedProject | null) {
     setBusy(true); setError('');
     try {
@@ -66,7 +70,8 @@ export default function Projects() {
     <div className="flex justify-between gap-4"><div><h1 className="text-2xl font-semibold">Projects</h1><p className="text-sm text-slate-500">Assignments, progress, and team visibility.</p></div>
       {manager && schemaReady && <button disabled={busy} className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50" onClick={()=>void openForm(null)}>New project</button>}</div>
     {error && !open && <p role="alert" className="text-red-700">{error}</p>}
-    <ProjectWorkspace revision={revision} onSchemaReady={setSchemaReady} onEdit={p=>void openForm(p)} />
+    <nav aria-label="Project sections" className="flex gap-2"><button className={`rounded-xl border px-4 py-2 text-sm font-semibold ${tab==='projects'?'bg-[#ffcc00] text-black':'bg-white text-black'}`} aria-pressed={tab==='projects'} onClick={()=>setTab('projects')}>Projects</button>{financeAccess&&<button className={`rounded-xl border px-4 py-2 text-sm font-semibold ${tab==='costs'?'bg-[#ffcc00] text-black':'bg-white text-black'}`} aria-pressed={tab==='costs'} onClick={()=>setTab('costs')}>Project charges & costs</button>}</nav>
+    {tab==='projects'?<ProjectWorkspace revision={revision} onSchemaReady={setSchemaReady} onEdit={p=>void openForm(p)} />:financeAccess&&<ProjectFinanceDashboard mode="costs"/>}
     {open && <><ProjectForm open={open} project={editing} clients={clients} employees={employees}
       statusOptions={[...new Set([...projectStatuses,...(editing ? [editing.status]:[])])]}
       healthOptions={[...new Set(['on_track',...(editing ? [editing.health]:[])])]}

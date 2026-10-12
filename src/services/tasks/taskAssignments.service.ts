@@ -415,6 +415,7 @@ export async function getTaskAssignmentsByEmployee(
 export async function createTaskAssignment(
   input: CreateTaskAssignmentInput,
 ): Promise<TaskAssignment> {
+  if (!input.commitment_confirmed || !input.committed_at || !Number.isFinite(Date.parse(input.committed_at)) || Date.parse(input.committed_at)<=Date.now()) throw new Error('Discuss and confirm a future committed completion time before assigning.');
   if (!input.task_id) {
     throw new Error(
       "Task is required.",
@@ -454,6 +455,8 @@ export async function createTaskAssignment(
   } = await supabase
     .from("task_assignments")
     .insert({
+      committed_at: input.committed_at,
+      commitment_confirmed: input.commitment_confirmed,
       task_id:
         input.task_id,
 

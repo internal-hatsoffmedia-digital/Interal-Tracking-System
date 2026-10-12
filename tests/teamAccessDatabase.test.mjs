@@ -164,3 +164,25 @@ test('only Admin can edit employee names or status; coordinator assignment choic
  assert.equal((await as(1,'update employees set full_name=$1,is_active=false where id=$2 returning id',['Admin updated',id(208)])).rows.length,1);
  assert.equal((await as(1,'update employees set full_name=$1,is_active=true where id=$2 returning id',['Esther',id(208)])).rows.length,1);
 });
+
+test('project finance coexists with production RLS and the approved reset preserves clients and identities',async()=>{
+ await db.exec('reset role');
+ for(const name of ['202610100020_hat_panel_tracker.sql','202610100021_fixed_project_ids.sql','202610100022_project_finance.sql'])await db.exec(await readFile(new URL('../supabase/migrations/'+name,import.meta.url),'utf8'));
+ const own=(await as(7,'select project_finance_data() as data')).rows[0].data;
+ assert.ok(own.projects.some(p=>p.id===id(301)));
+ const other=(await as(8,'select project_finance_data() as data')).rows[0].data;
+ assert.ok(!other.projects.some(p=>p.id===id(301)));
+ await as(7,"select save_project_finance_item($1,'Social Media','charge',10000,'monthly','2026-10-01')",[id(301)]);
+ await as(1,"select sales_grant_access($1,'viewer')",[id(12)]);
+ const sales=(await as(12,'select project_finance_data() as data')).rows[0].data;
+ assert.equal(sales.projects.length,2);assert.equal(sales.items.length,1);
+ assert.ok(sales.projects.every(p=>!p.can_edit));
+ await assert.rejects(as(12,"select save_project_finance_item($1,'Expense','expense',7000,'once','2026-10-01')",[id(301)]),/cannot change/);
+ await db.exec("reset role;select set_config('request.jwt.claim.sub','',false)");
+ const clients=(await db.query('select count(*)::int n from clients')).rows[0].n;
+ const profiles=(await db.query('select count(*)::int n from profiles')).rows[0].n;
+ await db.exec(await readFile(new URL('../scripts/reset-project-work.sql',import.meta.url),'utf8'));
+ for(const table of ['projects','tasks','task_assignments','timesheets','project_activity','project_finance_items'])assert.equal((await db.query(`select count(*)::int n from ${table}`)).rows[0].n,0);
+ assert.equal((await db.query('select count(*)::int n from clients')).rows[0].n,clients);
+ assert.equal((await db.query('select count(*)::int n from profiles')).rows[0].n,profiles);
+});

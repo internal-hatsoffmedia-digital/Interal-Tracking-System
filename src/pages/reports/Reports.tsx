@@ -19,9 +19,9 @@ import {
 } from "../../components/reports/ReportCharts";
 import ReportOverviewKpis from "../../components/reports/ReportOverviewKpis";
 import {
-  CategoryReportRow,
+  type CategoryReportRow,
   CategoryReportTable,
-  EmployeeCategoryRow,
+  type EmployeeCategoryRow,
   EmployeeCategoryTable,
   EmployeeTaskTable,
   EmptyReportState,
@@ -309,6 +309,29 @@ export default function Reports() {
       completionRate,
     };
   }, [filteredTasks, filteredTimesheets, projects]);
+
+  const categoryRows = useMemo<CategoryReportRow[]>(() => {
+    return [...new Set(filteredTasks.map(task => task.category))].map(category => {
+      const matching = filteredTasks.filter(task => task.category === category);
+      const ids = new Set(matching.map(task => task.id));
+      const completed = matching.filter(task => isCompleted(task.status)).length;
+      return { category, category_label: TASK_CATEGORY_MAP[category] || prettifyStatus(category),
+        total_tasks: matching.length, completed_tasks: completed,
+        delayed_tasks: matching.filter(task => isDelayed(task)).length,
+        estimated_hours: matching.reduce((sum,task) => sum + Number(task.estimated_hours || 0),0),
+        actual_hours: filteredTimesheets.filter(log => ids.has(log.task_id)).reduce((sum,log) => sum + Number(log.total_hours || 0),0),
+        completion_rate: matching.length ? completed / matching.length * 100 : 0 };
+    });
+  }, [filteredTasks, filteredTimesheets]);
+
+  const employeeCategoryRows = useMemo<EmployeeCategoryRow[]>(() => employees.map(employee => {
+    // Timesheets identify participation; count each completed task once per contributor.
+    const ids = new Set(filteredTimesheets.filter(log => log.employee_id === employee.id).map(log => log.task_id));
+    const completed = filteredTasks.filter(task => ids.has(task.id) && isCompleted(task.status));
+    const category_counts: Record<string,number> = {};
+    for (const task of completed) category_counts[task.category] = (category_counts[task.category] || 0) + 1;
+    return {employee_id:employee.id,employee_name:employee.full_name || 'Unnamed',employee_code:employee.employee_code || '—',category_counts,total_completed:completed.length};
+  }).filter(row => row.total_completed > 0), [employees,filteredTasks,filteredTimesheets]);
 
   // Task Status Rows
   const taskStatusRows = useMemo(() => {

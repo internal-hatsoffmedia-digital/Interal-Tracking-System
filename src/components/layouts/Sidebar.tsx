@@ -1,16 +1,18 @@
+import {useProjectFinanceAccess} from '../../hooks/useProjectFinanceAccess';
 import ProfileAvatar from '../common/ProfileAvatar';
 import {useEffect,useRef,useState} from 'react';
 import {NavLink,useLocation,useNavigate} from 'react-router-dom';
-import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,Timer,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,LogOut,X,PanelLeftClose,PanelLeftOpen,ArrowUpRight,Sparkles} from 'lucide-react';
+import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,LogOut,X,PanelLeftClose,PanelLeftOpen,ArrowUpRight,Sparkles} from 'lucide-react';
 import {useAuth} from '../../context/AuthContext';
 
 const groups=[
- {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team PC','/team-pc',UserCheck],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Timesheet','/timesheet',Timer],['Projects','/projects',FolderKanban]]},
- {name:'Studio',items:[['Clients','/clients',BriefcaseBusiness],['Teams','/teams',Users],['Employees','/employees',UserRound],['Team Members','/team-members',UserCheck],['Performance','/performance',BarChart3],['Reports','/reports',BarChart3]]},
+ {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team PC','/team-pc',UserCheck],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Projects','/projects',FolderKanban]]},
+ {name:'Studio',items:[['Clients','/clients',BriefcaseBusiness],['Teams','/teams',Users],['Employees','/employees',UserRound],['Team Members','/team-members',UserCheck],['Performance','/performance',BarChart3],['Reports','/reports',BarChart3],['Sales','/sales',BarChart3]]},
 ] as const;
 
 export default function Sidebar(){
  const {profile,signOut}=useAuth();
+ const financeAccess=useProjectFinanceAccess();
  const location=useLocation();
  const navigate=useNavigate();
  const [open,setOpen]=useState(false);
@@ -25,6 +27,7 @@ export default function Sidebar(){
  const visibleGroups = groups.map(g => {
    const isLead = profile?.role === 'associate_lead' || profile?.role === 'team_lead';
    return {...g, items:g.items.filter(([label]) => {
+     if(label === 'Sales') return financeAccess;
      if(label === 'My Team') return isLead;
      if(label === 'Team PC') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director';
      if(label === 'Team Work') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director' || isCoordinator;

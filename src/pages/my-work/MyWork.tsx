@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 
+import WorkTimer from '../../components/my-work/WorkTimer';
 import MyWorkTable from "../../components/my-work/MyWorkTable";
 
 import {
@@ -637,6 +638,8 @@ function MyWork() {
           )}h estimated`}
         />
       </div>
+
+      <WorkTimer/>
 
       {/* =================================================
           WORK AREA

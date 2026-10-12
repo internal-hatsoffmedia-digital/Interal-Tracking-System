@@ -1,3 +1,6 @@
+import { getTasks } from '../../services/tasks/tasks.service';
+import { displayTime, readVisibleRows, type Team } from '../tracker/trackerData';
+import ProjectTracker from '../tracker/ProjectTracker';
 import { useProjectManagement } from "../../hooks/useProjectManagement";
 import WorkspaceDialog from "../layouts/WorkspaceDialog";
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -71,7 +74,7 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
   }, [load]);
   const name = (id: string | null) => id ? people.find(p => p.id === id)?.full_name || 'Account unavailable' : 'Not recorded';
   const matchesFilters = (p: ManagedProject) =>
-    (!search || `${p.name} ${p.client?.name ?? ''}`.toLowerCase().includes(search.toLowerCase())) &&
+    (!search || `${p.name} ${p.project_code ?? ''} ${p.client?.name ?? ''}`.toLowerCase().includes(search.toLowerCase())) &&
     (!status || p.status === status) && (!member || p.project_members.some(m => m.access_kind === 'assignee' && m.profile_id === member)) &&
     (!assigner || p.assigned_by === assigner) && (!deadline || (p.target_deadline && p.target_deadline <= deadline)) &&
     (!from || p.created_at.slice(0, 10) >= from) && (!to || p.created_at.slice(0, 10) <= to) &&
@@ -87,10 +90,12 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
       const fresh = await loadProjectWorkspace();
       const rows = fresh.projects.filter(matchesFilters);
       const freshName = (id: string | null) => fresh.people.find(p=>p.id===id)?.full_name ?? (id ? 'Account unavailable':'Not recorded');
-      const text = [['Project','Client','Status','Assignees','Assigned by','Deadline','Missing information'], ...rows.map(p =>
-        [p.name,p.client?.name ?? (p.client_id ? 'Client unavailable' : 'Missing client'),p.status,
+      const [taskRows, teamRows] = await Promise.all([getTasks(),readVisibleRows<Team>('teams','id,name')]);
+      const text = [['Project ID','Client','Project Title','Category','Team','PCs','Artists','Start Time & Date (IST)','End Time & Date (IST)','Delivery Date','Final Link','Remarks','Rate (INR)','Status','Progress','Missing information'], ...rows.map(p =>
+        [p.project_code,p.client?.name ?? 'Client unavailable',p.name,p.category,teamRows.find(team=>team.id===p.team_id)?.name ?? '',
           p.project_members.filter(m => m.access_kind === 'assignee').map(m => freshName(m.profile_id)).join('; '),
-          freshName(p.assigned_by),p.target_deadline,missingFields(p).join('; ')])].map(r => r.map(csvCell).join(',')).join('\r\n');
+          [...new Set(taskRows.filter(t=>t.project_id===p.id).flatMap(t=>(t.assignments??(t.assignment?[t.assignment]:[])).map(a=>a.employee?.full_name).filter(Boolean)))].join('; '),
+          displayTime(p.started_at),displayTime(p.ended_at),p.target_deadline,p.final_link,p.remarks,p.rate == null ? '' : String(p.rate),p.status,`${p.completed_assets} / ${p.total_assets_required}`,missingFields(p).join('; ')])].map(r => r.map(csvCell).join(',')).join('\r\n');
       const url = URL.createObjectURL(new Blob(['\uFEFF' + text], { type: 'text/csv;charset=utf-8' }));
       const a = document.createElement('a'); a.href = url; a.download = 'project-report.csv'; a.click(); URL.revokeObjectURL(url);
     } catch (e) { setError(e instanceof Error ? e.message : 'Export failed'); }
@@ -126,7 +131,7 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
       'On hold': stats.onHold, Overdue: stats.overdue, Incomplete: stats.incomplete }).map(([key, value]) =>
       <div key={key} className="rounded-xl border border-slate-800 bg-slate-900/90 p-3.5"><p className="text-xs font-medium text-slate-400">{key}</p><p className="text-2xl font-bold text-white mt-1">{loading ? '…' : value}</p></div>)}</div>
     <div className="project-filters grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 p-4 bg-slate-950/60 border border-slate-800/80 rounded-2xl">
-      <label className="grid gap-1 text-xs font-medium text-slate-400">Search<input className={input} value={search} onChange={e => setSearch(e.target.value)} placeholder="Project or client" /></label>
+      <label className="grid gap-1 text-xs font-medium text-slate-400">Search<input className={input} value={search} onChange={e => setSearch(e.target.value)} placeholder="Project ID, title or client" /></label>
       <label className="grid gap-1 text-xs font-medium text-slate-400">Status<select className={input} value={status} onChange={e => setStatus(e.target.value)}><option value="">All statuses</option>{[...new Set([...projectStatuses,...projects.map(p=>p.status)])].map(s => <option key={s} value={s}>{label(s)}</option>)}</select></label>
       <label className="grid gap-1 text-xs font-medium text-slate-400">Team member / assignee<select className={input} value={member} onChange={e => setMember(e.target.value)}><option value="">All assignees</option>{people.filter(u => projects.some(p => p.project_members.some(m => m.profile_id === u.id && m.access_kind === 'assignee'))).map(u => <option key={u.id} value={u.id}>{u.full_name ?? u.id}</option>)}</select></label>
       <label className="grid gap-1 text-xs font-medium text-slate-400">Assigned by<select className={input} value={assigner} onChange={e => setAssigner(e.target.value)}><option value="">All assigners</option>{people.filter(u => projects.some(p => p.assigned_by === u.id)).map(u => <option key={u.id} value={u.id}>{u.full_name ?? u.id}</option>)}</select></label>
@@ -134,20 +139,22 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
       <label className="grid gap-1 text-xs font-medium text-slate-400">Created from<input type="date" className={input} value={from} onChange={e => setFrom(e.target.value)} /></label>
       <label className="grid gap-1 text-xs font-medium text-slate-400">Created through<input type="date" className={input} value={to} min={from} onChange={e => setTo(e.target.value)} /></label>
     </div>
-    <div className="flex flex-wrap items-center gap-5 text-xs text-slate-300">
+    <div className="flex flex-wrap items-center gap-5 text-xs text-slate-700">
       <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-amber-400" checked={incomplete} onChange={e => setIncomplete(e.target.checked)} /> Incomplete information</label>
       <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-amber-400" checked={associateOnly} onChange={e => setAssociateOnly(e.target.checked)} /> Assigned by Associate Lead</label>
       <button className="text-amber-400 hover:text-amber-300 font-semibold underline font-medium" onClick={() => { setSearch('');setStatus('');setMember('');setAssigner('');setDeadline('');setFrom('');setTo('');setIncomplete(false);setAssociateOnly(false); }}>Clear filters</button>
     </div>
     {loading ? <p role="status" className="text-slate-400 text-sm">Loading projects…</p> : !error && <>
-      {visible.length === 0 ? <p className="py-6 text-slate-500 text-sm">No accessible projects match these filters.</p> : <div className="overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead className="border-b border-slate-800 bg-slate-950 text-xs text-amber-400 font-bold font-semibold uppercase tracking-wider"><tr>{['Project / client','Assignments','Status / progress','Deadline','Information','Actions'].map(h=><th key={h} className="p-3.5">{h}</th>)}</tr></thead><tbody>
+      {mode === 'projects' && visible.length === 0 && <p className="py-6 text-sm text-slate-500">No accessible projects match these filters.</p>}
+      {mode === 'projects' && visible.length > 0 && <ProjectTracker projects={visible} people={people} onOpen={setSelected} onEdit={onEdit ? p => { if(canEdit(p)) onEdit(p); else setSelected(p.id); } : undefined} />}
+      {mode !== 'projects' && (visible.length === 0 ? <p className="py-6 text-slate-500 text-sm">No accessible projects match these filters.</p> : <div className="overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead className="border-b border-slate-800 bg-slate-950 text-xs text-amber-400 font-bold font-semibold uppercase tracking-wider"><tr>{['Project / client','Assignments','Status / progress','Deadline','Information','Actions'].map(h=><th key={h} className="p-3.5">{h}</th>)}</tr></thead><tbody>
         {visible.map(p => <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-800/30 transition align-top"><td className="p-3.5"><button className="text-left font-semibold text-slate-100 hover:text-amber-400 transition" onClick={() => setSelected(p.id)}>{p.name}</button><p className="text-xs text-slate-400">{p.client?.name ?? (p.client_id ? 'Client unavailable' : 'Missing client')}</p><p className="mt-1 text-[11px] text-slate-500">Updated {new Date(p.updated_at).toLocaleDateString()}</p></td>
           <td className="p-3.5 text-slate-300">{p.project_members.filter(m => m.access_kind === 'assignee').map(m => name(m.profile_id)).join(', ') || 'Unassigned'}<p className="text-xs text-slate-500">By {name(p.assigned_by)}</p></td>
           <td className="p-3.5 capitalize"><span className="project-status text-xs font-semibold px-2.5 py-0.5 rounded-md" data-status={p.status}>{label(p.status)}</span><p className="text-xs text-slate-400 mt-1">{p.completed_assets} / {p.total_assets_required} assets{!p.is_active && ' · Archived'}</p></td>
           <td className={`p-3.5 ${isOverdue(p) ? 'text-rose-400 font-semibold' : 'text-slate-300'}`}>{p.target_deadline ?? 'Not set'}{isOverdue(p) && <p className="text-xs text-rose-500 font-medium">Overdue</p>}</td>
           <td className="max-w-48 p-3.5 text-xs text-amber-400">{missingFields(p).join(', ') || <span className="text-emerald-400 font-medium">Complete</span>}</td>
           <td className="p-3.5">{onEdit && canEdit(p) ? <button className={button} onClick={() => onEdit(p)}>Edit details</button> : <Link className="text-xs font-semibold text-amber-400 hover:text-amber-300 font-semibold underline" to={`/projects?project=${p.id}`}>Details</Link>}</td></tr>)}
-      </tbody></table></div>}
+      </tbody></table></div>)}
       {mode === 'reports' && <div className="space-y-3 pt-4 border-t border-slate-800"><p className="text-xs text-slate-400">Completion rate: <strong className="text-white">{stats.completionRate}%</strong>. Completed projects ÷ all filtered projects. Date filters use project creation dates (UTC). Active workload includes uncompleted, active projects, including on-hold projects. Each project counts once in totals and once per assignee in workload.</p>
         <div className="overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead className="bg-slate-950 text-xs text-amber-400 font-bold"><tr><th className="p-3">Team member</th><th>Total assigned</th><th>Active workload</th><th>Completed</th><th>Completion rate</th></tr></thead><tbody>{people.map(u => {
           const assigned = visible.filter(p => p.project_members.some(m => m.access_kind === 'assignee' && m.profile_id === u.id));
@@ -229,6 +236,11 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
           </p>
           <dl className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-800/80 text-sm">
             {Object.entries({
+              'Project ID': project.project_code || 'Not set',
+              Category: project.category || 'Not set',
+              'Production Start': displayTime(project.started_at),
+              'Production End': displayTime(project.ended_at),
+              Remarks: project.remarks || '—',
               Creator: name(project.created_by),
               Assigner: name(project.assigned_by),
               Assigned: project.assigned_at ? new Date(project.assigned_at).toLocaleString() : 'Not recorded',

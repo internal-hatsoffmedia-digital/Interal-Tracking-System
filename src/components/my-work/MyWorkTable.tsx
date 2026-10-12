@@ -67,6 +67,9 @@ function formatDate(
       day: "2-digit",
       month: "short",
       year: "numeric",
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
     },
   );
 }
@@ -439,7 +442,7 @@ function MobileWorkCard({
       <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
         <div>
           <p className="text-slate-400">
-            Deadline
+            Completion (IST)
           </p>
 
           <p
@@ -617,7 +620,7 @@ function MyWorkTable({
                 </th>
 
                 <th className="px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  Deadline
+                  Completion (IST)
                 </th>
 
                 <th className="px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">

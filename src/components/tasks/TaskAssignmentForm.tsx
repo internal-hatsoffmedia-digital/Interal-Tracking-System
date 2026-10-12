@@ -110,6 +110,7 @@ function TaskAssignmentForm({
   const [employeeId, setEmployeeId] =
     useState("");
 
+  const [committed,setCommitted]=useState(''),[confirmed,setConfirmed]=useState(false);
   const [notes, setNotes] =
     useState("");
 
@@ -125,6 +126,7 @@ function TaskAssignmentForm({
       return;
     }
 
+    setCommitted('');setConfirmed(false);
     setTaskId("");
     setEmployeeId("");
     setNotes("");
@@ -231,8 +233,11 @@ function TaskAssignmentForm({
         return;
       }
 
+      const committedAt=committed?new Date(committed+':00+05:30').toISOString():'';
+      if(!confirmed||!committedAt||Date.parse(committedAt)<=Date.now()){setValidationError('Enter a future committed completion time and confirm your discussion with the assignee.');return;}
       try {
         await onSubmit({
+          committed_at:committedAt,commitment_confirmed:confirmed,
           task_id: taskId,
           employee_id: employeeId,
           notes:
@@ -543,7 +548,7 @@ function TaskAssignmentForm({
             {/* =============================================
                 NOTES
             ============================================= */}
-            <p className="rounded-xl bg-yellow-50 p-4 text-sm text-black">The task’s exact deadline is saved with this assignment. Set a date and time on the task before assigning Cut Masters work. For rescheduling or changing the editor, create a new assignment so recorded timing stays traceable.</p>
+            <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-4"><label htmlFor="assignment-commitment" className="block font-semibold">Committed completion (IST)</label><input id="assignment-commitment" type="datetime-local" required value={committed} onChange={e=>{setCommitted(e.target.value);setConfirmed(false);}} className="mt-2 w-full rounded-xl border p-3"/><label className="mt-3 flex items-start gap-2"><input type="checkbox" checked={confirmed} required onChange={e=>setConfirmed(e.target.checked)}/>I discussed and agreed this completion time with the assignee.</label><p className="mt-2 text-xs">The agreed time is saved with this assignment for delivery tracking.</p></div>
 
             <div>
               <label

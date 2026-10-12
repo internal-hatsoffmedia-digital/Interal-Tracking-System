@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
   type ReactNode,
 } from "react";
 
@@ -50,81 +51,58 @@ export function AuthProvider({
 
   const [loading, setLoading] = useState(true);
 
-  const loadProfile = async () => {
-    try {
-      const currentProfile =
-        await getCurrentProfile();
-
-      setProfile(currentProfile);
-    } catch (error) {
-      console.error(
-        "Failed to load profile:",
-        error,
-      );
-
-      setProfile(null);
-    }
-  };
+  const [sessionReady, setSessionReady] = useState(false);
+  const [profileRevision, setProfileRevision] = useState(0);
+  const profileRequest = useRef(0);
+  const [loadedProfileFor, setLoadedProfileFor] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
-
-    const initializeAuth = async () => {
-      try {
-        const {
-          data: { session: currentSession },
-        } = await supabase.auth.getSession();
-
-        if (!mounted) {
-          return;
-        }
-
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-
-        if (currentSession?.user) {
-          await loadProfile();
-        }
-      } catch (error) {
-        console.error(
-          "Failed to initialize authentication:",
-          error,
-        );
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initializeAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
-        if (!mounted) {
-          return;
-        }
-
+    let authEvents = 0;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        // Auth callbacks must return immediately: Supabase still holds its session lock.
+        if (!mounted) return;
+        authEvents++;
         setSession(newSession);
         setUser(newSession?.user ?? null);
-
-        if (newSession?.user) {
-          await loadProfile();
-        } else {
-          setProfile(null);
-        }
-
-        setLoading(false);
+        setSessionReady(true);
       },
     );
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    const initialRevision = authEvents;
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!mounted || authEvents !== initialRevision) return;
+      if (error) console.error("Failed to initialize authentication:", error);
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
+      setSessionReady(true);
+    }).catch(error => {
+      if (mounted && authEvents === initialRevision) {
+        console.error("Failed to initialize authentication:", error);
+        setSessionReady(true);
+      }
+    });
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
+
+  useEffect(() => {
+    const request = ++profileRequest.current;
+    if (!sessionReady) return;
+    if (!user) { setProfile(null); setLoading(false); return; }
+    setLoading(true);
+    setProfile(null);
+    getCurrentProfile().then(currentProfile => {
+      if (profileRequest.current === request) setProfile(currentProfile);
+    }).catch(error => {
+      if (profileRequest.current === request) {
+        console.error("Failed to load profile:", error);
+        setProfile(null);
+      }
+    }).finally(() => {
+      if (profileRequest.current === request) { setLoadedProfileFor(user.id); setLoading(false); }
+    });
+    return () => { profileRequest.current++; };
+  }, [user?.id, sessionReady, profileRevision]);
 
   const signOut = async () => {
     await authSignOut();
@@ -135,7 +113,7 @@ export function AuthProvider({
   };
 
   const refreshProfile = async () => {
-    await loadProfile();
+    setProfileRevision(revision => revision + 1);
   };
 
   return (
@@ -143,8 +121,8 @@ export function AuthProvider({
       value={{
         session,
         user,
-        profile,
-        loading,
+        profile: profile?.id === user?.id ? profile : null,
+        loading: !sessionReady || loading || (!!user && loadedProfileFor !== user.id),
         signOut,
         refreshProfile,
       }}

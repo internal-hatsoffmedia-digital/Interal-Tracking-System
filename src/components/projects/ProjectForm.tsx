@@ -52,6 +52,14 @@ interface ProjectFormProps {
 
 
 interface ProjectFormState {
+  project_code: string;
+  category: string;
+  final_link: string;
+  remarks: string;
+  started_at: string;
+  ended_at: string;
+  rate: string;
+
   client_id: string;
   name: string;
   series_title: string;
@@ -68,6 +76,14 @@ interface ProjectFormState {
 
 
 const EMPTY_FORM: ProjectFormState = {
+  project_code: "",
+  category: "",
+  final_link: "",
+  remarks: "",
+  started_at: "",
+  ended_at: "",
+  rate: "",
+
   client_id: "",
   name: "",
   series_title: "",
@@ -111,6 +127,10 @@ function ProjectForm({
   const isEditing =
     Boolean(project);
 
+  const initialStatus = statusOptions[0] ?? "";
+  const initialHealth = healthOptions[0] ?? "";
+  const initialInvoiceStatus = invoiceStatusOptions[0] ?? "";
+
   const [form, setForm] =
     useState<ProjectFormState>(
       EMPTY_FORM,
@@ -133,6 +153,13 @@ function ProjectForm({
 
     if (project) {
       setForm({
+        project_code: String(project.project_code ?? ""),
+        category: String(project.category ?? ""),
+        final_link: String(project.final_link ?? ""),
+        remarks: String(project.remarks ?? ""),
+        started_at: project.started_at ? new Date(project.started_at).toLocaleString("sv-SE").slice(0,16).replace(" ","T") : "",
+        ended_at: project.ended_at ? new Date(project.ended_at).toLocaleString("sv-SE").slice(0,16).replace(" ","T") : "",
+        rate: String(project.rate ?? ""),
         client_id:
           project.client_id ?? "",
 
@@ -181,14 +208,13 @@ function ProjectForm({
         ...EMPTY_FORM,
 
         status:
-          statusOptions[0] ?? "",
+          initialStatus,
 
         health:
-          healthOptions[0] ?? "",
+          initialHealth,
 
         invoice_status:
-          invoiceStatusOptions[0] ??
-          "",
+          initialInvoiceStatus,
       });
     }
 
@@ -196,9 +222,9 @@ function ProjectForm({
   }, [
     open,
     project,
-    statusOptions,
-    healthOptions,
-    invoiceStatusOptions,
+    initialStatus,
+    initialHealth,
+    initialInvoiceStatus,
   ]);
 
 
@@ -286,6 +312,9 @@ function ProjectForm({
   ======================================================== */
 
   const validate = () => {
+    if (form.rate !== "" && (!Number.isFinite(Number(form.rate)) || Number(form.rate) < 0)) { setValidationError("Rate must be a non-negative number."); return false; }
+    if (form.ended_at && (!form.started_at || new Date(form.ended_at) < new Date(form.started_at))) { setValidationError("End time requires a start time and cannot precede it."); return false; }
+
     if (!form.client_id) {
       setValidationError(
         "Please select a client.",
@@ -425,6 +454,13 @@ function ProjectForm({
 
 
     const commonPayload = {
+
+      category: form.category.trim() || null,
+      final_link: form.final_link.trim() || null,
+      remarks: form.remarks.trim() || null,
+      started_at: form.started_at ? new Date(form.started_at).toISOString() : null,
+      ended_at: form.ended_at ? new Date(form.ended_at).toISOString() : null,
+      rate: form.rate === "" ? null : Number(form.rate),
       client_id:
         form.client_id,
 
@@ -810,6 +846,15 @@ function ProjectForm({
             </section>
 
 
+            <section aria-label="Project tracker details"><h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Project tracker details</h3><div className="grid gap-4 sm:grid-cols-2">
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-project_code">Project ID<input id="tracker-project_code" type="text" value={form.project_code || "Generated when project is created"} readOnly className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900" /></label>
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-category">Category<input id="tracker-category" type="text"  value={form.category} onChange={e => updateField("category", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-started_at">Start Time & Date<input id="tracker-started_at" type="datetime-local"  value={form.started_at} onChange={e => updateField("started_at", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-ended_at">End Time & Date<input id="tracker-ended_at" type="datetime-local"  value={form.ended_at} onChange={e => updateField("ended_at", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-final_link">Final Link<input id="tracker-final_link" type="url"  value={form.final_link} onChange={e => updateField("final_link", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-remarks">Remarks<input id="tracker-remarks" type="text"  value={form.remarks} onChange={e => updateField("remarks", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-rate">Rate (INR)<input id="tracker-rate" type="number" min="0" step="0.01" value={form.rate} onChange={e => updateField("rate", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+</div><p className="mt-2 text-xs text-slate-500">Production times are actual timestamps. Delivery Date is the client deadline. Rate is saved once per project in INR. Every task under this project uses the same rate, including work continued on another day.</p></section>
             {/* =================================================
                 PRODUCTION PROGRESS
             ================================================== */}
@@ -1064,7 +1109,7 @@ function ProjectForm({
                     htmlFor="project-deadline"
                     className="mb-1.5 block text-xs font-medium text-slate-600"
                   >
-                    Target Deadline
+                    Delivery Date
                   </label>
 
                   <div className="relative">

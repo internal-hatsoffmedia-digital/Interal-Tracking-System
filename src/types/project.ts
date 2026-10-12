@@ -1,4 +1,12 @@
 export interface Project {
+  project_code?: string | null;
+  category?: string | null;
+  final_link?: string | null;
+  remarks?: string | null;
+  started_at?: string | null;
+  ended_at?: string | null;
+  rate?: number | null;
+
   id: string;
 
   client_id: string;
@@ -61,6 +69,14 @@ export interface ProjectWithRelations
 
 
 export interface CreateProjectInput {
+  project_code?: string | null;
+  category?: string | null;
+  final_link?: string | null;
+  remarks?: string | null;
+  started_at?: string | null;
+  ended_at?: string | null;
+  rate?: number | null;
+
   client_id: string;
 
   name: string;
@@ -90,6 +106,14 @@ export interface CreateProjectInput {
 
 
 export interface UpdateProjectInput {
+  project_code?: string | null;
+  category?: string | null;
+  final_link?: string | null;
+  remarks?: string | null;
+  started_at?: string | null;
+  ended_at?: string | null;
+  rate?: number | null;
+
   client_id?: string;
 
   name?: string;

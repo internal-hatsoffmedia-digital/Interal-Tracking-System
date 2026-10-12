@@ -1,12 +1,9 @@
 import {
   CheckCircle2,
   Clock3,
-  Kanban,
-  LayoutList,
   ListTodo,
   Plus,
   RefreshCw,
-  TableProperties,
   Users,
 } from "lucide-react";
 
@@ -21,8 +18,6 @@ import TaskActions from "../../components/tasks/TaskActions";
 import TaskFilters from "../../components/tasks/TaskFilters";
 import TaskForm from "../../components/tasks/TaskForm";
 import TaskTable from "../../components/tasks/TaskTable";
-import TaskGroupedList from "../../components/tasks/TaskGroupedList";
-import TaskKanbanBoard from "../../components/tasks/TaskKanbanBoard";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -34,12 +29,10 @@ import {
   createTask,
   getTasks,
   updateTask,
-  updateTaskStatus,
 } from "../../services/tasks/tasks.service";
 
 import {
   createTaskAssignment,
-  deleteTaskAssignment,
   updateTaskAssignment,
 } from "../../services/tasks/taskAssignments.service";
 
@@ -91,7 +84,6 @@ function Tasks() {
   const [formLoading, setFormLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskWithRelations | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "board" | "table">("list");
   const [defaultStatus, setDefaultStatus] = useState("");
   const [error, setError] = useState("");
 
@@ -358,6 +350,7 @@ function Tasks() {
           if (!!(task as TaskWithRelations & {archived_at?:string}).archived_at !== showArchived) return false;
           const matchesSearch =
             !searchTerm ||
+            (task.project?.project_code ?? "").toLowerCase().includes(searchTerm) ||
             task.title
               .toLowerCase()
               .includes(
@@ -510,14 +503,6 @@ function Tasks() {
      QUICK ADD TASK FOR STATUS
   ======================================================== */
 
-  const handleQuickAddTask = (
-    statusKey: string,
-  ) => {
-    setDefaultStatus(statusKey);
-    setEditingTask(null);
-    setError("");
-    setFormOpen(true);
-  };
 
   /* =======================================================
      EDIT TASK
@@ -561,6 +546,7 @@ function Tasks() {
         | string
         | null,
       assignmentNotes: string,
+      commitmentConfirmed: boolean,
     ) => {
       try {
         setFormLoading(true);
@@ -584,7 +570,7 @@ function Tasks() {
                 notes: assignmentNotes || null,
               });
             } else {
-              await createTaskAssignment({ task_id: editingTask.id, employee_id: assignedEmployeeId, notes: assignmentNotes || null });
+              await createTaskAssignment({ task_id: editingTask.id, employee_id: assignedEmployeeId, notes: assignmentNotes || null, committed_at: updatedTask.due_date!, commitment_confirmed: commitmentConfirmed });
             }
           }
 
@@ -659,6 +645,8 @@ function Tasks() {
             project:
               selectedProject
                 ? {
+                    project_code: selectedProject.project_code,
+                    rate: selectedProject.rate,
                     id:
                       selectedProject.id,
                     name:
@@ -688,6 +676,8 @@ function Tasks() {
               {
                 task_id:
                   newTask.id,
+                committed_at: newTask.due_date!,
+                commitment_confirmed: commitmentConfirmed,
 
                 employee_id:
                   assignedEmployeeId,
@@ -740,148 +730,6 @@ function Tasks() {
   ======================================================== */
 
   const handleStatusChange = (task:TaskWithRelations) => setActionTask(task);
-
-  const handleDirectStatusChange = async (
-    task: TaskWithRelations,
-    newStatus: string,
-  ) => {
-    try {
-      setError("");
-      const updatedTask = await updateTaskStatus(task.id, newStatus);
-      setTasks((current) =>
-        current.map((t) =>
-          t.id === updatedTask.id ? { ...t, ...updatedTask } : t,
-        ),
-      );
-    } catch (err) {
-      console.error("Unable to update task status:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to update task status.",
-      );
-    }
-  };
-
-  /* =======================================================
-     PRIORITY CHANGE
-  ======================================================== */
-
-  const handlePriorityChange = async (
-    task: TaskWithRelations,
-    newPriority: string,
-  ) => {
-    try {
-      setError("");
-      const updatedTask = await updateTask(task.id, {
-        priority: newPriority,
-      });
-      setTasks((current) =>
-        current.map((t) =>
-          t.id === updatedTask.id ? { ...t, ...updatedTask } : t,
-        ),
-      );
-    } catch (err) {
-      console.error("Unable to update task priority:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to update task priority.",
-      );
-    }
-  };
-
-  /* =======================================================
-     ASSIGN EMPLOYEE (Inline Popover)
-  ======================================================== */
-
-  const handleAssignEmployee = async (
-    taskId: string,
-    employeeId: string,
-  ) => {
-    try {
-      setError("");
-      const targetTask = tasks.find((t) => t.id === taskId);
-      const emp = employees.find((e) => e.id === employeeId);
-
-      if (targetTask?.assignment?.id) {
-        await updateTaskAssignment(targetTask.assignment.id, {
-          employee_id: employeeId,
-        });
-      } else {
-        await createTaskAssignment({
-          task_id: taskId,
-          employee_id: employeeId,
-        });
-      }
-
-      setTasks((current) =>
-        current.map((t) => {
-          if (t.id !== taskId) return t;
-          return {
-            ...t,
-            assignment: {
-              id: t.assignment?.id || "temp-" + Date.now(),
-              status: "assigned",
-              notes: null,
-              assigned_at: new Date().toISOString(),
-              employee_id: employeeId,
-              employee: emp
-                ? {
-                    id: emp.id,
-                    full_name: emp.full_name,
-                    employee_code: emp.employee_code,
-                    email: emp.email,
-                    job_title: emp.job_title ?? null,
-                    team_id: emp.team_id ?? null,
-                  }
-                : null,
-            },
-          };
-        }),
-      );
-
-      void loadData(true);
-    } catch (err) {
-      console.error("Unable to assign task:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to assign task.",
-      );
-    }
-  };
-
-  /* =======================================================
-     UNASSIGN EMPLOYEE
-  ======================================================== */
-
-  const handleUnassignEmployee = async (
-    taskId: string,
-    assignmentId: string,
-  ) => {
-    try {
-      setError("");
-      await deleteTaskAssignment(assignmentId);
-      setTasks((current) =>
-        current.map((t) =>
-          t.id === taskId ? { ...t, assignment: null } : t,
-        ),
-      );
-      void loadData(true);
-    } catch (err) {
-      console.error("Unable to unassign task:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to unassign task.",
-      );
-    }
-  };
-
-  /* =======================================================
-     CLEAR FILTERS
-  ======================================================== */
 
   const handleClearFilters =
     () => {
@@ -1158,48 +1006,6 @@ function Tasks() {
       ================================================== */}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {/* Left: View Switcher Tabs (List / Board / Table) */}
-        <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100/90 p-1">
-          <button
-            type="button"
-            onClick={() => setViewMode("list")}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-              viewMode === "list"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <LayoutList size={14} />
-            <span>List</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode("board")}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-              viewMode === "board"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <Kanban size={14} />
-            <span>Board</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode("table")}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-              viewMode === "table"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            <TableProperties size={14} />
-            <span>Table</span>
-          </button>
-        </div>
-
         {/* Right: Summary Count */}
         <div className="flex items-center gap-3">
           <p className="text-xs text-slate-500">
@@ -1225,44 +1031,8 @@ function Tasks() {
           TASK VIEWS (ClickUp Style List / Board / Table)
       ================================================== */}
 
-      {viewMode === "list" && (
-        <TaskGroupedList
-          tasks={filteredTasks}
-          loading={loading}
-          employees={employees}
-          statusOptions={statusOptions}
-          priorityOptions={priorityOptions}
-          onEdit={handleEditTask}
-          onStatusChange={handleDirectStatusChange}
-          onPriorityChange={handlePriorityChange}
-          onAssignEmployee={handleAssignEmployee}
-          onUnassignEmployee={handleUnassignEmployee}
-          onQuickAddTask={handleQuickAddTask}
-        />
-      )}
-
-      {viewMode === "board" && (
-        <TaskKanbanBoard
-          tasks={filteredTasks}
-          loading={loading}
-          employees={employees}
-          statusOptions={statusOptions}
-          onEdit={handleEditTask}
-          onStatusChange={handleDirectStatusChange}
-          onAssignEmployee={handleAssignEmployee}
-          onUnassignEmployee={handleUnassignEmployee}
-          onQuickAddTask={handleQuickAddTask}
-        />
-      )}
-
-      {viewMode === "table" && (
-        <TaskTable
-          tasks={filteredTasks}
-          loading={loading}
-          onEdit={handleEditTask}
-          onStatusChange={canManage?handleStatusChange:undefined}
-        />
-      )}
+      <TaskTable tasks={filteredTasks} loading={loading} onEdit={handleEditTask}
+        onStatusChange={canManage ? handleStatusChange : undefined} />
 
       {/* =================================================
           TASK FORM

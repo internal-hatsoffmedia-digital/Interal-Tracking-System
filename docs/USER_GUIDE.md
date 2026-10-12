@@ -91,3 +91,15 @@ Use the theme control to switch light/dark appearance. Sign out from the sidebar
 - Sales Tracker is temporarily disabled in the website and mobile navigation. Its records are preserved for future restoration.
 
 The website and native mobile app use the same workspace data. Available screens may differ by platform. This guide describes the website; having a local build or a GitHub commit does not by itself deploy it or activate database changes.
+
+## Dashboard images and birthdays
+
+On **Dashboard → Today**, Admin can publish up to eight images in one announcement. Everyone can browse the image slider with its arrows and dots or pause it. Select **Birthday celebration** and the date when publishing to show that celebration for that day only (IST).
+
+Any active signed-in colleague can type a birthday wish while the celebration is showing. Wishes are live only: colleagues already connected can see them, but there is no saved history for someone who joins later. Wishes clear when you refresh or leave the page, and all wishes and the birthday panel disappear at midnight IST. Images remain in Admin's Manage announcements until removed.
+
+## Office polls / Hatsoff Drive
+
+Admin can open **Dashboard → Today → Office polls → Create poll**, name the event, enter a question and add 2–10 topic options. Five options are shown initially; use Add topic for a sixth option. The unpublished preview shows how the poll will look before it is sent to the team. Optionally set a closing date/time in IST, then publish when ready.
+
+All active signed-in accounts can select one topic and change that choice until voting closes. Poll results update automatically about every 15 seconds and show totals and percentages, without other voters' names. Admin can close voting early. Closed poll results stay visible; polls and votes are saved so they survive refreshes. The active-account count comes from login accounts and is not a verified employee headcount.

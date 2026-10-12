@@ -24,6 +24,7 @@ const TeamMembers = lazy(() => import("../pages/team-members/TeamMembers"));
 const Clients = lazy(() => import("../pages/clients/Clients"));
 const Reports = lazy(() => import("../pages/reports/Reports"));
 const Settings = lazy(() => import("../pages/settings/Settings"));
+const ProjectFinanceDashboard = lazy(() => import("../pages/sales/ProjectFinanceDashboard"));
 
 function AppRouter() {
   return (
@@ -64,7 +65,7 @@ function AppRouter() {
               <Route path="/performance" element={<Performance />} />
               <Route path="/reports" element={<Reports />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/sales/*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/sales/*" element={<ProjectFinanceDashboard />} />
               <Route path="/task-assignments" element={<TaskAssignments />} />
             </Route>
           </Route>

@@ -25,6 +25,7 @@ interface SelectOption {
 }
 
 interface ProjectOption {
+  project_code?: string | null;
   id: string;
   name: string;
   series_title: string | null;
@@ -64,6 +65,7 @@ interface TaskFormProps {
       | UpdateTaskInput,
     assignedEmployeeId: string | null,
     assignmentNotes: string,
+    commitmentConfirmed: boolean,
   ) => Promise<void>;
 }
 
@@ -189,6 +191,7 @@ function TaskForm({
      FORM STATE
   ======================================================== */
 
+  const [commitmentConfirmed,setCommitmentConfirmed]=useState(false);
   const [
     clientId,
     setClientId,
@@ -426,7 +429,7 @@ function TaskForm({
 
       setStartDate("");
 
-      setDueDate("");
+      setDueDate("");setCommitmentConfirmed(false);
 
       setEstimatedHours("0");
 
@@ -685,6 +688,7 @@ function TaskForm({
       return;
     }
 
+    if(assignedEmployeeId&&!task?.assignment?.id&&(!commitmentConfirmed||!dueDate||new Date(dueDate+':00+05:30').getTime()<=Date.now())){setFormError('Set a future delivery deadline and confirm the agreed completion time with the assignee.');return;}
     const effectiveClientId =
       clientId ||
       projects.find((p) => p.id === projectId)?.client_id ||
@@ -722,14 +726,14 @@ function TaskForm({
       start_date:
         startDate
           ? new Date(
-              startDate,
+              startDate+':00+05:30',
             ).toISOString()
           : null,
 
       due_date:
         dueDate
           ? new Date(
-              dueDate,
+              dueDate+':00+05:30',
             ).toISOString()
           : null,
 
@@ -758,6 +762,7 @@ function TaskForm({
         assignedEmployeeId ||
           null,
         assignmentNotes.trim(),
+        commitmentConfirmed,
       );
     } catch (submitError) {
       setFormError(
@@ -1022,7 +1027,7 @@ function TaskForm({
                             project.id
                           }
                         >
-                          {project.name}
+                          {project.project_code ? `${project.project_code} · ` : ""}{project.name}
                           {project.series_title
                             ? ` — ${project.series_title}`
                             : ""}
@@ -1359,14 +1364,7 @@ function TaskForm({
                       value={
                         assignedEmployeeId
                       }
-                      onChange={(
-                        event,
-                      ) =>
-                        setAssignedEmployeeId(
-                          event.target
-                            .value,
-                        )
-                      }
+                      onChange={event=>{setAssignedEmployeeId(event.target.value);setCommitmentConfirmed(false);}}
                       disabled={
                         loading
                       }
@@ -1540,7 +1538,7 @@ function TaskForm({
 
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Delivery Deadline
+                    Delivery Deadline / committed completion (IST)
                   </label>
 
                   <input
@@ -1548,14 +1546,7 @@ function TaskForm({
                     value={
                       dueDate
                     }
-                    onChange={(
-                      event,
-                    ) =>
-                      setDueDate(
-                        event.target
-                          .value,
-                      )
-                    }
+                    onChange={event=>{setDueDate(event.target.value);setCommitmentConfirmed(false);}}
                     disabled={
                       loading
                     }
@@ -1565,6 +1556,7 @@ function TaskForm({
                   />
                 </div>
 
+                {assignedEmployeeId&&!task?.assignment?.id&&<label className="col-span-full flex items-start gap-3 rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-sm text-black"><input type="checkbox" checked={commitmentConfirmed} onChange={e=>setCommitmentConfirmed(e.target.checked)} required/>I discussed and agreed the delivery deadline above with the assignee before assigning this task.</label>}
                 {/* ESTIMATED */}
 
                 <div>
@@ -1830,26 +1822,7 @@ function formatDateTimeLocal(
     return "";
   }
 
-  const year =
-    date.getFullYear();
-
-  const month = String(
-    date.getMonth() + 1,
-  ).padStart(2, "0");
-
-  const day = String(
-    date.getDate(),
-  ).padStart(2, "0");
-
-  const hours = String(
-    date.getHours(),
-  ).padStart(2, "0");
-
-  const minutes = String(
-    date.getMinutes(),
-  ).padStart(2, "0");
-
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+  return new Date(date.getTime()+330*60000).toISOString().slice(0,16);
 }
 
 export default TaskForm;

@@ -182,7 +182,7 @@ function TaskFilters({
             onChange={(event) =>
               onSearchChange(event.target.value)
             }
-            placeholder="Search tasks..."
+            placeholder="Search task, project ID or client..."
             className="
               h-11
               w-full

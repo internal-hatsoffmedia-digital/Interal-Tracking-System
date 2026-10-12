@@ -15,6 +15,8 @@ export interface TaskAssignment {
   accepted_at: string | null;
   completed_at: string | null;
   deadline_at?: string | null;
+  committed_at?: string | null;
+  commitment_confirmed?: boolean;
 
   status: string;
   notes: string | null;
@@ -62,6 +64,8 @@ export interface TaskAssignmentWithRelations
 ========================================================= */
 
 export interface CreateTaskAssignmentInput {
+  committed_at: string;
+  commitment_confirmed: boolean;
   task_id: string;
   employee_id: string;
   notes?: string | null;

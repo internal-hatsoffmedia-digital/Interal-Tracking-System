@@ -185,7 +185,7 @@ export async function getMyWork(): Promise<
             null,
 
           due_date:
-            task.due_date ??
+            assignment.committed_at ?? assignment.deadline_at ?? task.due_date ??
             null,
 
           estimated_hours:
