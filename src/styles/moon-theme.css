@@ -1,0 +1,19 @@
+/* A static night landscape keeps motion and contrast comfortable during work. */
+.moon-scene{display:none;position:fixed;inset:0;pointer-events:none;z-index:0}
+html[data-theme=dark] .moon-scene{display:block;background:#0b1225 url('/moon-scene.svg') center top/cover no-repeat}
+html[data-theme=dark] #root .future-shell.modern-studio{background:transparent!important}
+html[data-theme=dark] #root .modern-studio main{background:transparent!important}
+html #root .modern-studio :is(.desk-primary,.future-primary){background:#ffcc00!important;color:#171717!important}
+html #root .modern-studio :is(.desk-primary,.future-primary):hover{background:#e6b800!important}
+html #root .modern-studio .desk-initial{background:#fff4bf;color:#6e5712}
+html #root .modern-studio .desk-page :is(input,select,textarea,button):focus-visible{outline-color:#ffcc00}
+html #root .modern-studio .desk-entry input{accent-color:#ffcc00}
+html[data-theme=dark] #root .modern-studio .future-sidebar{background:rgba(12,17,27,.96);border-color:#333b49!important}
+html[data-theme=dark] #root .modern-studio .future-topbar{background:rgba(12,17,27,.92)!important}
+html[data-theme=dark] #root .modern-studio .future-metric{background:#191d27!important;color:#f4f4f4!important;border-color:#353b48!important}
+html[data-theme=dark] #root .modern-studio .future-metric.dark{background:#191d27!important;color:#f4f4f4!important}
+html[data-theme=dark] #root .modern-studio .future-metric.lime{background:#ffcc00!important;color:#171717!important}
+html[data-theme=dark] #root .modern-studio .future-metric.pale{background:#fff8ea!important;color:#171717!important}
+html[data-theme=dark] #root .modern-studio .desk-summary .lavender{background:#38321e}
+html[data-theme=dark] #root .modern-studio .desk-summary .peach{background:#332c27}
+@media(max-width:700px){html[data-theme=dark] .moon-scene{background-position:72% top}}

@@ -1,0 +1,28 @@
+import {useEffect,useState} from 'react';
+import {Link} from 'react-router-dom';
+import {RefreshCw,Users} from 'lucide-react';
+import {supabase} from '../../lib/supabase';
+import {financeMoney} from '../../lib/projectFinanceMetrics';
+import {displayTime} from '../tracker/trackerData';
+import {istSalesDay} from '../../lib/employeeSalesReport';
+import './TeamDailyOverview.css';
+type Sale={profile_id:string;name:string;project_id:string;project_code:string;project_name:string;client_name:string;amount:number;completion_day:string;source:string};
+type Work={id:string;profile_id:string;name:string;task_title:string;project_code:string;status:string;task_status:string;assigned_at:string;completed_at:string|null;deadline_at:string|null};
+type Data={team_name:string;people:{id:string;name:string}[];sales:Sale[];work:Work[]};
+export default function TeamDailyOverview({userId}:{userId:string}){
+ const today=istSalesDay(new Date().toISOString());const [from,setFrom]=useState(today),[through,setThrough]=useState(today),[person,setPerson]=useState(''),[tab,setTab]=useState('sales'),[refresh,setRefresh]=useState(0);
+ const [result,setResult]=useState<{key:string;data?:Data;error?:string}|null>(null);const key=[userId,from,through].join(':');
+ useEffect(()=>{let active=true;let request=0;const load=()=>{const current=++request;void supabase.rpc('team_daily_overview',{p_from:from,p_through:through}).then(({data,error})=>{if(active&&current===request)setResult({key,...(error?{error:error.message}:{data:data as Data})});});};load();const timer=window.setInterval(load,60000);window.addEventListener('focus',load);return()=>{active=false;window.clearInterval(timer);window.removeEventListener('focus',load);};},[key,from,through,refresh]);
+ const current=result?.key===key?result:null;const sales=(current?.data?.sales??[]).filter(s=>!person||s.profile_id===person),work=(current?.data?.work??[]).filter(w=>!person||w.profile_id===person);
+ const revenue=sales.reduce((sum,s)=>sum+Number(s.amount),0);const daily=[...new Set(sales.map(s=>s.completion_day))].sort().map(day=>({day,amount:sales.filter(s=>s.completion_day===day).reduce((sum,s)=>sum+Number(s.amount),0)}));const max=Math.max(1,...daily.map(d=>d.amount));
+ return <section className="team-daily" aria-labelledby="team-daily-title"><header><div><span className="future-eyebrow">YOUR TEAM · DAILY OVERVIEW</span><h2 id="team-daily-title"><Users size={21}/>{current?.data?.team_name??'Your team'} · Work & sales</h2><p>Only your team’s work and credited completed-project revenue.</p></div><button onClick={()=>setRefresh(n=>n+1)} aria-label="Refresh team overview"><RefreshCw size={17}/></button></header>
+ <div className="team-daily-filters"><label>Team member<select value={person} onChange={e=>setPerson(e.target.value)}><option value="">All team members</option>{current?.data?.people.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label><label>From (IST)<input type="date" value={from} onChange={e=>setFrom(e.target.value)}/></label><label>Through (IST)<input type="date" value={through} onChange={e=>setThrough(e.target.value)}/></label><div><button onClick={()=>{setFrom(today);setThrough(today);}}>Today</button><button onClick={()=>{setFrom(today.slice(0,7)+'-01');setThrough(today);}}>This month</button></div></div>
+ {!current&&<p role="status">Loading your team overview…</p>}{current?.error&&<p role="alert">{current.error}</p>}
+ {current?.data&&<><div className="team-daily-stats"><div><span>Team credited sales</span><strong>{financeMoney(revenue)}</strong></div><div><span>Completed projects credited</span><strong>{new Set(sales.map(s=>s.project_id)).size}</strong></div><div><span>Open assignments</span><strong>{work.filter(w=>w.status!=='completed').length}</strong></div><div><span>Completed assignments</span><strong>{work.filter(w=>w.status==='completed').length}</strong></div></div>
+ {daily.length>0&&<div className="team-daily-chart" aria-label="Team sales by completion day">{daily.map(d=><div key={d.day}><span>{d.day}</span><div><i style={{width:`${d.amount/max*100}%`}}/></div><strong>{financeMoney(d.amount)}</strong></div>)}</div>}
+ <nav className="team-daily-tabs" aria-label="Team overview sections"><button aria-pressed={tab==='sales'} onClick={()=>setTab('sales')}>Sales by date</button><button aria-pressed={tab==='work'} onClick={()=>setTab('work')}>Team work</button><Link to="/my-team">Activity & timing →</Link></nav>
+ <div className="team-daily-table">{tab==='sales'?<table><thead><tr>{['Completed (IST)','Employee','Project','Client','Credited sales'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{sales.map(s=><tr key={s.project_id+s.profile_id}><td>{s.completion_day}</td><td>{s.name}</td><td>{s.project_code}<small>{s.project_name}</small></td><td>{s.client_name}</td><td>{financeMoney(Number(s.amount))}</td></tr>)}</tbody></table>:<table><thead><tr>{['Employee','Task / project','Work status','Assigned (IST)','Finished (IST)'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{work.map(w=><tr key={w.id}><td>{w.name}</td><td>{w.task_title}<small>{w.project_code}</small></td><td>{w.status.replaceAll('_',' ')}<small>{w.task_status.replaceAll('_',' ')}</small></td><td>{displayTime(w.assigned_at)}</td><td>{displayTime(w.completed_at)}</td></tr>)}</tbody></table>}</div>
+ {tab==='sales'&&!sales.length&&<p>No team sales for this employee/date range.</p>}{tab==='work'&&!work.length&&<p>No team work in this range.</p>}
+ <p className="team-daily-note">Sales use project completion dates in IST. Work includes open assignments up to the end date and work completed within the range. Shared projects use allocated employee shares.</p></>}
+ </section>;
+}

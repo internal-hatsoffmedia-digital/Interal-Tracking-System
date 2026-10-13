@@ -104,7 +104,7 @@ export default function ProductionFunnel() {
         setLoading(true);
         const { data, error } = await supabase
           .from("tasks")
-          .select("id, status");
+          .select("id, status").is("archived_at", null);
 
         if (error) throw error;
         const tasks = data ?? [];

@@ -61,7 +61,7 @@ export default function ExecutiveBriefing({
     try {
       setLoading(true);
       const [tasksRes, projectsRes] = await Promise.all([
-        supabase.from("tasks").select("id, status, created_at, due_date"),
+        supabase.from("tasks").select("id, status, created_at, due_date").is("archived_at", null),
         supabase.from("projects").select("id, status"),
       ]);
 
@@ -160,7 +160,7 @@ export default function ExecutiveBriefing({
   const roleTitle = isCoordinator
     ? "Project Coordinator"
     : isAdmin
-    ? "Studio Administrator / CEO"
+    ? "Administrator"
     : userRole === "associate_lead"
     ? "Associate Lead"
     : userRole === "team_lead"
@@ -172,16 +172,16 @@ export default function ExecutiveBriefing({
     : "Employee";
 
   return <div className="future-briefing">
-    <div className="future-briefing-intro"><div className="future-eyebrow"><span/>YOUR STUDIO, IN FOCUS</div><h1>Welcome, {displayName}<span className="future-heading-dot">.</span></h1><p>{roleTitle} · {currentTime || 'Today'}</p>
+    <div className="future-briefing-intro"><div className="future-eyebrow"><span/>YOUR DAY AT A GLANCE</div><h1>Welcome, {displayName}<span className="future-heading-dot">.</span></h1><p>{roleTitle} · {currentTime || 'Today'}</p>
     <div className="future-briefing-context"><span>{loading?'…':stats.activeProjects} active projects</span><span>{loading?'…':stats.onHold} on hold</span></div>
-    <div className="future-hero-actions"><button className="future-primary" onClick={()=>navigate('/tasks?status=internal_review')}>Review Completed Tasks ({stats.internalReview})<ArrowUpRight size={16}/></button><button className="future-secondary" onClick={handleCopyDigest}><Copy size={15}/>{copied?'Copied Studio Digest!':'Copy Status Digest'}</button></div>
-    <button className="future-text-link" onClick={()=>navigate('/reports')}>Performance Analytics <ArrowUpRight size={14}/></button>
-    </div><div className="studio-progress-card"><span className="future-eyebrow">PRODUCTION SNAPSHOT</span><h2>Every task, in focus</h2><div className="studio-progress-ring"><svg viewBox="0 0 160 160" role="img" aria-label={loading ? 'Loading task completion' : `${stats.deliveredThisWeek} of ${stats.totalTasks} tasks delivered`}><circle cx="80" cy="80" r="65" fill="none" stroke="var(--line)" strokeWidth="13"/><circle cx="80" cy="80" r="65" fill="none" stroke="var(--studio-green)" opacity={stats.deliveredThisWeek > 0 ? 1 : 0} strokeWidth="13" strokeLinecap="round" pathLength="100" strokeDasharray={`${stats.totalTasks ? stats.deliveredThisWeek / stats.totalTasks * 100 : 0} 100`} transform="rotate(-90 80 80)"/></svg><div><strong>{loading?'…':stats.totalTasks}</strong><span>Total tasks</span></div></div><div className="studio-progress-legend"><span><i/>Delivered</span><strong>{loading?'…':stats.deliveredThisWeek}</strong><span><i/>Remaining</span><strong>{loading?'…':Math.max(0,stats.totalTasks-stats.deliveredThisWeek)}</strong></div><p>{loading?'Loading your workspace…':stats.totalTasks?'A live view of your studio workload.':'Your first task will appear here.'}</p></div><div className="future-briefing-metrics">{[
-      {label:'Active Production',value:stats.inProgress,note:'Editing in progress',color:'amber'},
-      {label:'Internal Review',value:stats.internalReview,note:'Awaiting coordinator QA',color:'amber'},
-      {label:'Client Review Gate',value:stats.clientReview,note:'Awaiting client approval',color:'peach'},
-      {label:'Delivered',value:stats.deliveredThisWeek,note:'Approved & delivered',color:'lime'},
+    <div className="future-hero-actions"><button className="future-primary" onClick={()=>navigate('/tasks?status=internal_review')}>Review submitted work ({stats.internalReview})<ArrowUpRight size={16}/></button><button className="future-secondary" onClick={handleCopyDigest}><Copy size={15}/>{copied?'Summary copied':'Copy work summary'}</button></div>
+    <button className="future-text-link" onClick={()=>navigate('/reports')}>View reports <ArrowUpRight size={14}/></button>
+    </div><div className="studio-progress-card"><span className="future-eyebrow">TASK OVERVIEW</span><h2>Your team’s progress</h2><div className="studio-progress-ring"><svg viewBox="0 0 160 160" role="img" aria-label={loading ? 'Loading task completion' : `${stats.deliveredThisWeek} of ${stats.totalTasks} tasks delivered`}><circle cx="80" cy="80" r="65" fill="none" stroke="var(--line)" strokeWidth="13"/><circle cx="80" cy="80" r="65" fill="none" stroke="var(--studio-green)" opacity={stats.deliveredThisWeek > 0 ? 1 : 0} strokeWidth="13" strokeLinecap="round" pathLength="100" strokeDasharray={`${stats.totalTasks ? stats.deliveredThisWeek / stats.totalTasks * 100 : 0} 100`} transform="rotate(-90 80 80)"/></svg><div><strong>{loading?'…':stats.totalTasks}</strong><span>Total tasks</span></div></div><div className="studio-progress-legend"><span><i/>Delivered</span><strong>{loading?'…':stats.deliveredThisWeek}</strong><span><i/>Remaining</span><strong>{loading?'…':Math.max(0,stats.totalTasks-stats.deliveredThisWeek)}</strong></div><p>{loading?'Loading your workspace…':stats.totalTasks?'A live view of your studio workload.':'Your first task will appear here.'}</p></div><div className="future-briefing-metrics">{[
+      {label:'Work in progress',value:stats.inProgress,note:'Tasks being worked on',color:'amber'},
+      {label:'Team review',value:stats.internalReview,note:'Waiting for coordinator review',color:'amber'},
+      {label:'Client review',value:stats.clientReview,note:'Waiting for client approval',color:'peach'},
+      {label:'Delivered',value:stats.deliveredThisWeek,note:'Completed and approved',color:'lime'},
     ].map((m,i)=><div className={'future-metric '+m.color} key={m.label}><div><span>{m.label}</span><span className="future-metric-index">0{i+1}</span></div><strong>{loading?'…':m.value}</strong><p>{m.note}</p></div>)}</div>
-    <div className="future-briefing-footer"><span><Activity size={14}/>Workspace overview</span><div className="future-segmented"><button aria-pressed={viewMode==='executive'} onClick={()=>onToggleViewMode('executive')}><Gauge size={15}/>Executive Cockpit</button><button aria-pressed={viewMode==='operations'} onClick={()=>onToggleViewMode('operations')}><Zap size={15}/>Operations Flow</button></div></div>
+    <div className="future-briefing-footer"><span><Activity size={14}/>Workspace overview</span><div className="future-segmented"><button aria-pressed={viewMode==='executive'} onClick={()=>onToggleViewMode('executive')}><Gauge size={15}/>Overview</button><button aria-pressed={viewMode==='operations'} onClick={()=>onToggleViewMode('operations')}><Zap size={15}/>Work details</button></div></div>
   </div>;
 }

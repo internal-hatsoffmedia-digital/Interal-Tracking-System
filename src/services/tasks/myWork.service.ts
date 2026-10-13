@@ -107,23 +107,12 @@ export async function getMyWork(): Promise<
               assignment.task_id,
           );
 
-        if (!task) {
+        if (!task || task.archived_at) {
           return null;
         }
 
-        const client =
-          clients.find(
-            (item) =>
-              item.id ===
-              (task.client_id || project?.client_id),
-          );
-
-        const project =
-          projects.find(
-            (item) =>
-              item.id ===
-              task.project_id,
-          );
+        const project = projects.find(item => item.id === task.project_id);
+        const client = clients.find(item => item.id === (task.client_id || project?.client_id));
 
         return {
           assignment_id:

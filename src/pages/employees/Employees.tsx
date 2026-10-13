@@ -421,6 +421,7 @@ function Employees() {
                   formData.team_id ||
                   null,
 
+                date_of_birth: formData.date_of_birth || null,
                 joining_date:
                   formData.joining_date ||
                   null,
@@ -469,7 +470,8 @@ function Employees() {
                 formData.team_id ||
                 null,
 
-              joining_date:
+              date_of_birth: formData.date_of_birth || null,
+                joining_date:
                 formData.joining_date ||
                 null,
             });

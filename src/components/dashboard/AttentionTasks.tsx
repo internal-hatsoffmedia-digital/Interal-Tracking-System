@@ -293,7 +293,7 @@ function AttentionTasks() {
               planned_date,
               created_at
             `,
-          )
+          ).is("archived_at", null)
           .order("due_date", {
             ascending: true,
             nullsFirst: false,

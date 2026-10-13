@@ -77,7 +77,7 @@ function ProductionAlert() {
 
       const { data, error: queryError } = await supabase
         .from("tasks")
-        .select("id, status, priority, due_date, created_at")
+        .select("id, status, priority, due_date, created_at").is("archived_at", null)
         .limit(500);
 
       if (queryError) {

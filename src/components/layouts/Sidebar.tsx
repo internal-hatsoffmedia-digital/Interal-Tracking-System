@@ -4,6 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import {NavLink,useLocation,useNavigate} from 'react-router-dom';
 import {LayoutDashboard,CheckSquare,ClipboardList,CalendarDays,FolderKanban,BriefcaseBusiness,Users,UserRound,UserCheck,BarChart3,Settings,LogOut,X,PanelLeftClose,PanelLeftOpen,ArrowUpRight,Sparkles} from 'lucide-react';
 import {useAuth} from '../../context/AuthContext';
+import {usePageAccess} from '../../context/pageAccess';
 
 const groups=[
  {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team PC','/team-pc',UserCheck],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Projects','/projects',FolderKanban]]},
@@ -12,6 +13,7 @@ const groups=[
 
 export default function Sidebar(){
  const {profile,signOut}=useAuth();
+ const {allowed}=usePageAccess();
  const financeAccess=useProjectFinanceAccess('sales');
  const location=useLocation();
  const navigate=useNavigate();
@@ -26,13 +28,13 @@ export default function Sidebar(){
 
  const visibleGroups = groups.map(g => {
    const isLead = profile?.role === 'associate_lead' || profile?.role === 'team_lead';
-   return {...g, items:g.items.filter(([label]) => {
+   return {...g, items:g.items.filter(([label,path]) => {
+     if(!allowed(path)) return false;
      if(label === 'Sales') return financeAccess;
      if(label === 'My Team') return isLead;
      if(label === 'Team PC') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director';
      if(label === 'Team Work') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director' || isCoordinator;
      if(label === 'Teams' && isLead) return false;
-     if(label === 'My Work' && isCoordinator) return false;
      if(label === 'Clients' && profile?.role === 'employee') return false;
      return true;
    })}; });
@@ -51,7 +53,7 @@ export default function Sidebar(){
  <aside ref={panel} className={`future-sidebar ${open?'is-open':''} ${compact?'is-compact':''}`} aria-label="Main navigation">
  <div className="future-brand"><NavLink to="/dashboard" onClick={close} aria-label="Hatsoff home"><img src="/hatsoff-brand.svg" alt="Hatsoff Media"/><span><small>INTERNAL FORCE<span className="brand-dot"/></small></span></NavLink><button className="future-mobile-close" aria-label="Close navigation" onClick={close}><X size={19}/></button></div>
  <button type="button" className="studio-nav-toggle" aria-label={compact?'Expand navigation':'Compact navigation'} aria-pressed={compact} onClick={toggleCompact}>{compact?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}<span>Compact navigation</span></button>
- <nav>{visibleGroups.map(group=><div className="future-nav-group" key={group.name}><p>{group.name}</p>{group.items.map(([label,path,Icon])=><NavLink to={path} aria-label={label} title={label} onClick={close} key={path} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Icon size={18} strokeWidth={1.7}/><span>{label}</span>{location.pathname===path&&<span className="nav-active-dot"/>}</NavLink>)}</div>)}
+ <nav>{allowed('/daily-desk')&&<NavLink to="/daily-desk" onClick={close} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><ClipboardList size={18}/><span>Daily Desk</span></NavLink>}{allowed('/access')&&<NavLink to="/access" onClick={close} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Settings size={18}/><span>Access</span></NavLink>}{visibleGroups.map(group=><div className="future-nav-group" key={group.name}><p>{group.name}</p>{group.items.map(([label,path,Icon])=><NavLink to={path} aria-label={label} title={label} onClick={close} key={path} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Icon size={18} strokeWidth={1.7}/><span>{label}</span>{location.pathname===path&&<span className="nav-active-dot"/>}</NavLink>)}</div>)}
  <div className="future-studio-note"><Sparkles size={18}/><span>Focus. Create.<br/><strong>Deliver.</strong></span><ArrowUpRight size={17}/></div>
  </nav>
  <div className="future-sidebar-footer"><NavLink to="/settings" onClick={close} className={({isActive})=>`future-nav-link ${isActive?'is-active':''}`}><Settings size={18}/><span>Settings</span></NavLink><div className="future-account"><span className="future-avatar"><ProfileAvatar src={profile?.avatar_url} name={name}/></span><span><strong>{name}</strong><small>{profile?.role?.replaceAll('_',' ')||'Account'}</small></span><button title="Sign out" aria-label="Sign out" disabled={signingOut} onClick={()=>void logout()}><LogOut size={17}/></button></div>{error&&<p role="alert">{error}</p>}</div>

@@ -8,6 +8,7 @@ import {
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -193,6 +194,7 @@ function TaskForm({
   ======================================================== */
 
   const [commitmentConfirmed,setCommitmentConfirmed]=useState(false);
+  const [assignmentTeam,setAssignmentTeam]=useState('');
   const [
     clientId,
     setClientId,
@@ -518,7 +520,10 @@ function TaskForm({
      FILTER PROJECTS BY CLIENT
   ======================================================== */
 
-  const [assignmentTeam,setAssignmentTeam]=useState('');
+  const errorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (formError || error) errorRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [formError, error]);
   const selectedAssignmentTeam=assignmentTeam||employees.find(e=>e.id===assignedEmployeeId)?.team_id||'';
   const assignmentTeams=[...new Map(employees.filter(e=>e.is_active&&e.team_id).map(e=>[e.team_id!,{id:e.team_id!,name:e.team?.name||'Team name unavailable'}])).values()].sort((a,b)=>a.name.localeCompare(b.name));
   const eligibleArtists=employees.filter(e=>e.is_active&&(!selectedAssignmentTeam||e.team_id===selectedAssignmentTeam));
@@ -695,7 +700,12 @@ function TaskForm({
       return;
     }
 
-    if(assignedEmployeeId&&!task?.assignment?.id&&(!commitmentConfirmed||!dueDate||new Date(dueDate+':00+05:30').getTime()<=Date.now())){setFormError('Set a future delivery deadline and confirm the agreed completion time with the assignee.');return;}
+    if (assignedEmployeeId && !task?.assignment?.id) {
+      if (!dueDate) { setFormError('Enter the committed completion date and time (IST).'); return; }
+      const committedTimestamp = Date.parse(dueDate + ':00+05:30');
+      if (!Number.isFinite(committedTimestamp) || committedTimestamp <= Date.now()) { setFormError('Committed completion time must be a valid future date and time (IST).'); return; }
+      if (!commitmentConfirmed) { setFormError('Confirm the agreed completion time with the assignee after setting the deadline.'); return; }
+    }
     if(assignedEmployeeId&&!eligibleArtists.some(e=>e.id===assignedEmployeeId)){setFormError('Choose an active artist from the selected team.');return;}
     const effectiveClientId =
       clientId ||
@@ -902,7 +912,7 @@ function TaskForm({
 
             {(formError ||
               error) && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div ref={errorRef} role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 <p className="font-semibold">
                   Unable to save task
                 </p>
@@ -1361,7 +1371,7 @@ function TaskForm({
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div><label className="mb-1.5 block text-xs font-semibold text-slate-600">Team</label><select value={selectedAssignmentTeam} onChange={e=>{setAssignmentTeam(e.target.value);setAssignedEmployeeId('');setCommitmentConfirmed(false);}} disabled={loading} className={inputClass}><option value="">All teams · choose an artist</option>{assignmentTeams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
+                  <div><label className="mb-1.5 block text-xs font-semibold text-slate-600">Team</label><select value={selectedAssignmentTeam} onChange={e=>{setAssignmentTeam(e.target.value);setAssignedEmployeeId('');setCommitmentConfirmed(false);}} disabled={loading} className={inputClass}><option value="">All teams · includes Managers</option>{assignmentTeams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
                   {/* ASSIGNED TO */}
 
                   <div>
@@ -1387,7 +1397,7 @@ function TaskForm({
                       }
                     >
                       <option value="">
-                        Select artist
+                        Select artist / assignee
                       </option>
 
                       {eligibleArtists.map(

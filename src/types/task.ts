@@ -1,4 +1,5 @@
 export interface Task {
+  archived_at?: string | null;
   planner_date?:string|null;
   id: string;
 

@@ -223,3 +223,10 @@ export async function deleteTeamMember(id: string): Promise<void> {
     throw new Error(data.error);
   }
 }
+
+
+export async function getScopedTeamMembers(): Promise<TeamMember[]> {
+  const {data,error}=await supabase.rpc('workspace_team_directory');
+  if(error)throw error;
+  return (data??[]) as TeamMember[];
+}

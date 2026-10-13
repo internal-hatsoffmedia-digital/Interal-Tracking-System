@@ -34,7 +34,7 @@ export default function ClientAccountRadar() {
         setLoading(true);
         const [clientsRes, tasksRes, projectsRes] = await Promise.all([
           supabase.from("clients").select("id, name, short_name, industry, is_active"),
-          supabase.from("tasks").select("id, project_id, client_id, status"),
+          supabase.from("tasks").select("id, project_id, client_id, status").is("archived_at", null),
           supabase.from("projects").select("id, client_id"),
         ]);
 

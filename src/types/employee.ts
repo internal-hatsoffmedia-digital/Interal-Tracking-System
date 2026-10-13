@@ -7,6 +7,7 @@ export interface Employee {
   phone: string | null;
   job_title: string | null;
   team_id: string | null;
+  date_of_birth?: string | null;
   joining_date: string | null;
   is_active: boolean;
   created_at: string;
@@ -29,6 +30,7 @@ export interface CreateEmployeeInput {
   phone?: string | null;
   job_title?: string | null;
   team_id?: string | null;
+  date_of_birth?: string | null;
   joining_date?: string | null;
 }
 
@@ -39,6 +41,7 @@ export interface UpdateEmployeeInput {
   phone?: string | null;
   job_title?: string | null;
   team_id?: string | null;
+  date_of_birth?: string | null;
   joining_date?: string | null;
   is_active?: boolean;
 }

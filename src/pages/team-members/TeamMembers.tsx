@@ -9,7 +9,7 @@ import { errorMessage as formatErrorMessage } from "../../lib/errorMessage";
 import {
   createTeamMember,
   deleteTeamMember,
-  getTeamMembers,
+  getScopedTeamMembers,
   toggleTeamMemberStatus,
   updateTeamMember,
 } from "../../services/team-members/teamMembers.service";
@@ -64,12 +64,12 @@ export default function TeamMembers() {
       }
 
       const [memberData, teamData] = await Promise.all([
-        getTeamMembers(),
+        getScopedTeamMembers(),
         getActiveTeams(),
       ]);
 
       setMembers(memberData);
-      setTeams(teamData);
+      setTeams(['admin','manager','director'].includes(currentProfile?.role??'')?teamData:teamData.filter(t=>t.id===currentProfile?.team_id));
     } catch (err) {
       console.error("Failed to load team members data:", err);
       setErrorMessage(
@@ -79,7 +79,7 @@ export default function TeamMembers() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [currentProfile?.role,currentProfile?.team_id]);
 
   useEffect(() => {
     void loadData();
@@ -209,11 +209,11 @@ export default function TeamMembers() {
             </div>
 
             <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-              Team Members / User Management
+              {canManage ? "Team Members / User Management" : "Team Members"}
             </h1>
 
             <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-              Manage application user accounts, system roles, team scope, and account access permissions.
+              {canManage ? "Manage application user accounts, roles and access." : "Meet the people in your team. Account editing is managed by Admin."}
             </p>
           </div>
 

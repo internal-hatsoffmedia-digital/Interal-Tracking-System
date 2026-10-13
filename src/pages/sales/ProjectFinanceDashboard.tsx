@@ -7,6 +7,8 @@ import {financeMoney,financeMonth,financeBookingMonth,financeSummary,financeForT
 import {csvCell} from '../../lib/projectMetrics';
 import {displayTime} from '../../components/tracker/trackerData';
 import type {FinanceInput,FinanceItem,ProjectFinanceData} from '../../types/projectFinance';
+import EmployeeSalesReport from './EmployeeSalesReport';
+import EmployeeSalesCredits from './EmployeeSalesCredits';
 import ProjectFinanceCharts from './ProjectFinanceCharts';
 import './projectFinance.css';
 
@@ -67,6 +69,8 @@ export default function ProjectFinanceDashboard({mode='sales'}:{mode?:'sales'|'c
     {error&&<p role="alert" className="finance-message">{error} <button onClick={()=>void load()}>Retry</button></p>}
     {notice&&<p role="status" className="finance-message">{notice}</p>}
     {loading&&<p role="status">Loading project finances…</p>}
+    {mode==='sales'&&loaded?.userId===userId&&<EmployeeSalesReport projects={summary.projects} month={month}/>}
+    {mode==='sales'&&<h2 className="finance-company-heading">Company revenue · {month}</h2>}
     <div className="finance-stats">{[
       {label:'Completed sales',amount:summary.revenue,icon:ArrowUpRight,note:'Opening sales + completed project rates + eligible charges'},
       {label:'Company expenses',amount:summary.expenses,icon:ArrowDownLeft,note:'One-time and monthly costs'},
@@ -96,6 +100,7 @@ export default function ProjectFinanceDashboard({mode='sales'}:{mode?:'sales'|'c
     {mode==='costs'&&!loading&&!error&&!editable.length&&<p className="finance-message">Create a project first, or ask for coordinator access to an existing project. Sales accounts can view finance data; only authorized project managers can change costs.</p>}
     {!loading&&!error&&<>
     <section className="finance-card"><div className="finance-card-heading"><h2>Client summary</h2><span>Selected month</span></div><div className="finance-table-scroll"><table><thead><tr>{['Client','Base project rates','Additional charges','Revenue','Expenses','Net'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{byClient.map(c=><tr key={c.id}><td>{c.name}</td><td>{financeMoney(c.projectRevenue)}</td><td>{financeMoney(c.charges)}</td><td>{financeMoney(c.revenue)}</td><td>{financeMoney(c.expenses)}</td><td>{financeMoney(c.net)}</td></tr>)}</tbody></table>{!byClient.length&&<p className="finance-table-empty">No client projects yet.</p>}</div></section>
+    {mode==='sales'&&<EmployeeSalesCredits projects={summary.projects}/>}
     <section className="finance-card"><div className="finance-card-heading"><h2>Project rates</h2><span>One rate per project</span></div><div className="finance-table-scroll"><table><thead><tr>{['Project ID','Client / project','Base rate','Booking month','Status',''].map((h,i)=><th key={i}>{h}</th>)}</tr></thead><tbody>{summary.projects.map(p=><tr key={p.id}><td className="finance-code">{p.project_code}</td><td>{p.client_name}<small>{p.name}</small></td><td>{p.rate==null?'Not set':financeMoney(Number(p.rate))}</td><td>{financeBookingMonth(p)??'Not completed'}</td><td>{p.status.replaceAll('_',' ')}</td><td>{p.can_edit&&<Link to={`/projects?project=${p.id}`}>Project details →</Link>}</td></tr>)}</tbody></table>{!summary.projects.length&&<p className="finance-table-empty">No projects match these filters.</p>}</div></section>
     <section className="finance-card"><div className="finance-card-heading"><h2>Charges & expenses</h2><span>{summary.items.length} active entries in {month}</span></div><div className="finance-table-scroll"><table><thead><tr>{['Project ID','Service / cost','Type','Amount','Frequency','Period','Created by / time',''].map((h,i)=><th key={i}>{h}</th>)}</tr></thead><tbody>{summary.items.map(i=>{const p=data.projects.find(p=>p.id===i.project_id)!;return<tr key={i.id}><td className="finance-code">{p.project_code}</td><td>{i.label}<small>{i.notes}</small></td><td><span className="finance-kind">{i.kind==='charge'?'Client charge':'Expense'}</span></td><td>{financeMoney(Number(i.amount))}</td><td>{i.frequency==='once'?'One time':'Monthly'}</td><td>{i.start_month.slice(0,7)}{i.frequency==='monthly'?` → ${i.end_month?.slice(0,7)??'ongoing'}`:''}</td><td>{i.creator_name}<small>{displayTime(i.created_at)}</small></td><td>{mode==='costs'&&p.can_edit&&<button onClick={()=>edit(i)}>Edit</button>}</td></tr>;})}</tbody></table>{!summary.items.length&&<p className="finance-table-empty">No additional charges or expenses for this month.</p>}</div></section></>}
   </div>;

@@ -3,14 +3,16 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
-function service({hidden=false,unlinked=false}={}) {
+function service({hidden=false,unlinked=false,projectClient=false,archived=false}={}) {
  const seen=[];
  const supabase={auth:{getUser:async()=>({data:{user:{id:'vijay'}},error:null})},rpc:async()=>({data:unlinked?[]:[{id:'employee',profile_id:'vijay',is_active:true}],error:null}),from(table){
   let ids=[],start=0;
   const q={select(){return q},eq(){return q},order(){return q},in(key,values){ids=values;return q},range(offset){start=offset;return q},maybeSingle:async()=>({data:null,error:null}),then(resolve){
    let data=[];
    if(table==='task_assignments')data=Array.from({length:start===0?500:1},(_,i)=>({id:'a'+(i+start),task_id:'t'+(i+start),status:'assigned'}));
-   if(table==='tasks'){seen.push(ids);data=hidden?[]:ids.map(id=>({id,title:id}));}
+   if(table==='tasks'){seen.push(ids);data=hidden?[]:ids.map(id=>({id,title:id,project_id:projectClient?'project':null,client_id:null,archived_at:archived?'2026-10-13T00:00:00Z':null}));}
+   if(table==='projects'&&projectClient)data=[{id:'project',name:'Website work',client_id:'client'}];
+   if(table==='clients'&&projectClient)data=[{id:'client',name:'Project client'}];
    return Promise.resolve({data,error:null}).then(resolve);
   }};return q;
  }};
@@ -26,4 +28,15 @@ test('RLS-hidden assigned tasks produce an actionable error instead of vanishing
 });
 test('Unlinked login fails explicitly without guessing an employee identity',async()=>{
  await assert.rejects(service({unlinked:true}).api.getMyWork(),/No active employee record is linked/);
+});
+
+test('My Work resolves the project client when task client_id is absent',async()=>{
+ const result=await service({projectClient:true}).api.getMyWork();
+ assert.equal(result.length,501);
+ assert.ok(result.every(row=>row.client_name==='Project client'&&row.project_name==='Website work'));
+});
+
+
+test('archived tasks stay out of active My Work without reporting an RLS error',async()=>{
+ assert.equal((await service({archived:true}).api.getMyWork()).length,0);
 });

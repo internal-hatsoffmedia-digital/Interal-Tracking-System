@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 
+import WorkStatusConfirmation from '../../components/my-work/WorkStatusConfirmation';
 import WorkTimer from '../../components/my-work/WorkTimer';
 import MyWorkTable from "../../components/my-work/MyWorkTable";
 
@@ -38,16 +39,6 @@ type WorkFilter =
 /* =========================================================
    LABEL FORMATTER
 ========================================================= */
-
-function formatLabel(
-  value: string,
-): string {
-  return value
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) =>
-      letter.toUpperCase(),
-    );
-}
 
 /* =========================================================
    PAGE
@@ -334,7 +325,9 @@ function MyWork() {
      STATUS UPDATE
   ======================================================== */
 
-  const handleStatusChange =
+  const [pendingStatus, setPendingStatus] = useState<{assignmentId:string;status:string}|null>(null);
+  const handleStatusChange = (assignmentId:string,status:string) => setPendingStatus({assignmentId,status});
+  const applyStatusChange =
     useCallback(
       async (
         assignmentId: string,
@@ -348,23 +341,6 @@ function MyWork() {
           );
 
         if (!currentItem) {
-          return;
-        }
-
-        const readableStatus =
-          formatLabel(status);
-
-        const confirmMessage =
-          status === "completed"
-            ? `Mark "${currentItem.task_title}" as Complete and submit to your Project Coordinator for review?`
-            : status === "in_progress"
-            ? `Start working on "${currentItem.task_title}"?`
-            : `Change "${currentItem.task_title}" to ${readableStatus}?`;
-
-        const confirmed =
-          window.confirm(confirmMessage);
-
-        if (!confirmed) {
           return;
         }
 
@@ -500,6 +476,8 @@ function MyWork() {
 
   return (
     <div className="space-y-6">
+      {pendingStatus && <WorkStatusConfirmation status={pendingStatus.status} taskTitle={work.find(item=>item.assignment_id===pendingStatus.assignmentId)?.task_title} onClose={()=>setPendingStatus(null)} onConfirm={()=>{const action=pendingStatus;setPendingStatus(null);void applyStatusChange(action.assignmentId,action.status);}}/>}
+
       {/* =================================================
           HEADER
       ================================================== */}

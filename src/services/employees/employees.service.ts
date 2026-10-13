@@ -37,6 +37,7 @@ const employeeSelect = `
   is_active,
   created_at,
   updated_at,
+  employee_birth_dates (date_of_birth),
   profiles!employees_profile_id_fkey (role),
   teams!employees_team_id_fkey (
     id,
@@ -54,6 +55,7 @@ function normalizeEmployee(
 ): EmployeeWithTeam {
   return {
     ...employee,
+    date_of_birth: (Array.isArray(employee.employee_birth_dates) ? employee.employee_birth_dates[0] : employee.employee_birth_dates)?.date_of_birth ?? null,
     account_role: (Array.isArray(employee.profiles) ? employee.profiles[0] : employee.profiles)?.role ?? null,
 
     team: Array.isArray(employee.teams)
@@ -267,6 +269,7 @@ export async function createEmployee(
     throw error;
   }
 
+  if(input.date_of_birth !== undefined){const {error:birthError}=await supabase.rpc('set_employee_birth_date',{p_employee:data.id,p_date:input.date_of_birth || null});if(birthError)throw birthError;return {...normalizeEmployee(data),date_of_birth:input.date_of_birth || null};}
   return normalizeEmployee(data);
 }
 
@@ -348,6 +351,7 @@ export async function updateEmployee(
     throw error;
   }
 
+  if(input.date_of_birth !== undefined){const {error:birthError}=await supabase.rpc('set_employee_birth_date',{p_employee:data.id,p_date:input.date_of_birth || null});if(birthError)throw birthError;return {...normalizeEmployee(data),date_of_birth:input.date_of_birth || null};}
   return normalizeEmployee(data);
 }
 

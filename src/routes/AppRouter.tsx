@@ -5,8 +5,10 @@ import AppShell from "../components/layouts/AppShell";
 import PageErrorBoundary from "../components/layouts/PageErrorBoundary";
 
 const UserGuide = lazy(() => import("../pages/help/UserGuide"));
+const Access = lazy(() => import('../pages/access/Access'));
+const DailyDesk = lazy(() => import('../pages/daily-desk/DailyDesk'));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
-const Performance = lazy(() => import("../pages/performance/Performance"));
+const Performance = lazy(() => import("../pages/performance/CommitmentPerformance"));
 const Dashboard = lazy(() => import("../components/dashboard/Dashboard"));
 const Planner = lazy(() => import("../pages/planner/Planner"));
 const Projects = lazy(() => import("../pages/projects/Projects"));
@@ -22,7 +24,7 @@ const Teams = lazy(() => import("../pages/teams/Teams"));
 const Employees = lazy(() => import("../pages/employees/Employees"));
 const TeamMembers = lazy(() => import("../pages/team-members/TeamMembers"));
 const Clients = lazy(() => import("../pages/clients/Clients"));
-const Reports = lazy(() => import("../pages/reports/Reports"));
+const Reports = lazy(() => import("../pages/reports/CommitmentReports"));
 const Settings = lazy(() => import("../pages/settings/Settings"));
 const ProjectFinanceDashboard = lazy(() => import("../pages/sales/ProjectFinanceDashboard"));
 
@@ -50,6 +52,8 @@ function AppRouter() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/access" element={<Access />} />
+              <Route path="/daily-desk" element={<DailyDesk />} />
               <Route path="/user-guide" element={<UserGuide />} />
               <Route path="/my-team" element={<MyTeam />} />
               <Route path="/team-pc" element={<TeamPC />} />

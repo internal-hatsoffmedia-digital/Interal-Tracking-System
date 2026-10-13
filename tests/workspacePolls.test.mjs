@@ -11,6 +11,7 @@ test('office polls enforce Admin publishing, unique votes, closed deadlines and 
  grant usage on schema public,auth,private to authenticated;grant execute on function auth.uid(),private.workspace_role() to authenticated;
  insert into public.profiles values('10000000-0000-0000-0000-000000000001','admin',true),('10000000-0000-0000-0000-000000000002','employee',true),('10000000-0000-0000-0000-000000000003','employee',false);`);
  await db.exec(await readFile(new URL('../supabase/migrations/202610110001_workspace_polls.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/202610130008_poll_admin_controls.sql',import.meta.url),'utf8'));
  const login=async id=>{await db.exec('reset role;');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated;');};
  const admin='10000000-0000-0000-0000-000000000001',employee='10000000-0000-0000-0000-000000000002',inactive='10000000-0000-0000-0000-000000000003';
  await login(employee);
@@ -22,6 +23,8 @@ test('office polls enforce Admin publishing, unique votes, closed deadlines and 
  const {rows:[{id}]}=await db.query("select public.workspace_create_poll('Hatsoff Drive','Choose a topic',array['Design','Video','Web','Marketing','Coordination','AI']) id");
  await login(employee);
  await assert.rejects(()=>db.query('select public.workspace_vote_poll($1,9)',[id]),/valid topic/);
+ await assert.rejects(()=>db.query('select public.workspace_delete_poll($1)',[id]),/Only Admin/);
+ await assert.rejects(()=>db.query('select public.workspace_schedule_poll($1,now()+interval \'1 hour\')',[id]),/Only Admin/);
  await db.query('select public.workspace_vote_poll($1,0)',[id]);await db.query('select public.workspace_vote_poll($1,2)',[id]);
  let data=(await db.exec('select public.workspace_poll_data() data'))[0].rows[0].data;
  assert.equal(data.active_accounts,2);assert.equal(data.polls[0].my_option,2);assert.deepEqual(data.polls[0].counts,[0,0,1,0,0,0]);
@@ -29,11 +32,18 @@ test('office polls enforce Admin publishing, unique votes, closed deadlines and 
  await assert.rejects(()=>db.query('select public.workspace_close_poll($1)',[id]),/Only Admin/);
  await login(inactive);await assert.rejects(()=>db.query('select public.workspace_vote_poll($1,0)',[id]),/active account/);await assert.rejects(()=>db.exec('select public.workspace_poll_data()'),/active account/);
  await login(admin);await db.query('select public.workspace_vote_poll($1,1)',[id]);
+ await assert.rejects(()=>db.query('select public.workspace_schedule_poll($1,now()-interval \'1 hour\')',[id]),/future/);
+ await db.query('select public.workspace_schedule_poll($1,now()+interval \'1 hour\')',[id]);
  data=(await db.exec('select public.workspace_poll_data() data'))[0].rows[0].data;assert.deepEqual(data.polls[0].counts,[0,1,1,0,0,0]);
  await db.query('select public.workspace_close_poll($1)',[id]);
  await login(employee);await assert.rejects(()=>db.query('select public.workspace_vote_poll($1,1)',[id]),/closed/);
+ await login(admin);await assert.rejects(()=>db.query('select public.workspace_schedule_poll($1,now()+interval \'1 hour\')',[id]),/reopened/);
  await db.exec('reset role;');await db.query("update public.workspace_polls set closed_at=null,closes_at=now()-interval '1 minute' where id=$1",[id]);
  await login(employee);await assert.rejects(()=>db.query('select public.workspace_vote_poll($1,1)',[id]),/closed/);
+ await login(admin);
+ await db.query('select public.workspace_delete_poll($1)',[id]);
+ assert.equal((await db.exec('select public.workspace_poll_data() data'))[0].rows[0].data.polls.length,0);
+ await db.exec('reset role');assert.equal((await db.query('select count(*) n from workspace_poll_votes')).rows[0].n,0);
  await db.exec('reset role;set role anon;');await assert.rejects(()=>db.exec('select public.workspace_poll_data()'),/permission denied/);
  await db.close();
 });

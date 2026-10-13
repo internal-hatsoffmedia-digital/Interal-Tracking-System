@@ -1,0 +1,13 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
+const exports={};vm.runInNewContext(ts.transpileModule(readFileSync(new URL('../src/lib/employeeSalesReport.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{exports,Intl,Date,Map,Set});
+const {employeeSalesRows:rows,employeeSalesTotals:totals}=exports;
+const projects=[{id:'shared',status:'completed',sales_completed_at:'2026-10-12T20:00:00Z',rate:1000,project_code:'HMOCT0011',name:'Shared website',client_name:'Client'}, {id:'pending',status:'planning',sales_completed_at:null,rate:9000},{id:'old',status:'completed',sales_completed_at:'2026-09-30T17:00:00Z',rate:500}];
+const credits=[{project_id:'shared',profile_id:'a',name:'A',amount:400},{project_id:'shared',profile_id:'b',name:'B',amount:600},{project_id:'pending',profile_id:'a',name:'A',amount:9000},{project_id:'old',profile_id:'a',name:'A',amount:500}];
+test('employee and IST completion date filters count only their credited share',()=>{const result=rows(projects,credits,'a','2026-10-13','2026-10-13');assert.equal(result.length,1);assert.equal(result[0].completion_day,'2026-10-13');assert.equal(totals(result).amount,400);});
+test('all employees sum shares without multiplying shared project count',()=>{const result=rows(projects,credits,'','2026-10-01','2026-10-31');assert.equal(totals(result).amount,1000);assert.equal(totals(result).employees,2);assert.equal(totals(result).projects,1);});
+test('uncredited, unfinished and reversed ranges return no invented revenue',()=>{assert.equal(rows(projects,credits,'unknown','2026-10-01','2026-10-31').length,0);assert.equal(rows(projects,credits,'','2026-10-20','2026-10-01').length,0);assert.equal(rows(projects,credits,'','2026-10-12','2026-10-12').length,0);});
+test('existing client/team/project scope composes with employee filtering',()=>{const result=rows(projects.filter(p=>p.id==='old'),credits,'a','2026-09-01','2026-09-30');assert.equal(result.length,1);assert.equal(totals(result).amount,500);});

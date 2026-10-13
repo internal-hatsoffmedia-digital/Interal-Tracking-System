@@ -1,13 +1,12 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {Cake,ImagePlus,Megaphone} from 'lucide-react';
+import {ImagePlus,Megaphone} from 'lucide-react';
 import {supabase} from '../../lib/supabase';
 import {useAuth} from '../../context/AuthContext';
 import {studioDay} from '../../lib/dashboardCelebrations';
-import BirthdayWishes from './BirthdayWishes';
 import AnnouncementSlider from './AnnouncementSlider';
 import './announcements.css';
 type Announcement={id:string;title:string;image_data:string;images?:string[]|null;birthday_on?:string|null;created_at:string};
-export default function Announcements(){
+export default function Announcements({hero=false}:{hero?:boolean}){
  const {profile}=useAuth();const admin=profile?.role==='admin';
  const [loaded,setLoaded]=useState<{user:string;rows:Announcement[]}|null>(null);
  const rows=loaded&&loaded.user===profile?.id?loaded.rows:[];
@@ -77,12 +76,12 @@ export default function Announcements(){
    if(r.error)setError(r.error.message);else await load();setBusy(false);
  }
  if(!admin&&!visible.length&&!error)return null;
- return <section aria-label="Announcements" className="dashboard-announcements"><header><div><span className="announcement-eyebrow">AROUND THE STUDIO</span><h2><Megaphone size={18}/>Announcements & celebrations</h2></div>{admin&&<button disabled={busy} onClick={()=>setEditing(!editing)}><ImagePlus size={16}/>{editing?'Cancel':'Add images'}</button>}</header>
+ return <section aria-label="Announcements" className={`dashboard-announcements ${hero?'dashboard-hero-banner':''}`}><header><div><span className="announcement-eyebrow">TEAM UPDATES</span><h2><Megaphone size={18}/>Team highlights</h2></div>{admin&&<button disabled={busy} onClick={()=>setEditing(!editing)}><ImagePlus size={16}/>{editing?'Cancel':'Add images'}</button>}</header>
  {error&&<p role="alert" className="announcement-error">{error}</p>}
- {editing&&admin&&<form className="announcement-editor" onSubmit={e=>{e.preventDefault();void publish();}}><fieldset disabled={busy}><label>Title / image description<input maxLength={180} required value={title} onChange={e=>setTitle(e.target.value)}/></label><label>Images · up to 8<input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={e=>void selectFiles(e.target.files)}/></label><label className="announcement-checkbox"><input type="checkbox" checked={birthday} onChange={e=>setBirthday(e.target.checked)}/>Birthday celebration</label>{birthday&&<label>Birthday date (IST)<input type="date" min={day} required value={date} onChange={e=>setDate(e.target.value)}/><small>Shown on this date only. All signed-in colleagues can send live wishes.</small></label>}</fieldset><div className="announcement-previews">{images.map((image,i)=><img key={i} src={image} alt={`Selected image ${i+1}`}/>)}</div>{images.length>0&&<div><p className="announcement-eyebrow">UNPUBLISHED SLIDER PREVIEW</p><AnnouncementSlider slides={images.map((image,i)=>({key:String(i),image,title:title||`Image ${i+1}`,birthday}))} paused/></div>}<button className="announcement-primary" disabled={busy||!images.length||!title.trim()}>{busy?'Preparing…':'Publish announcement'}</button></form>}
+ {editing&&admin&&<form className="announcement-editor" onSubmit={e=>{e.preventDefault();void publish();}}><fieldset disabled={busy}><label>Title / image description<input maxLength={180} required value={title} onChange={e=>setTitle(e.target.value)}/></label><label>Images · up to 8<input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={e=>void selectFiles(e.target.files)}/></label><label className="announcement-checkbox"><input type="checkbox" checked={birthday} onChange={e=>setBirthday(e.target.checked)}/>Birthday celebration</label>{birthday&&<label>Birthday date (IST)<input type="date" min={day} required value={date} onChange={e=>setDate(e.target.value)}/><small>Shown on this date only. Colleagues can send 24-hour wishes in the automatic Birthdays & wishes section.</small></label>}</fieldset><div className="announcement-previews">{images.map((image,i)=><img key={i} src={image} alt={`Selected image ${i+1}`}/>)}</div>{images.length>0&&<div><p className="announcement-eyebrow">UNPUBLISHED SLIDER PREVIEW</p><AnnouncementSlider slides={images.map((image,i)=>({key:String(i),image,title:title||`Image ${i+1}`,birthday}))} paused/></div>}<button className="announcement-primary" disabled={busy||!images.length||!title.trim()}>{busy?'Preparing…':'Publish announcement'}</button></form>}
  {slides.length>0&&<AnnouncementSlider slides={slides.map(s=>({key:s.key,image:s.image,title:s.row.title,birthday:!!s.row.birthday_on}))} paused={editing}/>}
- {visible.filter(r=>r.birthday_on===day).map(r=><div key={`${profile?.id}-${r.id}-${day}`} className="announcement-birthday"><h3><Cake size={18}/>{r.title}</h3><BirthdayWishes announcementId={r.id} day={day}/></div>)}
- {!visible.length&&!editing&&<p className="announcement-empty">A little space for your studio’s next update.</p>}
+
+ {!visible.length&&!editing&&(hero?<div className="announcement-hero-placeholder"><img src="/studio-hero.svg" alt=""/><div><h3>Good work starts here.</h3><p>Plan, create and deliver.<br/>Together.</p></div></div>:<p className="announcement-empty">Your team’s next update will appear here.</p>)}
  {admin&&rows.length>0&&<details className="announcement-manage"><summary>Manage announcements ({rows.length})</summary>{rows.map(r=><div key={r.id}><span>{r.title}{r.birthday_on?` · Birthday ${r.birthday_on}`:''}</span><button disabled={busy} onClick={()=>void remove(r.id)}>Remove</button></div>)}</details>}
  </section>;
 }

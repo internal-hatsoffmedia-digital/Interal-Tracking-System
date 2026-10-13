@@ -211,7 +211,7 @@ function Planner() {
     useMemo(() => {
       return tasks.filter(
         (task) =>
-          Boolean(
+          !task.archived_at && Boolean(
             task.planned_date,
           ),
       ).map(task=>({...task,planner_date:plannerDay(task,today)}));
@@ -664,7 +664,7 @@ function Planner() {
             </option>
 
             <option value="editing_in_progress">
-              Editing in Progress
+              Work in Progress
             </option>
 
             <option value="internal_review">

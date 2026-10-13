@@ -280,3 +280,92 @@ test('project completion timestamp is server-controlled and appears in finance R
  await as(7,"update projects set status='in_progress' where id=$1",[p.id]);assert.equal((await as(2,'select team_sales_data() as data')).rows[0].data.projects.find(x=>x.id===p.id).sales_completed_at,null);
  }finally{await db.exec('reset role;rollback');}
 });
+
+
+test('coordinator can assign a task to a Manager and Manager can read their own assignment',async()=>{
+ await db.exec('reset role');
+ await db.exec(await readFile(new URL('../supabase/migrations/202610130002_task_insert_return_visibility.sql',import.meta.url),'utf8'));
+ await db.exec('begin');
+ try {
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id(1)]);
+  await db.query('update profiles set role=$1,team_id=null where id=$2',['manager',id(14)]);
+  await db.query('update employees set team_id=null where profile_id=$1',[id(14)]);
+  const project=(await as(2,"insert into projects(name,client_id,lead_employee_id) values('Manager assignment test',$1,$2) returning id",[id(50),id(207)])).rows[0];
+  const task=(await as(7,"insert into tasks(project_id,title,created_by) values($1,'Manager work',$2) returning id",[project.id,id(7)])).rows[0];
+  const assignment=(await as(7,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,$3) returning id',[task.id,id(214),id(7)])).rows[0];
+  assert.equal((await as(14,'select id from task_assignments where id=$1 and employee_id=$2',[assignment.id,id(214)])).rows.length,1);
+  assert.equal((await as(14,'select id from tasks where id=$1',[task.id])).rows.length,1);
+ }finally {await db.exec('rollback;reset role');}
+});
+
+
+test('team directory scopes colleagues and personal sales reveals only explicit completed-project credits',async()=>{
+ await db.exec('reset role');
+ await db.exec(await readFile(new URL('../supabase/migrations/202610130003_team_directory_personal_sales.sql',import.meta.url),'utf8'));
+ const directory=(await as(10,'select workspace_team_directory() d')).rows[0].d;
+ assert.ok(directory.length>0);assert.ok(directory.every(p=>p.team_id===id(101)&&p.email===''));
+ const coordinators=(await as(7,'select workspace_team_directory() d')).rows[0].d;
+ assert.ok(coordinators.every(p=>p.team_id===id(100)));
+ assert.equal((await as(1,'select workspace_team_directory() d')).rows[0].d.length,14);
+ await assert.rejects(()=>as(10,'select project_sales_credit_directory()'),/Sales leadership/);
+ await assert.rejects(()=>as(10,'select * from project_sales_credits'),/permission denied/);
+ await db.exec('reset role;begin');
+ try {
+  const project=(await as(2,"insert into projects(name,client_id,lead_employee_id,rate) values('Credited project',$1,$2,1000) returning id",[id(50),id(207)])).rows[0];
+  await as(7,"update projects set status='completed' where id=$1",[project.id]);
+  await as(2,'select set_project_sales_credit($1,$2,$3)',[project.id,id(10),400]);
+  await as(2,'select set_project_sales_credit($1,$2,$3)',[project.id,id(11),600]);
+  await db.exec('savepoint credit_cap');
+  await assert.rejects(()=>as(2,'select set_project_sales_credit($1,$2,$3)',[project.id,id(10),401]),/cannot exceed/);
+  await db.exec('rollback to savepoint credit_cap');
+  await assert.rejects(()=>as(2,'select set_project_sales_credit($1,$2,$3)',[project.id,id(10),-1]),/non-negative/);
+  await db.exec('rollback to savepoint credit_cap');
+  const own=(await as(10,'select employee_sales_summary() d')).rows[0].d;
+  assert.equal(own.month_total,400);assert.equal(own.all_time_total,400);assert.equal(own.credited_projects,1);
+  assert.deepEqual(Object.keys(own).sort(),['all_time_total','credited_projects','month','month_total']);
+  assert.equal((await as(11,'select employee_sales_summary() d')).rows[0].d.month_total,600);
+  assert.equal((await as(12,'select employee_sales_summary() d')).rows[0].d.month_total,0);
+  await as(7,"update projects set status='in_progress' where id=$1",[project.id]);
+  assert.equal((await as(10,'select employee_sales_summary() d')).rows[0].d.month_total,0);
+ }finally{await db.exec('rollback;reset role');}
+ await assert.rejects(()=>as(10,'select set_project_sales_credit($1,$2,$3)',[id(301),id(10),1]),/Sales leadership/);
+ await assert.rejects(()=>as(2,'select set_project_sales_credit($1,$2,$3)',[id(301),id(10),1]),/Complete the project/);
+});
+
+
+test('solo completed projects credit their contributor once and team leads see only own-team daily sales/work',async()=>{
+ await db.exec('reset role');await db.exec('alter table public.task_assignments add column if not exists deadline_at timestamptz');await db.exec(await readFile(new URL('../supabase/migrations/202610130004_solo_sales_team_daily.sql',import.meta.url),'utf8'));
+ await db.exec("alter type public.assignment_status add value if not exists 'in_progress'");
+ await db.exec('begin');try{
+  await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id(1)]);
+  await db.query('update profiles set team_id=$1 where id=$2',[id(101),id(3)]);
+  await db.query('update employees set team_id=$1 where profile_id=$2',[id(101),id(3)]);
+  const project=(await as(2,"insert into projects(name,client_id,lead_employee_id,rate) values('Solo production',$1,$2,35000) returning id",[id(50),id(207)])).rows[0];
+  const task=(await as(7,"insert into tasks(project_id,title,created_by) values($1,'Solo task',$2) returning id",[project.id,id(7)])).rows[0];
+  await as(7,"insert into task_assignments(task_id,employee_id,assigned_by,status) values($1,$2,$3,'in_progress')",[task.id,id(210),id(7)]);
+  const archived=(await as(7,"insert into tasks(project_id,title,created_by) values($1,'Archived contributor',$2) returning id",[project.id,id(7)])).rows[0];
+  await as(7,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,$3)',[archived.id,id(211),id(7)]);
+  await as(1,'update tasks set archived_at=now() where id=$1',[archived.id]);
+  await as(7,"update projects set status='completed' where id=$1",[project.id]);
+  let summary=(await as(10,'select employee_sales_summary() d')).rows[0].d;assert.equal(summary.month_total,35000);
+  await as(7,"update projects set status='completed' where id=$1",[project.id]);
+  assert.equal((await as(10,'select employee_sales_summary() d')).rows[0].d.month_total,35000);
+  const query="select team_daily_overview((now() at time zone 'Asia/Kolkata')::date,(now() at time zone 'Asia/Kolkata')::date) d";
+  const own=(await as(3,query)).rows[0].d;assert.equal(own.sales.filter(s=>s.project_id===project.id).length,1);assert.equal(own.sales.find(s=>s.project_id===project.id).amount,35000);assert.ok(own.work.every(w=>w.profile_id===id(10)||w.profile_id===id(3)));
+  const other=(await as(4,query)).rows[0].d;assert.ok(!other.sales.some(s=>s.project_id===project.id));assert.ok(!other.work.some(w=>w.profile_id===id(10)));
+  // Shared work is not credited in full to both people.
+  const shared=(await as(2,"insert into projects(name,client_id,lead_employee_id,rate) values('Shared production',$1,$2,1000) returning id",[id(50),id(207)])).rows[0];
+  const sharedTask=(await as(7,"insert into tasks(project_id,title,created_by) values($1,'Shared task',$2) returning id",[shared.id,id(7)])).rows[0];
+  for(const worker of [210,211])await as(7,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,$3)',[sharedTask.id,id(worker),id(7)]);
+  await as(7,"update projects set status='completed' where id=$1",[shared.id]);
+  assert.ok(!(await as(2,'select project_sales_credit_directory() d')).rows[0].d.credits.some(c=>c.project_id===shared.id));
+  await as(2,'select set_project_sales_credit($1,$2,400)',[shared.id,id(10)]);
+  await as(2,'select set_project_sales_credit($1,$2,600)',[shared.id,id(11)]);
+  assert.equal((await as(3,query)).rows[0].d.sales.find(s=>s.project_id===shared.id).amount,400);
+  assert.equal((await as(4,query)).rows[0].d.sales.find(s=>s.project_id===shared.id).amount,600);
+  await as(7,"update projects set status='in_progress' where id=$1",[project.id]);
+  assert.ok(!(await as(3,query)).rows[0].d.sales.some(s=>s.project_id===project.id));
+ }finally{await db.exec('rollback;reset role');}
+ await assert.rejects(()=>as(10,"select team_daily_overview(current_date,current_date)"),/active team lead/);
+ await assert.rejects(()=>as(3,"select team_daily_overview(current_date,current_date-1)"),/valid date range/);
+});

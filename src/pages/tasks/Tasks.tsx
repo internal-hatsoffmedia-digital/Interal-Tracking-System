@@ -158,7 +158,7 @@ function Tasks() {
       label: "New File",
     },
     {
-      value: "internal_corrections",
+      value: "internal_correction",
       label: "Internal Corrections",
     },
     {
@@ -193,7 +193,7 @@ function Tasks() {
     },
     {
       value: "editing_in_progress",
-      label: "Editing in Progress",
+      label: "Work in Progress",
     },
     {
       value: "internal_review",

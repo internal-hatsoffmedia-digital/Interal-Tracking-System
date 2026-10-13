@@ -114,3 +114,20 @@ html:not([data-theme=dark]) .workspace-dialog :is(.text-slate-300,.text-slate-40
 html:not([data-theme=dark]) .workspace-dialog .coordinator-picker>div { background:#f7f8fc; border-color:var(--line); }
 html:not([data-theme=dark]) .workspace-dialog button.bg-gradient-to-r { color:white; }
 html:not([data-theme=dark]) .project-status { color:#5140b8; }
+
+.workspace-dialog--compact{width:min(480px,100%)}
+.workspace-dialog-backdrop:has(.workspace-dialog--compact){background:rgba(12,15,20,.55);backdrop-filter:blur(5px)}
+.work-confirm-header{padding:24px!important;gap:14px!important;border-bottom:0!important;background:transparent!important}
+.work-confirm-header h2{font-size:22px;line-height:1.3;margin:0}
+.work-confirm-icon{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:16px;background:#fff3b0;color:#191919}
+.work-confirm-eyebrow{margin:0 0 4px;font-size:10px;letter-spacing:.16em;color:#8a8a8a;font-weight:700}
+.work-confirm-close{margin-left:auto;align-self:flex-start;font-size:26px;line-height:1;padding:4px 7px;border-radius:8px;background:transparent;color:inherit}
+.work-confirm-body{padding:0 24px 24px!important;font-size:14px;line-height:1.6}
+.work-confirm-task{display:grid;gap:5px;padding:16px;margin-top:20px;border:1px solid var(--line,#343434);border-radius:14px;background:var(--canvas,#191919);overflow-wrap:anywhere}
+.work-confirm-task span{font-size:11px;color:#858585;text-transform:uppercase;letter-spacing:.08em}
+.work-confirm-task strong{font-size:15px;color:var(--ink,inherit)}
+.work-confirm-footer{display:flex;justify-content:flex-end;gap:10px;padding:18px 24px;border-top:1px solid var(--line,#343434)}
+.work-confirm-cancel,.work-confirm-primary{border-radius:12px;padding:11px 18px;font-size:14px;font-weight:650}
+.work-confirm-cancel{border:1px solid var(--line,#555);background:transparent;color:inherit}
+.work-confirm-primary{background:#ffcc00;color:#111;border:1px solid #ffcc00}
+@media(max-width:480px){.work-confirm-footer button{flex:1}.work-confirm-header{padding:20px!important}.work-confirm-body{padding:0 20px 20px!important}}

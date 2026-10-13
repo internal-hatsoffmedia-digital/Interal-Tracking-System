@@ -229,7 +229,7 @@ function ProductionOverview() {
               "status",
               "planned_date",
             ].join(", "),
-          )
+          ).is("archived_at", null)
           .eq(
             "planned_date",
             today,

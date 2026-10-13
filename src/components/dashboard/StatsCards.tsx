@@ -316,7 +316,7 @@ function StatsCards() {
                 "due_date",
                 "created_at",
               ].join(", "),
-            ),
+            ).is("archived_at", null),
 
           supabase
             .from("projects")

@@ -420,7 +420,7 @@ function TeamWorkload() {
                 "status",
                 "planned_date",
               ].join(", "),
-            ),
+            ).is("archived_at", null),
 
           supabase
             .from("timesheets")

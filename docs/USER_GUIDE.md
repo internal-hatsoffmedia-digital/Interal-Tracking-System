@@ -103,3 +103,15 @@ Any active signed-in colleague can type a birthday wish while the celebration is
 Admin can open **Dashboard → Today → Office polls → Create poll**, name the event, enter a question and add 2–10 topic options. Five options are shown initially; use Add topic for a sixth option. The unpublished preview shows how the poll will look before it is sent to the team. Optionally set a closing date/time in IST, then publish when ready.
 
 All active signed-in accounts can select one topic and change that choice until voting closes. Poll results update automatically about every 15 seconds and show totals and percentages, without other voters' names. Admin can close voting early. Closed poll results stay visible; polls and votes are saved so they survive refreshes. The active-account count comes from login accounts and is not a verified employee headcount.
+
+## Access page and Daily Desk
+
+Admin, Manager and Director can open **Access** from the sidebar. Search for a member, choose a page rule and save. **Role default** removes a custom rule; **Show page** permits navigation within existing role limits; **Hide / block page** removes navigation and blocks the route. Changes refresh within one minute or when a member returns to the app. Access administration remains available to leadership to prevent accidental lockout. These controls do not grant database, editing or company sales privileges; role and team data policies continue to apply.
+
+Everyone has **Daily Desk**: pick an IST date, add personal to-dos or notes, and tick completed items. Entries persist across refreshes and are visible only to their author, including when another account is an administrator. These personal reminders do not assign production work to colleagues; use Tasks for production assignments and committed deadlines.
+
+## Birthdays, Reports and Performance
+
+Dashboard automatically announces colleagues' birthdays from the dates saved by Admin in Edit Employee. Upcoming birthdays show seven days ahead. Send a wish on the birthday date; each message remains for 24 hours, including across refreshes. No birth years appear. Expired messages disappear immediately, with physical cleanup within the next minute.
+
+Reports and Performance support employee/team/date filters, monthly reporting, task commitment details, timer logs and CSV export. Green means the employee submitted by the committed deadline, red means submitted late or currently overdue, and orange means unfinished work on a held project. No commitment is inferred where one is missing. Timer hours exclude breaks and manual timesheet entries. Current team/project access limits continue to apply.

@@ -27,6 +27,7 @@ export interface EmployeeFormData {
   phone: string;
   job_title: string;
   team_id: string;
+  date_of_birth: string;
   joining_date: string;
   is_active: boolean;
 }
@@ -57,6 +58,7 @@ const EMPTY_FORM: EmployeeFormData = {
   phone: "",
   job_title: "",
   team_id: "",
+  date_of_birth: "",
   joining_date: "",
   is_active: true,
 };
@@ -113,6 +115,7 @@ function EmployeeForm({
         employee.job_title ?? "",
       team_id:
         employee.team_id ?? "",
+      date_of_birth: employee.date_of_birth ?? "",
       joining_date:
         employee.joining_date ?? "",
       is_active:
@@ -745,6 +748,7 @@ function EmployeeForm({
                 </div>
 
 
+                <div><label htmlFor="employee-date-of-birth" className="mb-2 block text-sm font-medium">Date of Birth</label><input id="employee-date-of-birth" type="date" min="1900-01-01" max={new Date().toISOString().slice(0,10)} value={formData.date_of_birth} onChange={event=>updateField('date_of_birth',event.target.value)} className="w-full rounded-xl border px-4 py-3"/><p className="mt-2 text-xs text-gray-500">Visible and editable by Admin only.</p></div>
                 {/* Joining Date */}
 
                 <div>
