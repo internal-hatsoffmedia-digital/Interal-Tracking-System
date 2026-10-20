@@ -1,12 +1,14 @@
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {usePageAccess} from '../../context/pageAccess';
 import {useAuth} from '../../context/AuthContext';
 
 const pages = [
   ["User Guide", "/user-guide", "README, help, roles and how to use Internal Force"],
   ["Dashboard", "/dashboard", "Overview and delivery priorities"],
   ["My Work", "/my-work", "Your assigned tasks"],
+  ["QC", "/qc", "Quality checks and corrections"],
   ["Team PC", "/team-pc", "Coordinator activity and monthly editor delivery timing"],
   ["Tasks", "/tasks", "Manage production work"],
   ["Team Work", "/task-assignments", "Assign work to employees and monitor team tasks"],
@@ -22,12 +24,13 @@ const pages = [
 ];
 
 export default function WorkspaceSearch() {
-  const {profile}=useAuth();
+  const {profile}=useAuth();const {allowed}=usePageAccess();
   const navigate = useNavigate();
   const input = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const results = pages.filter(([name, , description]) =>
+  const results = pages.filter(([name, path, description]) =>
+    allowed(path) &&
     (name !== "Team PC" || ["admin", "manager", "director", "associate_lead", "team_lead"].includes(profile?.role ?? "")) &&
     (name !== "Team Work" || profile?.role !== "employee") &&
     `${name} ${description}`.toLowerCase().includes(query.trim().toLowerCase()),

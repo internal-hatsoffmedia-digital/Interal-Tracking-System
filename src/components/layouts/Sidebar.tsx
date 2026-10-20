@@ -7,7 +7,7 @@ import {useAuth} from '../../context/AuthContext';
 import {usePageAccess} from '../../context/pageAccess';
 
 const groups=[
- {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team PC','/team-pc',UserCheck],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['Planner','/planner',CalendarDays],['Projects','/projects',FolderKanban]]},
+ {name:'Your workspace',items:[['Dashboard','/dashboard',LayoutDashboard],['My Work','/my-work',CheckSquare],['My Team','/my-team',Users],['Team PC','/team-pc',UserCheck],['Team Work','/task-assignments',UserCheck],['Tasks','/tasks',ClipboardList],['QC','/qc',CheckSquare],['QC Activity','/qc-activity',ClipboardList],['Planner','/planner',CalendarDays],['Projects','/projects',FolderKanban]]},
  {name:'Studio',items:[['Clients','/clients',BriefcaseBusiness],['Teams','/teams',Users],['Employees','/employees',UserRound],['Team Members','/team-members',UserCheck],['Performance','/performance',BarChart3],['Reports','/reports',BarChart3],['Sales','/sales',BarChart3]]},
 ] as const;
 
@@ -30,6 +30,7 @@ export default function Sidebar(){
    const isLead = profile?.role === 'associate_lead' || profile?.role === 'team_lead';
    return {...g, items:g.items.filter(([label,path]) => {
      if(!allowed(path)) return false;
+     if(label === 'QC Activity') return !!profile?.is_active&&['admin','manager','director'].includes(profile.role);
      if(label === 'Sales') return financeAccess;
      if(label === 'My Team') return isLead;
      if(label === 'Team PC') return isLead || profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'director';

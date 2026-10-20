@@ -1,4 +1,7 @@
 export interface Project {
+  historical_artist?: string | null;
+  historical_coordinator?: string | null;
+  import_details?: Record<string, unknown> | null;
   production_team_ids?: string[];
   project_code?: string | null;
   category?: string | null;

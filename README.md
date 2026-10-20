@@ -204,6 +204,8 @@ For this review's exact coverage and limitations, read [the test report](docs/te
 
 ## Project controls FAQ
 
+For the current user and development workflow diagrams, see [Project workflow reference](docs/PROJECT_WORKFLOW.md) or open the [offline visual reference](docs/PROJECT_WORKFLOW.html). The reference covers roles, daily work, sales, office features, architecture and releases, as of 14 October 2026.
+
 **Why is the coordinator dropdown empty?** It requires an employee record linked to an active Project Coordinator profile. For non-admin managers the coordinator must also be in the manager's team. Verify Settings → Access Management and Employees linkage; creating an Auth user alone is insufficient. Existing project sharing additionally requires matching project/coordinator teams.
 
 **Why is there no project delete action?** The current Projects screen implements Archive/Restore through its edit workflow, not permanent deletion. Archiving preserves history. Permanent deletion would need an explicit UI/backend workflow with dependency handling; it was not added or executed in this review.

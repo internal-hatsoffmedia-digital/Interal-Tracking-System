@@ -34,8 +34,8 @@ const DEPARTMENTS = [
   { id: "creative", label: "Creative Clan", icon: Palette },
   { id: "cut", label: "Cut Masters", icon: Film },
   { id: "flow", label: "Flow Force", icon: Layers },
-  { id: "web", label: "Web Crafters", icon: Code2 },
-  { id: "digital", label: "Digital Marketing", icon: Megaphone },
+  { id: "web", label: "Digital Ninjas - W", icon: Code2 },
+  { id: "digital", label: "Digital Ninjas - M", icon: Megaphone },
   { id: "sales", label: "Market Hunters", icon: Target },
 ];
 

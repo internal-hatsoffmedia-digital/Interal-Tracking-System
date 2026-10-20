@@ -27,8 +27,8 @@ const input = 'project-input rounded-xl border border-slate-700 bg-slate-900/90 
 const button = 'project-button inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-700 hover:text-white disabled:opacity-50 transition';
 const label = (value: string) => value.replaceAll('_', ' ');
 
-export default function ProjectWorkspace({ mode = 'projects', onEdit, revision = 0, onSchemaReady }: {
-  mode?: 'projects' | 'dashboard' | 'reports'; onEdit?: (p: ManagedProject) => void; revision?: number; onSchemaReady?: (ready:boolean)=>void;
+export default function ProjectWorkspace({ mode = 'projects', onEdit, onDelete, revision = 0, onSchemaReady }: {
+  mode?: 'projects' | 'dashboard' | 'reports'; onEdit?: (p: ManagedProject) => void; onDelete?: (p: ManagedProject) => void; revision?: number; onSchemaReady?: (ready:boolean)=>void;
 }) {
   const { profile } = useAuth();
   const [params] = useSearchParams();
@@ -39,6 +39,7 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
   const [schemaReady, setSchemaReady] = useState(true);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const [showDeleted,setShowDeleted]=useState(false);
   const [member, setMember] = useState('');
   const [assigner, setAssigner] = useState('');
   const [deadline, setDeadline] = useState('');
@@ -74,6 +75,7 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
   }, [load]);
   const name = (id: string | null) => id ? people.find(p => p.id === id)?.full_name || 'Account unavailable' : 'Not recorded';
   const matchesFilters = (p: ManagedProject) =>
+    (mode!=='projects'||showDeleted||p.is_active) &&
     (!search || `${p.name} ${p.project_code ?? ''} ${p.client?.name ?? ''}`.toLowerCase().includes(search.toLowerCase())) &&
     (!status || p.status === status) && (!member || p.project_members.some(m => m.access_kind === 'assignee' && m.profile_id === member)) &&
     (!assigner || p.assigned_by === assigner) && (!deadline || (p.target_deadline && p.target_deadline <= deadline)) &&
@@ -83,7 +85,7 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
   const stats = summarizeProjects(visible);
   const project = projects.find(p => p.id === selected);
   const projectManager = useProjectManagement();
-  const canEdit = (p:ManagedProject) => profile?.role==='admin' || profile?.role==='project_coordinator' || (projectManager && p.team_id===profile?.team_id);
+  const canEdit = (p:ManagedProject) => ['admin','manager','director'].includes(profile?.role??'') || profile?.role==='project_coordinator' || (projectManager && p.team_id===profile?.team_id);
   async function exportCsv() {
     // Re-fetch before export so revoked access cannot survive in a cached report.
     try {
@@ -139,14 +141,14 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, revision =
       <label className="grid gap-1 text-xs font-medium text-slate-400">Created from<input type="date" className={input} value={from} onChange={e => setFrom(e.target.value)} /></label>
       <label className="grid gap-1 text-xs font-medium text-slate-400">Created through<input type="date" className={input} value={to} min={from} onChange={e => setTo(e.target.value)} /></label>
     </div>
-    <div className="flex flex-wrap items-center gap-5 text-xs text-slate-700">
+    <div className="flex flex-wrap items-center gap-5 text-xs text-slate-700">{mode==='projects'&&<label className="flex items-center gap-2"><input type="checkbox" checked={showDeleted} onChange={e=>setShowDeleted(e.target.checked)}/>Show deleted projects</label>}
       <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-amber-400" checked={incomplete} onChange={e => setIncomplete(e.target.checked)} /> Incomplete information</label>
       <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-amber-400" checked={associateOnly} onChange={e => setAssociateOnly(e.target.checked)} /> Assigned by Associate Lead</label>
       <button className="text-amber-400 hover:text-amber-300 font-semibold underline font-medium" onClick={() => { setSearch('');setStatus('');setMember('');setAssigner('');setDeadline('');setFrom('');setTo('');setIncomplete(false);setAssociateOnly(false); }}>Clear filters</button>
     </div>
     {loading ? <p role="status" className="text-slate-400 text-sm">Loading projects…</p> : !error && <>
       {mode === 'projects' && visible.length === 0 && <p className="py-6 text-sm text-slate-500">No accessible projects match these filters.</p>}
-      {mode === 'projects' && visible.length > 0 && <ProjectTracker projects={visible} people={people} onOpen={setSelected} onEdit={onEdit ? p => { if(canEdit(p)) onEdit(p); else setSelected(p.id); } : undefined} />}
+      {mode === 'projects' && visible.length > 0 && <ProjectTracker projects={visible} people={people} onDelete={onDelete ? p=>{if(canEdit(p))onDelete(p);} : undefined} onOpen={setSelected} onEdit={onEdit ? p => { if(canEdit(p)) onEdit(p); else setSelected(p.id); } : undefined} />}
       {mode !== 'projects' && (visible.length === 0 ? <p className="py-6 text-slate-500 text-sm">No accessible projects match these filters.</p> : <div className="overflow-x-auto border border-slate-800 rounded-xl"><table className="w-full text-left text-sm"><thead className="border-b border-slate-800 bg-slate-950 text-xs text-amber-400 font-bold font-semibold uppercase tracking-wider"><tr>{['Project / client','Assignments','Status / progress','Deadline','Information','Actions'].map(h=><th key={h} className="p-3.5">{h}</th>)}</tr></thead><tbody>
         {visible.map(p => <tr key={p.id} className="border-b border-slate-800/60 hover:bg-slate-800/30 transition align-top"><td className="p-3.5"><button className="text-left font-semibold text-slate-100 hover:text-amber-400 transition" onClick={() => setSelected(p.id)}>{p.name}</button><p className="text-xs text-slate-400">{p.client?.name ?? (p.client_id ? 'Client unavailable' : 'Missing client')}</p><p className="mt-1 text-[11px] text-slate-500">Updated {new Date(p.updated_at).toLocaleDateString()}</p></td>
           <td className="p-3.5 text-slate-300">{p.project_members.filter(m => m.access_kind === 'assignee').map(m => name(m.profile_id)).join(', ') || 'Unassigned'}<p className="text-xs text-slate-500">By {name(p.assigned_by)}</p></td>
@@ -242,7 +244,8 @@ function ProjectDetail({ project, people, onClose, onSaved, onEdit }: { project:
               'Production End': displayTime(project.ended_at),
               Remarks: project.remarks || '—',
               Creator: name(project.created_by),
-              Assigner: name(project.assigned_by),
+              'Assigned by / Coordinator': project.historical_coordinator || name(project.assigned_by),
+              'Artist (sheet)': project.historical_artist || 'Not recorded',
               Assigned: project.assigned_at ? new Date(project.assigned_at).toLocaleString() : 'Not recorded',
               Start: project.start_date ?? 'Not set',
               Deadline: project.target_deadline ?? 'Not set',

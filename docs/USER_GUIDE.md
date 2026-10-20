@@ -115,3 +115,29 @@ Everyone has **Daily Desk**: pick an IST date, add personal to-dos or notes, and
 Dashboard automatically announces colleagues' birthdays from the dates saved by Admin in Edit Employee. Upcoming birthdays show seven days ahead. Send a wish on the birthday date; each message remains for 24 hours, including across refreshes. No birth years appear. Expired messages disappear immediately, with physical cleanup within the next minute.
 
 Reports and Performance support employee/team/date filters, monthly reporting, task commitment details, timer logs and CSV export. Green means the employee submitted by the committed deadline, red means submitted late or currently overdue, and orange means unfinished work on a held project. No commitment is inferred where one is missing. Timer hours exclude breaks and manual timesheet entries. Current team/project access limits continue to apply.
+
+## Revenue and project-rate filters
+
+On Sales, **Revenue by filter** switches between Client, Employee and Team. Choose a member/client/team to narrow the ranking. The reporting month and top-level team/client/project filters also apply. Employee amounts use recorded shares of completed base project rates; charges and expenses are excluded. Client/team views include eligible client charges. Shared projects appear under each linked team and must not be added together to calculate company revenue.
+
+**Project rates** includes production teams and credited employee amounts, with separate client/team/employee filters. A base rate appears once per project. Historical artist names and task assignments do not automatically become sales credit. Project email notifications require a configured sender; they are not enabled by these display changes.
+
+## Personal and team-lead dashboards
+
+Employees have a personal summary with assignments, work in progress, review, delivered work, today’s timer hours and their own credited sales. The profile panel opens My Work for timer controls. Ongoing, In review, Completed and Next in line separate each person’s assignments; another contributor’s submission does not move their unfinished assignment into review.
+
+Associate Leads and Team Leads have a team workspace with date/member-filtered credited sales, a current-project list and project detail panel. The four project tabs use current status: held projects remain Ongoing; review is inferred from that team’s assigned task stages; completed projects remain Completed. Current projects may include team-linked projects without tasks. Sales and assignment dates are filtered independently of the current project inventory. The project metadata endpoint requires the tested team-dashboard migration; it grants no project editing or full Sales-page access.
+
+### Quality checks (QC)
+Work entering Internal Review automatically appears in QC. Admin selects reviewers on the QC page; Admin, Manager and Director can also review. Reviewers claim an item, send a correction note to an active assigned employee, then approve after rechecking. Employees see only related work and can resubmit their correction requests. Coordinators assigned to the project and the production team's leads receive in-app notifications linking to QC. QC approval does not mark a project delivered or book sales; the coordinator retains final delivery control. The QC page can be hidden in Access; database permissions remain enforced separately. Apply migration 202610150002_qc_workspace.sql before use.
+
+### QC Activity
+Admin, Manager and Director can open QC Activity in the sidebar or on Dashboard. Filter by IST dates to see who checked work, correction notes, approvals and reviewer changes. QC events retain the reviewer recorded at the time. Other roles use their scoped QC view. Corrected October import on 15 October 2026 includes 121 projects, excludes all 32 Prospect rows, creates no tasks, and queues the two source QC projects. Historical artist text does not create employee task assignments or credits. Next October ID is HMOCT26691.
+
+### Categories and work activity
+
+Task Category includes GMB Audit, SEO Audit, Website Audit and Whisk. Project Category suggests the same names while allowing existing custom categories.
+
+Use Edit or Delete in the task/project row. Delete is reversible: task records are archived and projects become inactive, retaining assignments, time and history. Use Show archived tasks / Show deleted projects to restore. Existing database permissions still decide who can change work.
+
+Team PC → Activity records new project, task, client and assignment creations and edits, including deletion and restoration. Project-access changes retain the existing project history. Activity refreshes every 30 seconds or with Refresh. Historical changes before logging was enabled cannot be reconstructed.

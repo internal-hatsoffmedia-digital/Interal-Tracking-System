@@ -1,0 +1,18 @@
+export const taskCategories = [
+ {value:'shorts_reels',label:'Shorts / Reels'},
+ {value:'long_video',label:'Long Video'},
+ {value:'smp',label:'Social Media Post (SMP)'},
+ {value:'graphic_design',label:'Graphic Design & Creatives'},
+ {value:'social_media_handling',label:'Social Media Handling'},
+ {value:'content_writing',label:'Content Writing'},
+ {value:'reel_story_writing',label:'Story Writer for Reels'},
+ {value:'ads_management',label:'Ads Management'},
+ {value:'wordpress_development',label:'WordPress Development'},
+ {value:'custom_coding',label:'Custom Coding & Development'},
+ {value:'website_deployment',label:'Website Deployment & Hosting'},
+ {value:'website_maintenance',label:'Website Maintenance'},
+ {value:'gmb_audit',label:'GMB Audit'},
+ {value:'seo_audit',label:'SEO Audit'},
+ {value:'website_audit',label:'Website Audit'},
+ {value:'whisk',label:'Whisk'},
+];

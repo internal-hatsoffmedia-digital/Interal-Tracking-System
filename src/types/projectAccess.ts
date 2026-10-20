@@ -30,7 +30,7 @@ export interface ProjectActivity {
   created_at: string;
 }
 export interface ProjectNotification {
-  entity_type?:'project'|'sales_lead'|'task';
+  entity_type?:'project'|'sales_lead'|'task'|'qc';
   id: string;
   project_id: string;
   message: string;

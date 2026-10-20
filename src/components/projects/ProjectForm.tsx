@@ -1,3 +1,4 @@
+import {taskCategories} from '../../lib/taskCategories';
 import {
   AlertCircle,
   Building2,
@@ -856,7 +857,7 @@ function ProjectForm({
 
             <section aria-label="Project tracker details"><h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Project tracker details</h3><div className="grid gap-4 sm:grid-cols-2">
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-project_code">Project ID<input id="tracker-project_code" type="text" value={form.project_code || "Generated when project is created"} readOnly className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900" /></label>
-<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-category">Category<input id="tracker-category" type="text"  value={form.category} onChange={e => updateField("category", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+<datalist id="project-category-options">{taskCategories.map(c=><option key={c.value} value={c.label}/>)}</datalist><label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-category">Category<input id="tracker-category" type="text" list="project-category-options"  value={form.category} onChange={e => updateField("category", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-started_at">Start Time & Date<input id="tracker-started_at" type="datetime-local"  value={form.started_at} onChange={e => updateField("started_at", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-ended_at">End Time & Date<input id="tracker-ended_at" type="datetime-local"  value={form.ended_at} onChange={e => updateField("ended_at", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-final_link">Final Link<input id="tracker-final_link" type="url"  value={form.final_link} onChange={e => updateField("final_link", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>

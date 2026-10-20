@@ -52,10 +52,13 @@ export async function loadProjectNotifications() {
   const sales=await supabase.from('notifications').select('id,entity_id,entity_type,title,message,created_at,read_at')
     .eq('user_id',user.id).in('entity_type',['sales_lead','task']).order('created_at',{ascending:false}).limit(100);
   if(sales.error)throw new Error(sales.error.message);
-  return [...(data ?? []) as ProjectNotification[],...sales.data.map(n=>({id:n.id,project_id:n.entity_id,message:n.title+': '+n.message,created_at:n.created_at,read_at:n.read_at,entity_type:n.entity_type as 'sales_lead'|'task'}))]
+  const qc=await supabase.rpc('qc_notification_data');
+  if(qc.error&&!['PGRST202','42883'].includes(qc.error.code))throw new Error(qc.error.message);
+  const qcRows=((qc.data||[]) as {id:string;review_id:string;message:string;created_at:string;read_at:string|null}[]).map(n=>({...n,project_id:n.review_id,entity_type:'qc' as const}));
+  return [...qcRows,...(data ?? []) as ProjectNotification[],...sales.data.map(n=>({id:n.id,project_id:n.entity_id,message:n.title+': '+n.message,created_at:n.created_at,read_at:n.read_at,entity_type:n.entity_type as 'sales_lead'|'task'}))]
     .sort((a,b)=>b.created_at.localeCompare(a.created_at)).slice(0,100);
 }
 export async function readProjectNotification(id: string,entityType?:string) {
-  const { error } = await supabase.rpc(entityType==='task'?'workspace_read_notification':entityType==='sales_lead'?'sales_read_notification':'mark_project_notification_read', { p_id: id });
+  const { error } = await supabase.rpc(entityType==='qc'?'qc_read_notification':entityType==='task'?'workspace_read_notification':entityType==='sales_lead'?'sales_read_notification':'mark_project_notification_read', { p_id: id });
   if (error) throw new Error(error.message);
 }

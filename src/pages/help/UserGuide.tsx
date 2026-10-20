@@ -100,7 +100,7 @@ const ROLES_INFO: RoleInfo[] = [
     role: 'Associate Lead & Team Lead',
     badge: 'Squad Oversight',
     color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
-    scope: 'Assigned squad only (Creative Clan, Cut Masters, Web Development, Digital Ninjas)',
+    scope: 'Assigned squad only (Creative Clan, Cut Masters, Digital Ninjas - W, Digital Ninjas - M)',
     description: 'Production leaders in charge of direct squad output, workload distribution, and task assignment.',
     keyResponsibilities: [
       'Manage tasks in "Team Work" exclusively for their squad members',
@@ -735,7 +735,7 @@ export default function UserGuide() {
                   Focused Workspace for Each Associate Lead
                 </h3>
                 <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                  When an Associate Lead (e.g., Ganesh in <strong>Creative Clan</strong>, Sudeesh in <strong>Cut Masters</strong>, Vijay in <strong>Web Development</strong>, or Janani in <strong>Digital Ninjas</strong>) opens <strong>Team Work</strong>:
+                  When an Associate Lead (e.g., Ganesh in <strong>Creative Clan</strong>, Sudeesh in <strong>Cut Masters</strong>, Vijay in <strong>Digital Ninjas - W</strong>, or Janani in <strong>Digital Ninjas - M</strong>) opens <strong>Team Work</strong>:
                 </p>
                 <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
                   <li className="flex items-start gap-2">

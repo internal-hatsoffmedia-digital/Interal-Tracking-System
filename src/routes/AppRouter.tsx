@@ -5,6 +5,8 @@ import AppShell from "../components/layouts/AppShell";
 import PageErrorBoundary from "../components/layouts/PageErrorBoundary";
 
 const UserGuide = lazy(() => import("../pages/help/UserGuide"));
+const QCActivity = lazy(() => import('../pages/qc/QCActivity'));
+const QC = lazy(() => import('../pages/qc/QC'));
 const Access = lazy(() => import('../pages/access/Access'));
 const DailyDesk = lazy(() => import('../pages/daily-desk/DailyDesk'));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
@@ -52,6 +54,8 @@ function AppRouter() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/qc-activity" element={<QCActivity />} />
+              <Route path="/qc" element={<QC />} />
               <Route path="/access" element={<Access />} />
               <Route path="/daily-desk" element={<DailyDesk />} />
               <Route path="/user-guide" element={<UserGuide />} />

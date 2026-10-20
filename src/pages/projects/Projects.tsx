@@ -1,3 +1,4 @@
+import ProjectArtistWork from '../../components/projects/ProjectArtistWork';
 import {useNavigate} from 'react-router-dom';
 import ProjectFinanceDashboard from '../sales/ProjectFinanceDashboard';
 import {useProjectFinanceAccess} from '../../hooks/useProjectFinanceAccess';
@@ -19,6 +20,7 @@ import type { CreateProjectInput, UpdateProjectInput } from '../../types/project
 export default function Projects() {
   const {profile}=useAuth();
   const navigate=useNavigate();
+  const [deleting,setDeleting]=useState<ManagedProject|null>(null);
   const [editing, setEditing] = useState<ManagedProject | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -68,12 +70,20 @@ export default function Projects() {
     catch(e) { setError(e instanceof Error ? e.message : 'Unable to archive project'); }
     finally { setBusy(false); }
   }
+  async function removeProject(){
+    if(!deleting)return;setBusy(true);setError('');
+    try{await setProjectStatus(deleting.id,!deleting.is_active);setDeleting(null);setRevision(r=>r+1);}
+    catch(e){setError(e instanceof Error?e.message:'Unable to delete project');}finally{setBusy(false);}
+  }
   return <div className="space-y-6">
+    {deleting&&<div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"><section role="dialog" aria-modal="true" aria-labelledby="delete-project-title" className="w-full max-w-md rounded-2xl bg-white p-6 space-y-4"><h2 id="delete-project-title" className="text-xl font-semibold">{deleting.is_active?'Delete project?':'Restore project?'}</h2><p>{deleting.name}</p><p className="text-sm text-slate-500">Delete removes the project from active work. Tasks, time records and activity history are kept. You can restore the project from this list.</p>{error&&<p role="alert">{error}</p>}<div className="flex gap-3"><button disabled={busy} onClick={()=>setDeleting(null)}>Cancel</button><button className="rounded-xl bg-red-600 text-white px-4 py-2" disabled={busy} onClick={()=>void removeProject()}>{deleting.is_active?'Confirm delete':'Restore project'}</button></div></section></div>}
+
     <div className="flex justify-between gap-4"><div><h1 className="text-2xl font-semibold">Projects</h1><p className="text-sm text-slate-500">Assignments, progress, and team visibility.</p></div>
       {manager && schemaReady && <button disabled={busy} className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50" onClick={()=>void openForm(null)}>New project</button>}</div>
     {error && !open && <p role="alert" className="text-red-700">{error}</p>}
     <nav aria-label="Project sections" className="flex gap-2"><button className={`rounded-xl border px-4 py-2 text-sm font-semibold ${tab==='projects'?'bg-[#ffcc00] text-black':'bg-white text-black'}`} aria-pressed={tab==='projects'} onClick={()=>setTab('projects')}>Projects</button>{financeAccess&&<button className={`rounded-xl border px-4 py-2 text-sm font-semibold ${tab==='costs'?'bg-[#ffcc00] text-black':'bg-white text-black'}`} aria-pressed={tab==='costs'} onClick={()=>setTab('costs')}>Project charges & costs</button>}</nav>
-    {tab==='projects'?<ProjectWorkspace revision={revision} onSchemaReady={setSchemaReady} onEdit={p=>void openForm(p)} />:financeAccess&&<ProjectFinanceDashboard mode="costs"/>}
+    {tab==='projects'&&<ProjectArtistWork/>}
+    {tab==='projects'?<ProjectWorkspace revision={revision} onSchemaReady={setSchemaReady} onDelete={manager?setDeleting:undefined} onEdit={p=>void openForm(p)} />:financeAccess&&<ProjectFinanceDashboard mode="costs"/>}
     {open && <><ProjectForm open={open} project={editing} clients={clients} teams={teams} employees={employees} selfCoordinator={profile?.role==='project_coordinator'}
       statusOptions={[...new Set([...projectStatuses,...(editing ? [editing.status]:[])])]}
       healthOptions={[...new Set(['on_track',...(editing ? [editing.health]:[])])]}

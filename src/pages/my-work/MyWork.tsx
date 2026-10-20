@@ -1,3 +1,4 @@
+import ProjectArtistWork from '../../components/projects/ProjectArtistWork';
 import {useAssignmentRefresh} from '../../hooks/useAssignmentRefresh';
 import {
   AlertCircle,
@@ -617,6 +618,7 @@ function MyWork() {
         />
       </div>
 
+      <ProjectArtistWork/>
       <WorkTimer/>
 
       {/* =================================================

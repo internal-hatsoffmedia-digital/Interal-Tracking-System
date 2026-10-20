@@ -1,3 +1,4 @@
+import { productionTeamName } from "../../lib/productionTeamNames";
 import { supabase } from "../../lib/supabase";
 import type {
   CreateTeamInput,
@@ -84,11 +85,13 @@ async function populateTeamDetails(rawTeams: Record<string, unknown>[]): Promise
       email: e.email ?? undefined,
     }));
 
-    let displayName = (t.name as string) ?? "";
-    if (teamNameKey.includes("web") || teamNameKey.includes("warrior")) {
-      displayName = "Web Crafters · Web Development & Deployment";
+    let displayName = productionTeamName((t.name as string) ?? "", (t.team_type as string) ?? "");
+    if (displayName === "Digital Ninjas - W" || displayName === "Digital Ninjas - M") {
+      // Canonical team names distinguish web and marketing.
+    } else if (teamNameKey.includes("web") || teamNameKey.includes("warrior")) {
+      displayName = "Digital Ninjas - W";
     } else if (teamNameKey.includes("ninja") || teamNameKey.includes("digital ninjas")) {
-      displayName = "Digital Ninjas · Digital Marketing";
+      displayName = "Digital Ninjas - M";
     } else if (teamNameKey.includes("marketing")) {
       displayName = "Digital Marketing";
     } else if (teamNameKey.includes("creative") || teamNameKey.includes("design")) {

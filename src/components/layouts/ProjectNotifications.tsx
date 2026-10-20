@@ -34,6 +34,7 @@ export default function ProjectNotifications() {
   },[load,profile?.id]);
   async function visit(row:ProjectNotification) {
     try {
+      if(row.entity_type==='qc'){await readProjectNotification(row.id,'qc');setOpen(false);await load();navigate('/qc?review='+row.project_id);return;}
       if(row.entity_type==='task') {
         const r=await supabase.from('tasks').select('id').eq('id',row.project_id).maybeSingle();
         if(r.error)throw new Error(r.error.message);

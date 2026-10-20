@@ -1,0 +1,5 @@
+.birthday-priority{width:100%;margin:0 0 22px;padding:24px;border:1px solid var(--line);border-radius:24px;background:var(--surface)}
+.dashboard-community-grid>.workspace-polls:only-child,.role-community>.workspace-polls:only-child{grid-column:1/-1}
+.birthday-priority-heading{display:flex;align-items:center;justify-content:space-between;gap:18px}.birthday-priority-heading h2{display:flex;align-items:center;gap:9px;margin:8px 0;font-size:22px}.birthday-eyebrow{font-size:10px;font-weight:700;letter-spacing:.15em;color:var(--muted)}
+.birthday-priority.birthday-today{background:radial-gradient(circle at 96% 0%,#ffcc0045,transparent 45%),var(--surface);border-color:#d7b529;box-shadow:0 8px 28px #ffcc0014}.birthday-party{font-size:30px;white-space:nowrap}.birthday-sound{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:20px;background:#ffcc00;color:#161616;border:0;margin:12px 0;cursor:pointer}.birthday-priority .birthday-celebration{margin-top:14px}.birthday-priority .birthday-upcoming{margin-top:12px}
+@media(max-width:600px){.birthday-priority{padding:18px}.birthday-party{font-size:21px}.birthday-priority-heading h2{font-size:19px}}

@@ -1,9 +1,13 @@
+import QCActivity from '../../pages/qc/QCActivity';
+import EmployeeWorkspace from './EmployeeWorkspace';
+import LeadWorkspace from './LeadWorkspace';
 import {Link} from 'react-router-dom';
 import {useAuth} from '../../context/AuthContext';
 import './dashboardOverview.css';
 import {BookOpen,CheckSquare,CalendarDays,Timer,FolderOpen} from 'lucide-react';
 import PersonalSalesTicker from './PersonalSalesTicker';
 import DirectorSalesTicker from './DirectorSalesTicker';
+import DirectorTeamSales from './DirectorTeamSales';
 import OfficeBirthdays from './OfficeBirthdays';
 import '../../pages/reports/workInsights.css';
 import AssignedToYou from './AssignedToYou';
@@ -27,10 +31,13 @@ export default function Dashboard(){
  const [mode,setMode]=useState<'executive'|'operations'>('executive');const [view,setView]=useState('today');const location=useLocation();const navigate=useNavigate();
  const active=location.hash==='#attention'?'today':view;
  const tabs=[{id:'today',label:'Today',icon:LayoutGrid},{id:'projects',label:'Projects & people',icon:FolderKanban},{id:'insights',label:'Team insights',icon:ChartNoAxesCombined}];
- return <div className="future-dashboard">{profile?.role==='director'?<DirectorSalesTicker/>:<PersonalSalesTicker/>}
+ if(profile?.is_active&&profile.role==='employee')return <EmployeeWorkspace key={profile.id+':'+profile.team_id}/>;
+ if(profile?.is_active&&['associate_lead','team_lead'].includes(profile.role))return <LeadWorkspace key={profile.id+':'+profile.team_id}/>;
+ return <div className="future-dashboard"><OfficeBirthdays/>{profile?.role==='director'?<DirectorSalesTicker/>:<PersonalSalesTicker/>}
  <header className="dashboard-greeting"><div><span className="future-eyebrow">WELCOME BACK</span><h1>Hi, {profile?.full_name||'there'}.</h1><p>Here’s what’s happening with your team today.</p></div><Link to="/daily-desk" className="desk-primary">Plan your day <ArrowUpRight size={17}/></Link></header>
- <div className="dashboard-hero-grid"><Announcements hero/><ExecutiveBriefing viewMode={mode} onToggleViewMode={setMode}/></div>
- <div className="dashboard-community-grid"><OfficeBirthdays/><WorkspacePolls/></div><TeamLeadOverview/>
+ {profile?.role==='director'&&<DirectorTeamSales/>}
+ <QCActivity compact/><div className="dashboard-hero-grid"><Announcements hero/><ExecutiveBriefing viewMode={mode} onToggleViewMode={setMode}/></div>
+ <div className="dashboard-community-grid"><WorkspacePolls/></div><TeamLeadOverview/>
  <div className="flex justify-end py-3"><Link to="/user-guide" className="project-button flex items-center gap-2 px-4 py-2"><BookOpen size={17}/>User Guide / README</Link></div>
  <div className="future-dashboard-navigation"><div className="future-section-title"><span className="future-eyebrow">YOUR WORKSPACE</span><h2>Explore your work <ArrowUpRight size={20}/></h2></div><div className="future-dashboard-tabs" aria-label="Dashboard views">{tabs.map(t=><button key={t.id} aria-pressed={active===t.id} onClick={()=>{if(location.hash)navigate(location.pathname,{replace:true});setView(t.id);}}><t.icon size={16}/>{t.label}</button>)}</div></div>
  <div className="future-dashboard-panel" key={active}>

@@ -144,7 +144,7 @@ function Teams() {
           matchesDept =
             tType.includes("web") ||
             tName.includes("web") ||
-            tName.includes("crafter");
+            tName.includes("crafter") || tName === "digital ninjas - w";
         } else if (department === "digital") {
           matchesDept =
             tType.includes("digital") ||
@@ -152,6 +152,7 @@ function Teams() {
             tName.includes("digital") ||
             tName.includes("marketing") ||
             tName.includes("ninja");
+          matchesDept = matchesDept && !tType.includes("web") && tName !== "digital ninjas - w";
         } else if (department === "sales") {
           matchesDept =
             tName.includes("market") ||

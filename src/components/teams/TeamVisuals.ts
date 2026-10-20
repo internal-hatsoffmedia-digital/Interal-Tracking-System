@@ -99,10 +99,10 @@ export function getTeamVisuals(team: Team): TeamVisualInfo {
   }
 
   // 4. Web Crafters / Web Development
-  if (type.includes("web") || name.includes("web") || name.includes("crafter")) {
+  if (type.includes("web") || name.includes("web") || name.includes("crafter") || name === "digital ninjas - w") {
     return {
       department: "Web Development",
-      shortLabel: "Web Crafters",
+      shortLabel: "Digital Ninjas - W",
       icon: Code2,
       gradient: "from-emerald-600 to-teal-500",
       darkBannerGradient: "from-slate-950 via-emerald-950 to-slate-900",
@@ -125,7 +125,7 @@ export function getTeamVisuals(team: Team): TeamVisualInfo {
   ) {
     return {
       department: "Digital Marketing",
-      shortLabel: "Digital Ninjas",
+      shortLabel: "Digital Ninjas - M",
       icon: Megaphone,
       gradient: "from-amber-500 to-orange-500",
       darkBannerGradient: "from-slate-950 via-amber-950 to-slate-900",

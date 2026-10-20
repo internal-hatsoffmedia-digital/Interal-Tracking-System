@@ -1,3 +1,4 @@
+import {taskCategories} from '../../lib/taskCategories';
 import {
   CheckCircle2,
   Clock3,
@@ -101,56 +102,7 @@ function Tasks() {
      OPTIONS
   ======================================================== */
 
-  const categoryOptions: SelectOption[] = [
-    {
-      value: "shorts_reels",
-      label: "Shorts / Reels",
-    },
-    {
-      value: "long_video",
-      label: "Long Video",
-    },
-    {
-      value: "smp",
-      label: "Social Media Post (SMP)",
-    },
-    {
-      value: "graphic_design",
-      label: "Graphic Design & Creatives",
-    },
-    {
-      value: "social_media_handling",
-      label: "Social Media Handling",
-    },
-    {
-      value: "content_writing",
-      label: "Content Writing",
-    },
-    {
-      value: "reel_story_writing",
-      label: "Story Writer for Reels",
-    },
-    {
-      value: "ads_management",
-      label: "Ads Management",
-    },
-    {
-      value: "wordpress_development",
-      label: "WordPress Development",
-    },
-    {
-      value: "custom_coding",
-      label: "Custom Coding & Development",
-    },
-    {
-      value: "website_deployment",
-      label: "Website Deployment & Hosting",
-    },
-    {
-      value: "website_maintenance",
-      label: "Website Maintenance",
-    },
-  ];
+  const categoryOptions: SelectOption[] = taskCategories;
 
   const revisionStatusOptions: SelectOption[] = [
     {
@@ -788,7 +740,7 @@ function Tasks() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-5 flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showArchived} onChange={e=>setShowArchived(e.target.checked)}/>Show archived tasks</label>{canManage && <select aria-label="Choose task actions" className="max-w-full rounded-lg border bg-white p-2 text-sm" value="" onChange={e=>setActionTask(tasks.find(t=>t.id===e.target.value) ?? null)}><option value="">Task actions — hold, remove or restore</option>{filteredTasks.map(t=><option value={t.id} key={t.id}>{t.title}</option>)}</select>}</div>
+      <div className="mb-5 flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showArchived} onChange={e=>setShowArchived(e.target.checked)}/>Show archived tasks</label>{canManage && <select aria-label="Choose task actions" className="max-w-full rounded-lg border bg-white p-2 text-sm" value="" onChange={e=>setActionTask(tasks.find(t=>t.id===e.target.value) ?? null)}><option value="">Task actions — status, delete or restore</option>{filteredTasks.map(t=><option value={t.id} key={t.id}>{t.title}</option>)}</select>}</div>
       {actionTask && <TaskActions task={actionTask} onClose={()=>setActionTask(null)} onSaved={()=>loadData(true)}/>}
       {/* =================================================
           HEADER

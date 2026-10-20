@@ -47,7 +47,10 @@ export async function getTeamOversight(ownTeam=false) {
   const taskIds=[...new Set(assignments.map(a=>a.task_id))];
   const tasks=await rows('tasks','id,title,project_id,status,due_date','id',taskIds);
   const memberProfiles=new Set(teamMembers.map(e=>e.profile_id).filter(Boolean));
-  const activity=await rows('project_activity','id,project_id,actor_id,action,created_at','actor_id',[...memberProfiles] as string[]);
+  const activity=await rows('project_activity','id,project_id,actor_id,action,created_at','actor_id',[...new Set([...memberProfiles,...(ownTeam?[]:coordinatorIds)])] as string[]);
+  const auditResult=await supabase.rpc('team_pc_work_activity');
+  if(auditResult.error)throw new Error('Activity log: '+auditResult.error.message);
+  const workActivity=(auditResult.data??[]) as {id:string;actor_id:string;project_id:string|null;entity_type:string;title:string;action:string;changed_fields:string[];created_at:string}[];
   const visibleProjects=ownTeam?projects.filter(p=>tasks.some(t=>t.project_id===p.id&&teamAssignments.some(a=>a.task_id===t.id))||memberProfiles.has(p.created_by)):projects;
-  return {activity,coordinators,projects:visibleProjects,clients:ownTeam?clients.filter(c=>memberProfiles.has(c.created_by)):clients,createdTasks:ownTeam?createdTasks.filter(t=>memberProfiles.has(t.created_by)):createdTasks,assignments:assignments.filter(a=>coordinatorIds.includes(a.assigned_by)),teamMembers,teamAssignments,tasks,people,employees,teams};
+  return {workActivity:ownTeam?workActivity.filter(a=>memberProfiles.has(a.actor_id)):workActivity,activity,coordinators,projects:visibleProjects,clients:ownTeam?clients.filter(c=>memberProfiles.has(c.created_by)):clients,createdTasks:ownTeam?createdTasks.filter(t=>memberProfiles.has(t.created_by)):createdTasks,assignments:assignments.filter(a=>coordinatorIds.includes(a.assigned_by)),teamMembers,teamAssignments,tasks,people,employees,teams};
 }

@@ -1,6 +1,8 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {ArrowDownLeft,ArrowUpRight,BarChart3,Download,RefreshCw,Wallet} from 'lucide-react';
-import {Link} from 'react-router-dom';
+import {useSalesCreditDirectory} from '../../hooks/useSalesCreditDirectory';
+import RevenueBreakdown from './RevenueBreakdown';
+import ProjectRates from './ProjectRates';
 import {useAuth} from '../../context/AuthContext';
 import {loadProjectFinance,saveProjectFinanceItem} from '../../services/sales/projectFinance.service';
 import {financeMoney,financeMonth,financeBookingMonth,financeSummary,financeForTeam,isFinanceMonth,financeClients} from '../../lib/projectFinanceMetrics';
@@ -16,6 +18,7 @@ const emptyData:ProjectFinanceData={projects:[],items:[]};
 const blank=(month:string):FinanceInput=>({project_id:'',label:'',kind:'charge',amount:0,frequency:'once',start_month:month+'-01',end_month:null,notes:''});
 export default function ProjectFinanceDashboard({mode='sales'}:{mode?:'sales'|'costs'}) {
   const {profile}=useAuth();
+  const creditDirectory=useSalesCreditDirectory(mode==='sales');
   const userId=[profile?.id,profile?.team_id,profile?.role,mode].join(':');
   const [loaded,setLoaded]=useState<{userId:string;data:ProjectFinanceData}|null>(null);
   const rawData=loaded&&loaded.userId===userId?loaded.data:emptyData;
@@ -83,7 +86,8 @@ export default function ProjectFinanceDashboard({mode='sales'}:{mode?:'sales'|'c
       <p className="finance-chart-note">Opening sales count once in October. They are excluded from client/project filters until their details are confirmed.</p>
     </section>}
     {!loading&&!error&&summary.unpriced>0&&<p className="finance-message">{summary.unpriced} project(s) completed this month have no rate. Their revenue is not yet included. Add the rate through Edit project.</p>}
-    {mode==='sales'&&!loading&&!error&&<ProjectFinanceCharts data={data} month={month} client={client} project={project} onClient={id=>{setClient(id);setProject('');}}/>}
+    {mode==='sales'&&!loading&&!error&&<ProjectFinanceCharts data={data} month={month} client={client} project={project}/>}
+    {mode==='sales'&&!loading&&!error&&<RevenueBreakdown data={{...data,projects:summary.projects,clients:data.clients?.filter(c=>!client||c.id===client),teams:data.teams?.filter(t=>!teamFilter||t.id===teamFilter)}} month={month} directory={creditDirectory.data} loading={creditDirectory.loading} error={creditDirectory.error}/>}
     <p className="finance-explanation">Team filters show whole amounts for linked projects; shared projects can appear in multiple teams. The base project rate counts once, in its completion month (IST). Additional charges increase revenue; expenses reduce net. Monthly entries apply from the start month through the optional end month, inclusive. Sales require the coordinator to mark the project Completed. Sales do not confirm payment collection. Task counts never multiply revenue.</p>
     {mode==='costs'&&editable.length>0&&<section className="finance-card" id="finance-entry"><div className="finance-card-heading"><div><h2>{form.id?'Edit financial entry':'Assign project charges & costs'}</h2><p>Keep the base rate on the project. Enter only additional charges or expenses here.</p></div></div>
       <form onSubmit={e=>void save(e)} className="finance-entry-form"><fieldset disabled={saving||loading}>
@@ -101,7 +105,7 @@ export default function ProjectFinanceDashboard({mode='sales'}:{mode?:'sales'|'c
     {!loading&&!error&&<>
     <section className="finance-card"><div className="finance-card-heading"><h2>Client summary</h2><span>Selected month</span></div><div className="finance-table-scroll"><table><thead><tr>{['Client','Base project rates','Additional charges','Revenue','Expenses','Net'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{byClient.map(c=><tr key={c.id}><td>{c.name}</td><td>{financeMoney(c.projectRevenue)}</td><td>{financeMoney(c.charges)}</td><td>{financeMoney(c.revenue)}</td><td>{financeMoney(c.expenses)}</td><td>{financeMoney(c.net)}</td></tr>)}</tbody></table>{!byClient.length&&<p className="finance-table-empty">No client projects yet.</p>}</div></section>
     {mode==='sales'&&<EmployeeSalesCredits projects={summary.projects}/>}
-    <section className="finance-card"><div className="finance-card-heading"><h2>Project rates</h2><span>One rate per project</span></div><div className="finance-table-scroll"><table><thead><tr>{['Project ID','Client / project','Base rate','Booking month','Status',''].map((h,i)=><th key={i}>{h}</th>)}</tr></thead><tbody>{summary.projects.map(p=><tr key={p.id}><td className="finance-code">{p.project_code}</td><td>{p.client_name}<small>{p.name}</small></td><td>{p.rate==null?'Not set':financeMoney(Number(p.rate))}</td><td>{financeBookingMonth(p)??'Not completed'}</td><td>{p.status.replaceAll('_',' ')}</td><td>{p.can_edit&&<Link to={`/projects?project=${p.id}`}>Project details →</Link>}</td></tr>)}</tbody></table>{!summary.projects.length&&<p className="finance-table-empty">No projects match these filters.</p>}</div></section>
+    <ProjectRates data={{...data,projects:summary.projects}} directory={creditDirectory.data} showEmployees={mode==='sales'} loading={creditDirectory.loading} error={creditDirectory.error}/>
     <section className="finance-card"><div className="finance-card-heading"><h2>Charges & expenses</h2><span>{summary.items.length} active entries in {month}</span></div><div className="finance-table-scroll"><table><thead><tr>{['Project ID','Service / cost','Type','Amount','Frequency','Period','Created by / time',''].map((h,i)=><th key={i}>{h}</th>)}</tr></thead><tbody>{summary.items.map(i=>{const p=data.projects.find(p=>p.id===i.project_id)!;return<tr key={i.id}><td className="finance-code">{p.project_code}</td><td>{i.label}<small>{i.notes}</small></td><td><span className="finance-kind">{i.kind==='charge'?'Client charge':'Expense'}</span></td><td>{financeMoney(Number(i.amount))}</td><td>{i.frequency==='once'?'One time':'Monthly'}</td><td>{i.start_month.slice(0,7)}{i.frequency==='monthly'?` → ${i.end_month?.slice(0,7)??'ongoing'}`:''}</td><td>{i.creator_name}<small>{displayTime(i.created_at)}</small></td><td>{mode==='costs'&&p.can_edit&&<button onClick={()=>edit(i)}>Edit</button>}</td></tr>;})}</tbody></table>{!summary.items.length&&<p className="finance-table-empty">No additional charges or expenses for this month.</p>}</div></section></>}
   </div>;
 }

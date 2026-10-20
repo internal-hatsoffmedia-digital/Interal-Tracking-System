@@ -1,16 +1,14 @@
 import {useId,useState} from 'react';
-import {ArrowUpRight} from 'lucide-react';
-import {financeClients,financeMoney,financeSummary,trailingFinanceMonths} from '../../lib/projectFinanceMetrics';
+import {financeMoney,financeSummary,trailingFinanceMonths} from '../../lib/projectFinanceMetrics';
 import type {ProjectFinanceData} from '../../types/projectFinance';
 
 const shortMoney=(n:number)=>new Intl.NumberFormat('en-IN',{notation:'compact',maximumFractionDigits:1}).format(n);
 const monthLabel=(m:string)=>new Date(m+'-01T00:00:00Z').toLocaleDateString('en-IN',{month:'short',year:'2-digit',timeZone:'UTC'});
-export default function ProjectFinanceCharts({data,month,client,project,onClient}:{data:ProjectFinanceData;month:string;client:string;project:string;onClient:(id:string)=>void}){
+export default function ProjectFinanceCharts({data,month,client,project}:{data:ProjectFinanceData;month:string;client:string;project:string}){
   const gradient=useId();
   const [selected,setSelected]=useState<string|null>(null);
   const trend=trailingFinanceMonths(month).map(m=>({month:m,...financeSummary(data,m,client,project)}));
   const summary=financeSummary(data,month,client,project);
-  const clients=financeClients(data).filter(([id])=>!client||id===client).map(([id,name])=>({id,name,...financeSummary(data,month,id,project)})).sort((a,b)=>b.revenue-a.revenue||a.name.localeCompare(b.name));
   const max=Math.max(1,...trend.flatMap(t=>[t.revenue,t.expenses]));
   const x=(i:number)=>60+i*106;
   const y=(n:number)=>210-n/max*160;
@@ -39,8 +37,6 @@ export default function ProjectFinanceCharts({data,month,client,project,onClient
       <div className="finance-mix-row"><span>Opening sales · Unattributed</span><strong>{financeMoney(summary.openingRevenue)}</strong></div>
       <p className="finance-chart-note">Opening sales have no client allocation yet. One project rate, counted once. Additional client charges are shown separately.</p>
     </section>
-    <section className="finance-card finance-ranking"><div className="finance-card-heading"><div><p className="finance-chart-kicker">CLIENT PORTFOLIO</p><h2>Revenue by client</h2></div><span>{clients.length} clients · select to filter</span></div>
-      {!clients.length?<p className="finance-chart-note">No clients available to your account.</p>:<div className="finance-ranking-list">{clients.map((c,i)=><button key={c.id} onClick={()=>onClient(c.id)} aria-label={`Filter ${c.name}, revenue ${financeMoney(c.revenue)}`}><span className="finance-ranking-number">{String(i+1).padStart(2,'0')}</span><div><span>{c.name}</span><span className="finance-bar-track"><span style={{width:`${c.revenue/Math.max(1,...clients.map(v=>v.revenue))*100}%`}}/></span><small>{c.projects.length} {c.projects.length===1?'project':'projects'}{!c.revenue?' · No revenue booked this month':''}</small></div><strong>{financeMoney(c.revenue)}</strong><ArrowUpRight size={16}/></button>)}</div>}
-    </section>
+
   </div>;
 }
