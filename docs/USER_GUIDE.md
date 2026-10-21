@@ -141,3 +141,11 @@ Task Category includes GMB Audit, SEO Audit, Website Audit and Whisk. Project Ca
 Use Edit or Delete in the task/project row. Delete is reversible: task records are archived and projects become inactive, retaining assignments, time and history. Use Show archived tasks / Show deleted projects to restore. Existing database permissions still decide who can change work.
 
 Team PC → Activity records new project, task, client and assignment creations and edits, including deletion and restoration. Project-access changes retain the existing project history. Activity refreshes every 30 seconds or with Refresh. Historical changes before logging was enabled cannot be reconstructed.
+
+### Project completion and employee sales
+
+Client, Project Name, Production Teams, Rate (INR), Payment Status and Status are required. A zero rate is allowed for work with no charge. Start/End Time, Production Progress and Project / Series Title are no longer entered in the project form; historical values are preserved.
+
+In My Work → My projects, a verified project contributor selects Work complete → send to QC. This submits the project to Internal QC without completing it or booking sales. Reviewers check the work in QC. After QC approval, the project coordinator can select Client Review or Client Correction. Corrections can be resubmitted to Internal QC.
+
+To select Completed, the coordinator chooses one verified employee who submitted work (or completed a task) for this project. All QC reviews for the project must be approved. The project rate is credited once in full to that employee, and Completed by appears in the tracker. Users with Sales access can click the name to open that employee’s sales. Existing shared credits must be resolved by Sales leadership before choosing a single full-rate recipient.

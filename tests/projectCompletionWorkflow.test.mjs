@@ -1,0 +1,40 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {PGlite} from '@electric-sql/pglite';
+const id=n=>`00000000-0000-0000-0000-${String(n).padStart(12,'0')}`;
+test('employee submission, QC, coordinator completion and full employee credit are scoped and atomic',async()=>{
+ const db=new PGlite();try{
+ await db.exec(`create role anon;create role authenticated;create schema auth;create schema private;
+ create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ create table profiles(id uuid primary key,full_name text,role text,is_active boolean,team_id uuid);
+ create table clients(id uuid primary key,name text);
+ create table projects(id uuid primary key,name text,project_code text,client_id uuid,team_id uuid,production_team_ids uuid[],status text,is_active boolean,started_at timestamptz,ended_at timestamptz,target_deadline date,rate numeric,invoice_status text,sales_completed_at timestamptz);
+ create table tasks(id uuid primary key,project_id uuid references projects,title text,status text,footage_link text,archived_at timestamptz);
+ create table employees(id uuid primary key,profile_id uuid,is_active boolean);create table task_assignments(task_id uuid,employee_id uuid,status text);create table project_members(project_id uuid,profile_id uuid);
+ create table member_page_access(profile_id uuid,page text constraint member_page_access_page_check check(page in ('dashboard')),allowed boolean,updated_by uuid,updated_at timestamptz,primary key(profile_id,page));
+ create function private.manages_page_access() returns boolean language sql as $$select true$$;
+ create function private.role_of(u uuid) returns text language sql as $$select role from public.profiles where id=u and is_active$$;
+ create function private.full_project_access(pid uuid) returns boolean language sql as $$select exists(select 1 from public.project_members where project_id=pid and profile_id=auth.uid())$$;
+ create function private.can_manage_project(pid uuid) returns boolean language sql as $$select false$$;
+ create function private.credit_solo_project(pid uuid) returns void language plpgsql as $$begin return;end$$;
+ create function private.record_event(pid uuid,action text,details jsonb) returns void language plpgsql as $$begin return;end$$;
+ create table project_sales_credits(project_id uuid,profile_id uuid,amount numeric,credited_by uuid,team_id uuid,source text,updated_at timestamptz default now(),primary key(project_id,profile_id));
+ create function private.completion_time() returns trigger language plpgsql as $$begin if new.status='completed' then new.sales_completed_at=now();else new.sales_completed_at=null;end if;return new;end$$;
+ create trigger completion_time before update on projects for each row execute function private.completion_time();
+ insert into profiles values('${id(1)}','Admin','admin',true,null),('${id(2)}','Artist','employee',true,'${id(11)}'),('${id(3)}','PC','project_coordinator',true,'${id(10)}'),('${id(4)}','Other artist','employee',true,'${id(12)}');
+ insert into employees values('${id(102)}','${id(2)}',true),('${id(104)}','${id(4)}',true);
+ insert into projects values('${id(20)}','Website','P20','${id(30)}','${id(10)}',array['${id(11)}'::uuid],'in_progress',true,null,null,null,2000,'pending_billing',null),('${id(21)}','Other','P21','${id(30)}','${id(10)}',array['${id(12)}'::uuid],'in_progress',true,null,null,null,1000,'pending_billing',null);
+ insert into clients values('${id(30)}','Client');insert into project_members values('${id(20)}','${id(3)}');`);
+ for(const file of ['202610150002_qc_workspace.sql','202610150004_project_artist_links.sql','202610210001_project_review_statuses.sql','202610210002_project_completion_workflow.sql'])await db.exec(await readFile('supabase/migrations/'+file,'utf8'));
+ await db.exec(`insert into project_artist_links(project_id,profile_id,coordinator_id,source_artist,linked_by) values('${id(20)}','${id(2)}','${id(3)}','Artist','${id(1)}');set role authenticated;`);
+ const as=async n=>db.exec(`select set_config('request.jwt.claim.sub','${id(n)}',false)`);
+ await as(4);await assert.rejects(db.query('select submit_project_work($1)',[id(20)]),/assigned contributors/);assert.equal((await db.query('select my_project_submissions() d')).rows[0].d.length,0);
+ await as(2);assert.equal((await db.query('select my_project_submissions() d')).rows[0].d.length,1);await db.query('select submit_project_work($1)',[id(20)]);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(2)]),/coordinator access/);
+ await as(3);assert.equal((await db.query('select project_completion_people($1) d',[id(20)])).rows[0].d[0].id,id(2));await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(2)]),/Finish Internal QC/);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(21),id(2)]),/coordinator access/);
+ await as(1);const review=(await db.query('select qc_workspace() d')).rows[0].d.items[0].id;await db.query('select qc_update($1,$2)',[review,'claim']);await db.query('select qc_update($1,$2,$3)',[review,'approve','Looks good']);
+ await as(3);await assert.rejects(db.query('select complete_project_work($1,$2,$3)',[id(20),id(4),{name:'Should roll back'}]),/submitted work/);
+ await db.exec('reset role');assert.equal((await db.query('select name from projects where id=$1',[id(20)])).rows[0].name,'Website');await db.exec('set role authenticated');
+ await db.query('select complete_project_work($1,$2,$3)',[id(20),id(2),{rate:2500,name:'Delivered website'}]);
+ await db.exec('reset role');const project=(await db.query('select * from projects where id=$1',[id(20)])).rows[0];assert.equal(project.status,'completed');assert.equal(project.completed_by_profile_id,id(2));assert.equal(project.name,'Delivered website');assert.ok(project.sales_completed_at);
+ const credits=(await db.query('select * from project_sales_credits')).rows;assert.equal(credits.length,1);assert.equal(Number(credits[0].amount),2500);assert.equal(credits[0].profile_id,id(2));
+ await db.exec('set role authenticated');await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(2)]),/unfinished/);await db.exec('reset role;set role anon');await assert.rejects(db.query('select my_project_submissions()'),/permission denied/);
+ }finally{await db.close();}
+});

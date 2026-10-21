@@ -1,3 +1,4 @@
+import {useSearchParams} from 'react-router-dom';
 import {useCallback,useEffect,useState} from 'react';
 import {Download,RefreshCw,Users} from 'lucide-react';
 import {supabase} from '../../lib/supabase';
@@ -8,7 +9,8 @@ import type {FinanceProject} from '../../types/projectFinance';
 interface Directory {people:{id:string;name:string;team:string|null}[];credits:EmployeeCredit[]}
 const empty:Directory={people:[],credits:[]};
 export default function EmployeeSalesReport({projects,month}:{projects:FinanceProject[];month:string}){
- const [directory,setDirectory]=useState<Directory>(empty),[employee,setEmployee]=useState('');
+ const [params]=useSearchParams();
+ const [directory,setDirectory]=useState<Directory>(empty),[employee,setEmployee]=useState(params.get('employee')||'');
  const [from,setFrom]=useState(''),[through,setThrough]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true);
  const load=useCallback(async()=>{setLoading(true);const {data,error}=await supabase.rpc('project_sales_credit_directory');if(error){setDirectory(empty);setError(error.message);}else{setDirectory(data as Directory);setError('');}setLoading(false);},[]);
  useEffect(()=>{let active=true;const refresh=()=>{void supabase.rpc('project_sales_credit_directory').then(({data,error})=>{if(!active)return;if(error){setDirectory(empty);setError(error.message);}else{setDirectory(data as Directory);setError('');}setLoading(false);});};refresh();window.addEventListener('sales-credits-updated',refresh);return()=>{active=false;window.removeEventListener('sales-credits-updated',refresh);};},[]);

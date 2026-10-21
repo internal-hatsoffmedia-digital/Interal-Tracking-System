@@ -1,4 +1,6 @@
 export interface Project {
+  completed_by_name?:string|null;
+  completed_by_profile_id?:string|null;
   historical_artist?: string | null;
   historical_coordinator?: string | null;
   import_details?: Record<string, unknown> | null;
@@ -111,6 +113,7 @@ export interface CreateProjectInput {
 
 
 export interface UpdateProjectInput {
+  completed_by_profile_id?:string|null;
   production_team_ids?: string[];
   project_code?: string | null;
   category?: string | null;

@@ -1,3 +1,5 @@
+import {supabase} from '../../lib/supabase';
+import {projectRequirementError} from '../../lib/projectRequirements';
 import {taskCategories} from '../../lib/taskCategories';
 import {
   AlertCircle,
@@ -10,6 +12,7 @@ import {
 } from "lucide-react";
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -55,6 +58,7 @@ interface ProjectFormProps {
 
 
 interface ProjectFormState {
+  completed_by_profile_id:string;
   production_team_ids: string[];
   project_code: string;
   category: string;
@@ -80,6 +84,7 @@ interface ProjectFormState {
 
 
 const EMPTY_FORM: ProjectFormState = {
+  completed_by_profile_id:"",
   production_team_ids: [],
   project_code: "",
   category: "",
@@ -107,6 +112,7 @@ const EMPTY_FORM: ProjectFormState = {
 function formatOption(
   value: string,
 ): string {
+  if(value==='internal_review')return 'Internal QC';
   return value
     .replace(/_/g, " ")
     .replace(/\b\w/g, (letter) =>
@@ -131,6 +137,9 @@ function ProjectForm({
   onManageAssignments,
   onSubmit,
 }: ProjectFormProps) {
+  const [completionPeople,setCompletionPeople]=useState<{id:string;name:string}[]>([]);
+  const [completionError,setCompletionError]=useState('');
+  useEffect(()=>{let active=true;if(!open||!project?.id)return;void supabase.rpc('project_completion_people',{p_project:project.id}).then(r=>{if(active){setCompletionPeople(r.data??[]);setCompletionError(r.error?r.error.message:'');}});return()=>{active=false;};},[open,project?.id]);
   const isEditing =
     Boolean(project);
 
@@ -153,13 +162,14 @@ function ProjectForm({
      INITIALIZE FORM
   ======================================================== */
 
+  const initializedForm=useRef<string|null>(null);
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) {initializedForm.current=null;return;}
+    const key=project?.id||'new-project';if(initializedForm.current===key)return;initializedForm.current=key;
 
     if (project) {
       setForm({
+        completed_by_profile_id:project.completed_by_profile_id||"",
         production_team_ids: project.production_team_ids ?? [],
         project_code: String(project.project_code ?? ""),
         category: String(project.category ?? ""),
@@ -320,8 +330,15 @@ function ProjectForm({
   ======================================================== */
 
   const validate = () => {
+    if(form.status==='completed'&&project?.status!=='completed'){
+      if(!project){setValidationError('Create the project first. Final completion is confirmed after employee submission and QC.');return false;}
+      if(!form.completed_by_profile_id){setValidationError('Select the employee who completed this project.');return false;}
+    }
+    const requiredError=projectRequirementError(form);
+    if(requiredError){setValidationError(requiredError);return false;}
+
     if (form.rate !== "" && (!Number.isFinite(Number(form.rate)) || Number(form.rate) < 0)) { setValidationError("Rate must be a non-negative number."); return false; }
-    if (form.ended_at && (!form.started_at || new Date(form.ended_at) < new Date(form.started_at))) { setValidationError("End time requires a start time and cannot precede it."); return false; }
+
 
     if (!form.client_id) {
       setValidationError(
@@ -338,50 +355,6 @@ function ProjectForm({
 
       return false;
     }
-
-    const total =
-      Number(
-        form.total_assets_required,
-      );
-
-    const completed =
-      Number(
-        form.completed_assets,
-      );
-
-
-    if (
-      !Number.isFinite(total) ||
-      total < 0
-    ) {
-      setValidationError(
-        "Total assets must be a valid number.",
-      );
-
-      return false;
-    }
-
-
-    if (
-      !Number.isFinite(completed) ||
-      completed < 0
-    ) {
-      setValidationError(
-        "Completed assets must be a valid number.",
-      );
-
-      return false;
-    }
-
-
-    if (completed > total) {
-      setValidationError(
-        "Completed assets cannot be greater than total assets.",
-      );
-
-      return false;
-    }
-
 
     if (
       form.start_date &&
@@ -444,30 +417,13 @@ function ProjectForm({
     }
 
 
-    const total =
-      Math.max(
-        0,
-        Number(
-          form.total_assets_required,
-        ),
-      );
-
-    const completed =
-      Math.max(
-        0,
-        Number(
-          form.completed_assets,
-        ),
-      );
-
-
     const commonPayload = {
 
+      ...(form.status==='completed'&&project?.status!=='completed'?{completed_by_profile_id:form.completed_by_profile_id}:{}),
       category: form.category.trim() || null,
       final_link: form.final_link.trim() || null,
       remarks: form.remarks.trim() || null,
-      started_at: form.started_at ? new Date(form.started_at).toISOString() : null,
-      ended_at: form.ended_at ? new Date(form.ended_at).toISOString() : null,
+
       rate: form.rate === "" ? null : Number(form.rate),
       client_id:
         form.client_id,
@@ -475,25 +431,9 @@ function ProjectForm({
       name:
         form.name.trim(),
 
-      series_title:
-        form.series_title.trim() ||
-        null,
-
       description:
         form.description.trim() ||
         null,
-
-      total_assets_required:
-        total,
-
-      completed_assets:
-        completed,
-
-      pending_assets:
-        Math.max(
-          0,
-          total - completed,
-        ),
 
       production_team_ids: form.production_team_ids,
       ...(isEditing ? {} : { lead_employee_id: form.lead_employee_id || null }),
@@ -789,37 +729,6 @@ function ProjectForm({
                 </div>
 
 
-                {/* SERIES TITLE */}
-
-                <div className="sm:col-span-2">
-
-                  <label
-                    htmlFor="project-series-title"
-                    className="mb-1.5 block text-xs font-medium text-slate-600"
-                  >
-                    Project / Series Title
-                  </label>
-
-                  <input
-                    id="project-series-title"
-                    type="text"
-                    value={
-                      form.series_title
-                    }
-                    onChange={(event) =>
-                      updateField(
-                        "series_title",
-                        event.target.value,
-                      )
-                    }
-                    placeholder="e.g. Weekly Podcast Series"
-                    disabled={loading}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-300 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50"
-                  />
-
-                </div>
-
-
                 {/* DESCRIPTION */}
 
                 <div className="sm:col-span-2">
@@ -858,129 +767,10 @@ function ProjectForm({
             <section aria-label="Project tracker details"><h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Project tracker details</h3><div className="grid gap-4 sm:grid-cols-2">
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-project_code">Project ID<input id="tracker-project_code" type="text" value={form.project_code || "Generated when project is created"} readOnly className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-900" /></label>
 <datalist id="project-category-options">{taskCategories.map(c=><option key={c.value} value={c.label}/>)}</datalist><label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-category">Category<input id="tracker-category" type="text" list="project-category-options"  value={form.category} onChange={e => updateField("category", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
-<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-started_at">Start Time & Date<input id="tracker-started_at" type="datetime-local"  value={form.started_at} onChange={e => updateField("started_at", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
-<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-ended_at">End Time & Date<input id="tracker-ended_at" type="datetime-local"  value={form.ended_at} onChange={e => updateField("ended_at", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-final_link">Final Link<input id="tracker-final_link" type="url"  value={form.final_link} onChange={e => updateField("final_link", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-remarks">Remarks<input id="tracker-remarks" type="text"  value={form.remarks} onChange={e => updateField("remarks", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
-<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-rate">Rate (INR)<input id="tracker-rate" type="number" min="0" step="0.01" value={form.rate} onChange={e => updateField("rate", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
-</div><p className="mt-2 text-xs text-slate-500">Production times are actual timestamps. Delivery Date is the client deadline. Rate is saved once per project in INR. Every task under this project uses the same rate, including work continued on another day.</p></section>
-            {/* =================================================
-                PRODUCTION PROGRESS
-            ================================================== */}
-
-            <section>
-
-              <div className="mb-3">
-
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-                  Production Progress
-                </p>
-
-              </div>
-
-
-              <div className="grid gap-4 sm:grid-cols-3">
-
-                {/* TOTAL */}
-
-                <div>
-
-                  <label
-                    htmlFor="project-total-assets"
-                    className="mb-1.5 block text-xs font-medium text-slate-600"
-                  >
-                    Total Assets
-                  </label>
-
-                  <input
-                    id="project-total-assets"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={
-                      form.total_assets_required
-                    }
-                    onChange={(event) =>
-                      updateField(
-                        "total_assets_required",
-                        event.target.value,
-                      )
-                    }
-                    disabled={loading}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50"
-                  />
-
-                </div>
-
-
-                {/* COMPLETED */}
-
-                <div>
-
-                  <label
-                    htmlFor="project-completed-assets"
-                    className="mb-1.5 block text-xs font-medium text-slate-600"
-                  >
-                    Completed Assets
-                  </label>
-
-                  <input
-                    id="project-completed-assets"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={
-                      form.completed_assets
-                    }
-                    onChange={(event) =>
-                      updateField(
-                        "completed_assets",
-                        event.target.value,
-                      )
-                    }
-                    disabled={loading}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50"
-                  />
-
-                </div>
-
-
-                {/* PENDING PREVIEW */}
-
-                <div>
-
-                  <label className="mb-1.5 block text-xs font-medium text-slate-600">
-                    Pending Assets
-                  </label>
-
-                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 text-sm font-semibold text-slate-700">
-
-                    {Math.max(
-                      0,
-                      Number(
-                        form.total_assets_required ||
-                          0,
-                      ) -
-                        Number(
-                          form.completed_assets ||
-                            0,
-                        ),
-                    )}
-
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              <p className="mt-2 text-[11px] text-slate-400">
-                Pending assets are calculated automatically from total and completed assets.
-              </p>
-
-            </section>
-
-
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-rate">Rate (INR) *<input id="tracker-rate" required type="number" min="0" step="0.01" value={form.rate} onChange={e => updateField("rate", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+</div><p className="mt-2 text-xs text-slate-500">Production times are recorded through work tracking. Delivery Date is the client deadline. Rate is saved once per project in INR. Every task under this project uses the same rate, including work continued on another day.</p></section>
             {/* =================================================
                 ASSIGNMENT & DATES
             ================================================== */}
@@ -998,7 +788,7 @@ function ProjectForm({
 
               <div className="grid gap-4 sm:grid-cols-2">
 
-                <fieldset className="sm:col-span-2 rounded-xl border p-4"><legend className="px-2 text-sm font-semibold">Production teams</legend><p className="mb-3 text-xs text-slate-500">Select every team working on this project. Assign individual employees through Tasks / Team Work.</p><div className="flex flex-wrap gap-4">{teams.map(t=><label key={t.id} className="flex items-center gap-2 text-sm"><input type="checkbox" disabled={loading} checked={form.production_team_ids.includes(t.id)} onChange={e=>setForm({...form,production_team_ids:e.target.checked?[...form.production_team_ids,t.id]:form.production_team_ids.filter(id=>id!==t.id)})}/>{t.name}</label>)}</div></fieldset>
+                <fieldset className="sm:col-span-2 rounded-xl border p-4"><legend className="px-2 text-sm font-semibold">Production teams *</legend><p className="mb-3 text-xs text-slate-500">Select every team working on this project. Assign individual employees through Tasks / Team Work.</p><div className="flex flex-wrap gap-4">{teams.map(t=><label key={t.id} className="flex items-center gap-2 text-sm"><input type="checkbox" disabled={loading} checked={form.production_team_ids.includes(t.id)} onChange={e=>setForm({...form,production_team_ids:e.target.checked?[...form.production_team_ids,t.id]:form.production_team_ids.filter(id=>id!==t.id)})}/>{t.name}</label>)}</div></fieldset>
                 {/* LEAD ARTIST */}
 
                 <div>
@@ -1170,6 +960,7 @@ function ProjectForm({
               </div>
 
 
+              {form.status==='completed'&&project?.status!=='completed'&&<label className="grid gap-2 text-sm mb-4">Completed by employee *<select aria-label="Completed by employee" value={form.completed_by_profile_id} onChange={e=>updateField('completed_by_profile_id',e.target.value)} disabled={loading} required><option value="">Choose an employee who submitted work</option>{completionPeople.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><small>The full project rate will be credited to this employee after Internal QC is approved.</small>{completionError&&<span role="alert">{completionError}</span>}{!completionPeople.length&&<small>No submitted employee work yet. The employee must submit from My Work first.</small>}</label>}
               <div className="grid gap-4 sm:grid-cols-3">
 
                 {/* STATUS */}
@@ -1180,7 +971,7 @@ function ProjectForm({
                     htmlFor="project-status"
                     className="mb-1.5 block text-xs font-medium text-slate-600"
                   >
-                    Status
+                    Status *
                   </label>
 
                   <select
@@ -1276,7 +1067,7 @@ function ProjectForm({
                     htmlFor="project-payment"
                     className="mb-1.5 block text-xs font-medium text-slate-600"
                   >
-                    Payment Status
+                    Payment Status *
                   </label>
 
                   <select

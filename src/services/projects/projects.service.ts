@@ -1,3 +1,4 @@
+import {projectRequirementError} from '../../lib/projectRequirements';
 import { supabase } from "../../lib/supabase";
 
 import type {
@@ -258,6 +259,9 @@ export async function createProject(
     throw new Error("Project name is required.");
   }
 
+  const requiredError=projectRequirementError(input);
+  if(requiredError)throw new Error(requiredError);
+
   const totalAssets = Math.max(
     0,
     Number(
@@ -364,6 +368,13 @@ export async function updateProject(
   id: string,
   input: UpdateProjectInput,
 ): Promise<Project> {
+  if(input.status==='completed'&&input.completed_by_profile_id){
+    const {status:completionStatus,completed_by_profile_id:worker,lead_employee_id:lead,...patch}=input;
+    void completionStatus;void lead;
+    const result=await supabase.rpc('complete_project_work',{p_project:id,p_employee:worker,p_patch:patch});
+    if(result.error)throw new Error(result.error.message);
+    const saved=await getProjectById(id);if(!saved)throw new Error('Completed project is unavailable');return saved;
+  }
   const updates: Record<string, unknown> = {};
 
   if (input.category !== undefined) updates.category = input.category || null;

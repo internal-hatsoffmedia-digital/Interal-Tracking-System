@@ -1,6 +1,6 @@
 import type { ManagedProject } from '../types/projectAccess';
 
-export const projectStatuses = ['planning', 'in_progress', 'on_hold', 'completed'];
+export const projectStatuses = ['planning', 'in_progress', 'internal_review', 'client_review', 'client_correction', 'on_hold', 'completed'];
 export const isCompleted = (p: ManagedProject) => p.status === 'completed';
 export const isOngoing = (p: ManagedProject) => p.is_active && !isCompleted(p);
 export function todayLocal() {
@@ -30,3 +30,5 @@ export function csvCell(value: unknown) {
   if (/^[\s]*[=+@-]/.test(text)) text = `'${text}`;
   return `"${text.replace(/"/g, '""')}"`;
 }
+
+export const projectStatusLabel=(value:string)=>value==='internal_review'?'Internal QC':value==='client_review'?'Client Review':value==='client_correction'?'Client Correction':value.replaceAll('_',' ');

@@ -298,10 +298,18 @@ function TaskForm({
      RESET / POPULATE FORM
   ======================================================== */
 
+  const initializedForm = useRef<string | null>(null);
   useEffect(() => {
     if (!open) {
+      initializedForm.current = null;
       return;
     }
+
+    // Focus/session refreshes recreate option arrays and task objects. They must
+    // not overwrite a draft. Reopening or selecting another task starts a form.
+    const formKey = task?.id ?? 'new-task';
+    if (initializedForm.current === formKey) return;
+    initializedForm.current = formKey;
 
     setFormError("");
 
@@ -456,6 +464,8 @@ function TaskForm({
     revisionStatusOptions,
     priorityOptions,
     statusOptions,
+    defaultStatus,
+    projects,
   ]);
 
   /* =======================================================

@@ -1,3 +1,4 @@
+import MyProjectSubmissions from '../../components/projects/MyProjectSubmissions';
 import ProjectArtistWork from '../../components/projects/ProjectArtistWork';
 import {useAssignmentRefresh} from '../../hooks/useAssignmentRefresh';
 import {
@@ -618,7 +619,7 @@ function MyWork() {
         />
       </div>
 
-      <ProjectArtistWork/>
+      <MyProjectSubmissions/><ProjectArtistWork/>
       <WorkTimer/>
 
       {/* =================================================
