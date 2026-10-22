@@ -158,3 +158,5 @@ Task and Project edit forms include Delete actions with confirmation. Deletion r
 Tasks → Focused hours shows task-linked timer hours on each task row and a project/employee summary including project-only sessions. Project-only time is not assigned to an arbitrary task or multiplied across tasks. Select a task in My Work’s timer to record task-specific hours. Work-date filters use IST and pauses are excluded.
 
 QC operations start on 22 October 2026 at midnight IST. Earlier confirmations are excluded from active QC and QC Activity, while historical reviews and notes remain stored. A new employee confirmation or explicit coordinator submission can bring older work into QC for a fresh review.
+
+Sales opens with result values and tables hidden. Set the filters and use the section’s Show button. Employee sales, Revenue by filter, Project rates, Client summary and Charges & expenses each open independently. Results use 25 rows initially, with Show 25 more for longer lists. Filter changes/reset hide old results, while exports include the full applied selection. Employee credit records appear only after selecting a completed project.

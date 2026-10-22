@@ -1,18 +1,15 @@
-import {useCallback,useEffect,useState} from 'react';
+import type {SalesCreditDirectory} from '../../hooks/useSalesCreditDirectory';
+import {useState} from 'react';
 import {supabase} from '../../lib/supabase';
 import {financeMoney} from '../../lib/projectFinanceMetrics';
 import type {FinanceProject} from '../../types/projectFinance';
-type Person={id:string;name:string;team:string|null};
-type Credit={project_id:string;profile_id:string;name:string;amount:number};
-export default function EmployeeSalesCredits({projects}:{projects:FinanceProject[]}){
- const [people,setPeople]=useState<Person[]>([]),[credits,setCredits]=useState<Credit[]>([]);
+export default function EmployeeSalesCredits({projects,directory}:{projects:FinanceProject[];directory:SalesCreditDirectory}){
+ const {people,credits}=directory;
  const [project,setProject]=useState(''),[person,setPerson]=useState(''),[amount,setAmount]=useState('');
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[saving,setSaving]=useState(false);
- const load=useCallback(async()=>{const {data,error}=await supabase.rpc('project_sales_credit_directory');if(error){setError(error.message);return;}setPeople(data.people);setCredits(data.credits);},[]);
- useEffect(()=>{let active=true;void supabase.rpc('project_sales_credit_directory').then(({data,error})=>{if(!active)return;if(error){setError(error.message);return;}setPeople(data.people);setCredits(data.credits);});return()=>{active=false;};},[]);
  const completed=projects.filter(p=>p.status==='completed'&&p.sales_completed_at&&p.rate!=null);
  const selected=completed.find(p=>p.id===project);const allocated=credits.filter(c=>c.project_id===project).reduce((sum,c)=>sum+Number(c.amount),0);
- async function save(event:React.FormEvent){event.preventDefault();setSaving(true);setError('');setNotice('');try{const {error}=await supabase.rpc('set_project_sales_credit',{p_project:project,p_profile:person,p_amount:Number(amount)});if(error)throw error;await load();window.dispatchEvent(new Event('sales-credits-updated'));setNotice('Sales credit saved. The employee dashboard updates within one minute.');}catch(e){setError(e instanceof Error?e.message:(e as {message?:string})?.message??'Unable to save sales credit.');}finally{setSaving(false);}}
+ async function save(event:React.FormEvent){event.preventDefault();setSaving(true);setError('');setNotice('');try{const {error}=await supabase.rpc('set_project_sales_credit',{p_project:project,p_profile:person,p_amount:Number(amount)});if(error)throw error;window.dispatchEvent(new Event('sales-credits-updated'));setNotice('Sales credit saved. The employee dashboard updates within one minute.');}catch(e){setError(e instanceof Error?e.message:(e as {message?:string})?.message??'Unable to save sales credit.');}finally{setSaving(false);}}
  return <section className="finance-card"><div className="finance-card-heading"><h2>Credit employee sales</h2><span>Completed project base rates only</span></div>
  <p className="mb-4 text-sm">Completed projects with one verified contributor credit that employee automatically. For shared projects, allocate the agreed shares here. This allocates existing revenue; it does not add sales again. Historical unattributed sales stay separate.</p>
  {error&&<p role="alert" className="mb-3 text-sm text-red-600">{error}</p>}{notice&&<p role="status" className="mb-3 text-sm">{notice}</p>}
@@ -21,6 +18,6 @@ export default function EmployeeSalesCredits({projects}:{projects:FinanceProject
  <label className="grid gap-1 text-sm">Credit amount (INR)<input required type="number" min="0" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} className="rounded-xl border p-3"/></label><button disabled={saving||!selected||!person||amount===''} className="self-end rounded-xl bg-[#ffcc00] p-3 font-semibold text-black disabled:opacity-50">{saving?'Saving…':'Save credit'}</button></form>
  {selected&&<p className="mt-3 text-sm">Project rate: {financeMoney(Number(selected.rate))} · Allocated: {financeMoney(allocated)}. Zero removes that employee’s credited share.</p>}
  {!completed.length&&<p className="mt-3 text-sm">Complete a priced project before crediting employee sales.</p>}
- <div className="finance-table-scroll mt-4"><table><thead><tr><th>Project</th><th>Employee</th><th>Credited amount</th></tr></thead><tbody>{credits.filter(c=>Number(c.amount)>0&&projects.some(p=>p.id===c.project_id)).map(c=><tr key={c.project_id+c.profile_id}><td>{projects.find(p=>p.id===c.project_id)?.project_code}</td><td>{c.name}</td><td>{financeMoney(Number(c.amount))}</td></tr>)}</tbody></table></div>
+ {selected&&<div className="finance-table-scroll mt-4"><table><thead><tr><th>Project</th><th>Employee</th><th>Credited amount</th></tr></thead><tbody>{credits.filter(c=>Number(c.amount)>0&&c.project_id===project).map(c=><tr key={c.project_id+c.profile_id}><td>{projects.find(p=>p.id===c.project_id)?.project_code}</td><td>{c.name}</td><td>{financeMoney(Number(c.amount))}</td></tr>)}</tbody></table></div>}
  </section>;
 }
