@@ -146,6 +146,9 @@ Team PC → Activity records new project, task, client and assignment creations 
 
 Client, Project Name, Production Teams, Rate (INR), Payment Status and Status are required. A zero rate is allowed for work with no charge. Start/End Time, Production Progress and Project / Series Title are no longer entered in the project form; historical values are preserved.
 
-In My Work → My projects, a verified project contributor selects Work complete → send to QC. This submits the project to Internal QC without completing it or booking sales. Reviewers check the work in QC. After QC approval, the project coordinator can select Client Review or Client Correction. Corrections can be resubmitted to Internal QC.
+In My Work → My projects, a verified project contributor selects Work complete → send to coordinator. This submits the project for coordinator review without completing it or booking sales. Only a coordinator or authorized project manager setting Internal QC and saving releases work to the QC page. Employee task completion alone does not enter QC. Existing unconfirmed reviews remain stored but hidden until a coordinator reconfirms them. Reviewers then check the work in QC. After QC approval, the project coordinator can select Client Review or Client Correction. Corrections can be resubmitted to Internal QC.
 
 To select Completed, the coordinator chooses one verified employee who submitted work (or completed a task) for this project. All QC reviews for the project must be approved. The project rate is credited once in full to that employee, and Completed by appears in the tracker. Users with Sales access can click the name to open that employee’s sales. Existing shared credits must be resolved by Sales leadership before choosing a single full-rate recipient.
+
+
+Task timer columns show the first timer start, the employee’s task completion, and focused timer hours excluding pauses. Work-date filters use IST. Performance shows employee IDs beside names and includes them in exports. Coordinator edits are saved against the signed-in profile in Team PC Activity; changing a task does not change its assigned employee.

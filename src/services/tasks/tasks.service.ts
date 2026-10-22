@@ -46,6 +46,7 @@ interface AssignmentRelation {
   status: string;
   notes: string | null;
   assigned_at: string;
+  completed_at?:string|null;
   deadline_at?:string|null;
   committed_at?:string|null;
 }
@@ -86,7 +87,7 @@ async function getTaskRelations() {
     supabase
       .from("task_assignments")
       .select(
-        "id, task_id, employee_id, assigned_by, status, notes, assigned_at, deadline_at, committed_at",
+        "id, task_id, employee_id, assigned_by, status, notes, assigned_at, completed_at, deadline_at, committed_at",
       )
       .order("assigned_at", {
         ascending: false,
@@ -225,6 +226,7 @@ function attachRelations(
           taskAssignment
             ? {
                 id: taskAssignment.id,
+                completed_at:taskAssignment.completed_at,
                 deadline_at:taskAssignment.deadline_at,
                 committed_at:taskAssignment.committed_at,
                 status:

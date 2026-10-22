@@ -17,3 +17,12 @@ html[data-theme=dark] #root .modern-studio .future-metric.pale{background:#fff8e
 html[data-theme=dark] #root .modern-studio .desk-summary .lavender{background:#38321e}
 html[data-theme=dark] #root .modern-studio .desk-summary .peach{background:#332c27}
 @media(max-width:700px){html[data-theme=dark] .moon-scene{background-position:72% top}}
+
+/* Keep pale text readable when any dashboard or tracker row is hovered. */
+html[data-theme=dark] #root .future-shell main table tbody tr:hover,
+html[data-theme=dark] #root .workspace-shell main table tbody tr:hover {
+ background:#273244!important;color:#f4f4f4!important;
+}
+html[data-theme=dark] #root .future-shell main table tbody tr:hover > td {
+ background-color:transparent;
+}

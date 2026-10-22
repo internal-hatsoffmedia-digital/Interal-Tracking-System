@@ -71,6 +71,7 @@ export interface TaskWithRelations
     status: string;
     notes: string | null;
     assigned_at: string;
+    completed_at?:string|null;
     committed_at?:string|null;
     deadline_at?: string | null;
     employee_id: string;

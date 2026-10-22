@@ -24,11 +24,15 @@ test('employee submission, QC, coordinator completion and full employee credit a
  insert into projects values('${id(20)}','Website','P20','${id(30)}','${id(10)}',array['${id(11)}'::uuid],'in_progress',true,null,null,null,2000,'pending_billing',null),('${id(21)}','Other','P21','${id(30)}','${id(10)}',array['${id(12)}'::uuid],'in_progress',true,null,null,null,1000,'pending_billing',null);
  insert into clients values('${id(30)}','Client');insert into project_members values('${id(20)}','${id(3)}');`);
  for(const file of ['202610150002_qc_workspace.sql','202610150004_project_artist_links.sql','202610210001_project_review_statuses.sql','202610210002_project_completion_workflow.sql'])await db.exec(await readFile('supabase/migrations/'+file,'utf8'));
+ await db.exec(`insert into qc_reviews(project_id) values('${id(21)}');`);
+ for(const file of ['202610210003_awaiting_coordinator_status.sql','202610210004_coordinator_qc_release.sql'])await db.exec(await readFile('supabase/migrations/'+file,'utf8'));
  await db.exec(`insert into project_artist_links(project_id,profile_id,coordinator_id,source_artist,linked_by) values('${id(20)}','${id(2)}','${id(3)}','Artist','${id(1)}');set role authenticated;`);
  const as=async n=>db.exec(`select set_config('request.jwt.claim.sub','${id(n)}',false)`);
+ await as(1);assert.equal((await db.query('select qc_workspace() d')).rows[0].d.items.length,0);
  await as(4);await assert.rejects(db.query('select submit_project_work($1)',[id(20)]),/assigned contributors/);assert.equal((await db.query('select my_project_submissions() d')).rows[0].d.length,0);
- await as(2);assert.equal((await db.query('select my_project_submissions() d')).rows[0].d.length,1);await db.query('select submit_project_work($1)',[id(20)]);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(2)]),/coordinator access/);
+ await as(2);assert.equal((await db.query('select my_project_submissions() d')).rows[0].d.length,1);await db.query('select submit_project_work($1)',[id(20)]);assert.equal((await db.query('select my_project_submissions() d')).rows[0].d[0].status,'awaiting_coordinator');assert.equal((await db.query('select qc_workspace() d')).rows[0].d.items.length,0);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(2)]),/coordinator access/);
  await as(3);assert.equal((await db.query('select project_completion_people($1) d',[id(20)])).rows[0].d[0].id,id(2));await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(2)]),/Finish Internal QC/);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(21),id(2)]),/coordinator access/);
+ await db.exec(`reset role;update projects set status='internal_review' where id='${id(20)}';set role authenticated`);
  await as(1);const review=(await db.query('select qc_workspace() d')).rows[0].d.items[0].id;await db.query('select qc_update($1,$2)',[review,'claim']);await db.query('select qc_update($1,$2,$3)',[review,'approve','Looks good']);
  await as(3);await assert.rejects(db.query('select complete_project_work($1,$2,$3)',[id(20),id(4),{name:'Should roll back'}]),/submitted work/);
  await db.exec('reset role');assert.equal((await db.query('select name from projects where id=$1',[id(20)])).rows[0].name,'Website');await db.exec('set role authenticated');
