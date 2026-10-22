@@ -149,11 +149,11 @@ function Tasks() {
     },
     {
       value: "internal_review",
-      label: "Sent for Internal Review",
+      label: "Internal QC",
     },
     {
       value: "client_review",
-      label: "Sent for Client Review",
+      label: "Client approval",
     },
     {
       value: "approved_delivered",
@@ -1003,6 +1003,7 @@ function Tasks() {
         revisionStatusOptions={revisionStatusOptions}
         priorityOptions={priorityOptions}
         statusOptions={statusOptions}
+        onDelete={canManage&&editingTask?()=>{handleCloseForm();handleStatusChange(editingTask);}:undefined}
         onClose={handleCloseForm}
         onSubmit={handleSubmitTask}
       />

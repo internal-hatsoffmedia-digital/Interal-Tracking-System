@@ -31,4 +31,4 @@ export function csvCell(value: unknown) {
   return `"${text.replace(/"/g, '""')}"`;
 }
 
-export const projectStatusLabel=(value:string)=>value==='awaiting_coordinator'?'Awaiting coordinator':value==='internal_review'?'Internal QC':value==='client_review'?'Client Review':value==='client_correction'?'Client Correction':value.replaceAll('_',' ');
+export const projectStatusLabel=(value:string)=>value==='awaiting_coordinator'?'Awaiting coordinator':value==='internal_review'?'Internal QC':value==='client_review'?'Client approval':value==='client_correction'?'Client Correction':value.replaceAll('_',' ');

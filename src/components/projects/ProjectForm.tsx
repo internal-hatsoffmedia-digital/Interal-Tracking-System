@@ -47,6 +47,7 @@ interface ProjectFormProps {
   error?: string;
 
   onClose: () => void;
+  onDelete?:()=>void;
   onManageAssignments?: () => void;
 
   onSubmit: (
@@ -113,6 +114,7 @@ function formatOption(
   value: string,
 ): string {
   if(value==='internal_review')return 'Internal QC';
+  if(value==='client_review')return 'Client approval';
   return value
     .replace(/_/g, " ")
     .replace(/\b\w/g, (letter) =>
@@ -134,10 +136,11 @@ function ProjectForm({
   loading = false,
   error = "",
   onClose,
+  onDelete,
   onManageAssignments,
   onSubmit,
 }: ProjectFormProps) {
-  const [completionPeople,setCompletionPeople]=useState<{id:string;name:string}[]>([]);
+  const [completionPeople,setCompletionPeople]=useState<{id:string;name:string;employee_code?:string}[]>([]);
   const [completionError,setCompletionError]=useState('');
   useEffect(()=>{let active=true;if(!open||!project?.id)return;void supabase.rpc('project_completion_people',{p_project:project.id}).then(r=>{if(active){setCompletionPeople(r.data??[]);setCompletionError(r.error?r.error.message:'');}});return()=>{active=false;};},[open,project?.id]);
   const isEditing =
@@ -330,7 +333,7 @@ function ProjectForm({
   ======================================================== */
 
   const validate = () => {
-    if(form.status==='completed'&&project?.status!=='completed'){
+    if(form.status==='completed'){
       if(!project){setValidationError('Create the project first. Final completion is confirmed after employee submission and QC.');return false;}
       if(!form.completed_by_profile_id){setValidationError('Select the employee who completed this project.');return false;}
     }
@@ -419,7 +422,7 @@ function ProjectForm({
 
     const commonPayload = {
 
-      ...(form.status==='completed'&&project?.status!=='completed'?{completed_by_profile_id:form.completed_by_profile_id}:{}),
+      ...(form.status==='completed'?{completed_by_profile_id:form.completed_by_profile_id}:{}),
       category: form.category.trim() || null,
       final_link: form.final_link.trim() || null,
       remarks: form.remarks.trim() || null,
@@ -960,7 +963,7 @@ function ProjectForm({
               </div>
 
 
-              {form.status==='completed'&&project?.status!=='completed'&&<label className="grid gap-2 text-sm mb-4">Completed by employee *<select aria-label="Completed by employee" value={form.completed_by_profile_id} onChange={e=>updateField('completed_by_profile_id',e.target.value)} disabled={loading} required><option value="">Choose an employee who submitted work</option>{completionPeople.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select><small>The full project rate will be credited to this employee after Internal QC is approved.</small>{completionError&&<span role="alert">{completionError}</span>}{!completionPeople.length&&<small>No submitted employee work yet. The employee must submit from My Work first.</small>}</label>}
+              {form.status==='completed'&&<label className="grid gap-2 text-sm mb-4">Completed by employee *<select aria-label="Completed by employee" value={form.completed_by_profile_id} onChange={e=>updateField('completed_by_profile_id',e.target.value)} disabled={loading} required><option value="">Choose the employee to credit</option>{completionPeople.map(p=><option key={p.id} value={p.id}>{p.name}{p.employee_code?` (${p.employee_code})`:""}</option>)}</select><small>The full project rate will be credited to the selected contributor. New completions require QC approval.</small>{completionError&&<span role="alert">{completionError}</span>}{!completionPeople.length&&<small>No verified contributors yet. Assign the employee to this project first.</small>}</label>}
               <div className="grid gap-4 sm:grid-cols-3">
 
                 {/* STATUS */}
@@ -1119,6 +1122,7 @@ function ProjectForm({
 
           <div className="sticky bottom-0 flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
 
+            {isEditing&&onDelete&&<button type="button" disabled={loading} className="text-red-600 underline sm:mr-auto" onClick={onDelete}>Delete project</button>}
             <button
               type="button"
               onClick={onClose}

@@ -60,6 +60,7 @@ interface TaskFormProps {
   statusOptions: SelectOption[];
 
   onClose: () => void;
+  onDelete?:()=>void;
 
   onSubmit: (
     data:
@@ -184,6 +185,7 @@ function TaskForm({
   priorityOptions,
   statusOptions,
   onClose,
+  onDelete,
   onSubmit,
 }: TaskFormProps) {
   const isEdit =
@@ -1765,6 +1767,7 @@ function TaskForm({
               Cancel
             </button>
 
+            {isEdit&&onDelete&&<button type="button" disabled={loading} className="text-red-600 underline mr-auto" onClick={onDelete}>Delete task</button>}
             <button
               type="submit"
               disabled={

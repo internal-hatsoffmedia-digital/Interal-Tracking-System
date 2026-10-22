@@ -336,6 +336,11 @@ export async function updateMyWorkStatus(
   assignmentId: string,
   status: string,
 ): Promise<void> {
+  if(status==='completed'){
+    const result=await supabase.rpc('submit_task_work',{p_assignment:assignmentId});
+    if(result.error)throw new Error(result.error.message);
+    return;
+  }
   const updates: Record<
     string,
     unknown

@@ -8,9 +8,9 @@ export default function WorkStatusConfirmation({status,taskTitle,onClose,onConfi
           <button className="work-confirm-close" aria-label="Close confirmation" onClick={onClose}>×</button>
         </header>
         <div className="workspace-dialog-body work-confirm-body">
-          <p>{status==='completed'?'Submit your finished work to the Project Coordinator for review.':status==='in_progress'?'Ready to begin? This marks your assignment as in progress.':'Accept this assignment so your coordinator knows you have picked it up.'}</p>
+          <p>{status==='completed'?'Are you sure this task is completed? Confirming will send it directly to QC.':status==='in_progress'?'Ready to begin? This marks your assignment as in progress.':'Accept this assignment so your coordinator knows you have picked it up.'}</p>
           <div className="work-confirm-task"><span>Task</span><strong>{taskTitle}</strong></div>
         </div>
-        <footer className="work-confirm-footer"><button className="work-confirm-cancel" onClick={onClose}>Cancel</button><button className="work-confirm-primary" onClick={onConfirm}>{status==='accepted'?'Accept task':status==='in_progress'?'Start task':'Submit for review'}</button></footer>
+        <footer className="work-confirm-footer"><button className="work-confirm-cancel" onClick={onClose}>Cancel</button><button className="work-confirm-primary" onClick={onConfirm}>{status==='accepted'?'Accept task':status==='in_progress'?'Start task':'Yes, complete and send to QC'}</button></footer>
       </WorkspaceDialog>
 );}

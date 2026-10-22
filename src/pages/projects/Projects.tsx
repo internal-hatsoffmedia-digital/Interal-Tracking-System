@@ -63,13 +63,6 @@ export default function Projects() {
     } catch(e) { setError(e instanceof Error ? e.message : 'Unable to save project'); throw e; }
     finally { setBusy(false); }
   }
-  async function archive() {
-    if (!editing) return;
-    setBusy(true);setError('');
-    try { await setProjectStatus(editing.id,!editing.is_active);setOpen(false);setRevision(r=>r+1); }
-    catch(e) { setError(e instanceof Error ? e.message : 'Unable to archive project'); }
-    finally { setBusy(false); }
-  }
   async function removeProject(){
     if(!deleting)return;setBusy(true);setError('');
     try{await setProjectStatus(deleting.id,!deleting.is_active);setDeleting(null);setRevision(r=>r+1);}
@@ -85,11 +78,12 @@ export default function Projects() {
     {tab==='projects'&&<ProjectArtistWork/>}
     {tab==='projects'?<ProjectWorkspace revision={revision} onSchemaReady={setSchemaReady} onDelete={manager?setDeleting:undefined} onEdit={p=>void openForm(p)} />:financeAccess&&<ProjectFinanceDashboard mode="costs"/>}
     {open && <><ProjectForm open={open} project={editing} clients={clients} teams={teams} employees={employees} selfCoordinator={profile?.role==='project_coordinator'}
-      statusOptions={[...new Set([...projectStatuses,...(editing ? [editing.status]:[])])]}
+      statusOptions={editing&&['client_review','client_correction'].includes(editing.status)?['client_review','client_correction','completed']:[...new Set([...projectStatuses.filter(s=>s!=='awaiting_coordinator'),...(editing ? [editing.status]:[])])]}
       healthOptions={[...new Set(['on_track',...(editing ? [editing.health]:[])])]}
       invoiceStatusOptions={[...new Set(['pending_billing',...(editing ? [editing.invoice_status]:[])])]}
       onManageAssignments={editing ? ()=>{setOpen(false);navigate('/projects?project='+editing.id);} : undefined}
+      onDelete={manager&&editing?()=>{setOpen(false);setDeleting(editing);}:undefined}
       loading={busy} error={error} onClose={()=>{if(!busy)setOpen(false);}} onSubmit={save} />
-      {manager && editing && <button disabled={busy} className="fixed bottom-4 left-4 z-[60] rounded-lg border bg-white px-3 py-2 text-sm shadow-lg" onClick={()=>void archive()}>{editing.is_active ? 'Archive project' : 'Restore project'}</button>}</>}
+      </>}
   </div>;
 }
