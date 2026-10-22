@@ -156,3 +156,5 @@ Task timer columns show the first timer start, the employee’s task completion,
 Task and Project edit forms include Delete actions with confirmation. Deletion removes work from active lists while preserving recoverable history. Existing historical completions with exactly one verified contributor and no credit record receive the numeric project rate once; shared or existing credits are preserved.
 
 Tasks → Focused hours shows task-linked timer hours on each task row and a project/employee summary including project-only sessions. Project-only time is not assigned to an arbitrary task or multiplied across tasks. Select a task in My Work’s timer to record task-specific hours. Work-date filters use IST and pauses are excluded.
+
+QC operations start on 22 October 2026 at midnight IST. Earlier confirmations are excluded from active QC and QC Activity, while historical reviews and notes remain stored. A new employee confirmation or explicit coordinator submission can bring older work into QC for a fresh review.
