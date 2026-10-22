@@ -9,3 +9,12 @@ Validation: 11 relevant automated tests passed (filter calculations and initial 
 This ZIP supersedes earlier 22 October builds and includes the prior QC launch-date/focused-hours changes. Upload/extract contents into Hostinger public_html. Includes .htaccess; no SQL, secrets or test preview files.
 
 SHA256: c109cd01209655a73d40c28b1947817eb889c004f88c7bd51a69a31a72bfebe0
+
+## Signed-in Admin verification
+
+Admin browser verification completed after sign-in. Initial table count: 0; one Employee sales section. Employee Show results displayed 25 data rows; Show 25 more displayed 50. Employee selection hid stale tables; Saraswathy selection showed only her credits; Reset hid results. Creative Clan project-rate filtering opened 25 rows independently. A global team change hid tables and retained exactly one instance of each section. Company results and Creative Clan revenue breakdown each showed INR 1200. Client summary displayed 25 rows; Charges & expenses opened as a separate table. Global client changes hid both. The page was left at All teams/All clients with every result table hidden. No credits or records were saved.
+
+The live check exposed duplicate React sibling keys, which could duplicate or omit sections. Each independently keyed Sales section now has a unique prefix; reload and repeated filter changes verified a single instance. Production build passed after this correction.
+
+Latest verified archive: hatsoff-internal-hostinger-2026-10-22-sales-filters-verified.zip. This supersedes the earlier sales-filters ZIP.
+SHA256: 742d6e20cd53c69fdbbf36a6785f6075e3ac0ba87bf8989f134525b722ba9dc5
