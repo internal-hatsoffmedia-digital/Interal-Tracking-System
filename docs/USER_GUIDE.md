@@ -160,3 +160,12 @@ Tasks → Focused hours shows task-linked timer hours on each task row and a pro
 QC operations start on 22 October 2026 at midnight IST. Earlier confirmations are excluded from active QC and QC Activity, while historical reviews and notes remain stored. A new employee confirmation or explicit coordinator submission can bring older work into QC for a fresh review.
 
 Sales opens with result values and tables hidden. Set the filters and use the section’s Show button. Employee sales, Revenue by filter, Project rates, Client summary and Charges & expenses each open independently. Results use 25 rows initially, with Show 25 more for longer lists. Filter changes/reset hide old results, while exports include the full applied selection. Employee credit records appear only after selecting a completed project.
+
+
+### Monthly SMP and team projects
+
+Open Projects → SMP & EXP Projects → New monthly project. Choose the project month, client, project name, rate, payment status and production team(s): Digital Ninjas - M and/or Digital Ninjas - W. The start and delivery dates cover the full calendar month automatically. Individual task assignments remain separate.
+
+After the work passes Internal QC, edit the project, choose Completed and select one production team under Credit full rate to team. The full project rate is booked once, on final completion, to that team. It does not create personal employee sales credits or split the rate between teams. Existing regular projects retain their employee-credit workflow.
+
+Project details in this tab opens the project form on the same page. Save refreshes the displayed finances. Existing projects are not automatically converted to monthly billing.

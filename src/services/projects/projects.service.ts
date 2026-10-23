@@ -300,6 +300,8 @@ export async function createProject(
   const { data, error } = await supabase
     .from("projects")
     .insert({
+      monthly_team_project:input.monthly_team_project??false,
+      billing_month:input.billing_month??null,
       production_team_ids: input.production_team_ids ?? [],
       category: input.category || null,
       final_link: input.final_link || null,
@@ -368,14 +370,22 @@ export async function updateProject(
   id: string,
   input: UpdateProjectInput,
 ): Promise<Project> {
+  if(input.status==='completed'&&input.sales_credit_team_id){
+    const {status,completed_by_profile_id,sales_credit_team_id,monthly_team_project,lead_employee_id,...patch}=input;
+    void status;void completed_by_profile_id;void monthly_team_project;void lead_employee_id;
+    const result=await supabase.rpc('complete_monthly_project_work',{p_project:id,p_team:sales_credit_team_id,p_patch:patch});
+    if(result.error)throw new Error(result.error.message);
+    const saved=await getProjectById(id);if(!saved)throw new Error('Monthly project unavailable');return saved;
+  }
   if(input.status==='completed'&&input.completed_by_profile_id){
-    const {status:completionStatus,completed_by_profile_id:worker,lead_employee_id:lead,...patch}=input;
-    void completionStatus;void lead;
+    const {status:completionStatus,completed_by_profile_id:worker,lead_employee_id:lead,monthly_team_project,billing_month,sales_credit_team_id,...patch}=input;
+    void completionStatus;void lead;void monthly_team_project;void billing_month;void sales_credit_team_id;
     const result=await supabase.rpc('complete_project_work',{p_project:id,p_employee:worker,p_patch:patch});
     if(result.error)throw new Error(result.error.message);
     const saved=await getProjectById(id);if(!saved)throw new Error('Completed project is unavailable');return saved;
   }
   const updates: Record<string, unknown> = {};
+  if(input.billing_month!==undefined)updates.billing_month=input.billing_month;
 
   if (input.category !== undefined) updates.category = input.category || null;
   if (input.final_link !== undefined) updates.final_link = input.final_link || null;

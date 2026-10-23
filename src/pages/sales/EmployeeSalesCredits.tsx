@@ -7,7 +7,7 @@ export default function EmployeeSalesCredits({projects,directory}:{projects:Fina
  const {people,credits}=directory;
  const [project,setProject]=useState(''),[person,setPerson]=useState(''),[amount,setAmount]=useState('');
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[saving,setSaving]=useState(false);
- const completed=projects.filter(p=>p.status==='completed'&&p.sales_completed_at&&p.rate!=null);
+ const completed=projects.filter(p=>!p.monthly_team_project&&p.status==='completed'&&p.sales_completed_at&&p.rate!=null);
  const selected=completed.find(p=>p.id===project);const allocated=credits.filter(c=>c.project_id===project).reduce((sum,c)=>sum+Number(c.amount),0);
  async function save(event:React.FormEvent){event.preventDefault();setSaving(true);setError('');setNotice('');try{const {error}=await supabase.rpc('set_project_sales_credit',{p_project:project,p_profile:person,p_amount:Number(amount)});if(error)throw error;window.dispatchEvent(new Event('sales-credits-updated'));setNotice('Sales credit saved. The employee dashboard updates within one minute.');}catch(e){setError(e instanceof Error?e.message:(e as {message?:string})?.message??'Unable to save sales credit.');}finally{setSaving(false);}}
  return <section className="finance-card"><div className="finance-card-heading"><h2>Credit employee sales</h2><span>Completed project base rates only</span></div>

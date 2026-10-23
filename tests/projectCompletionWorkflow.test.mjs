@@ -44,5 +44,24 @@ test('employee submission, QC, coordinator completion and full employee credit a
  await db.exec('set role authenticated');await db.query('select complete_project_work($1,$2)',[id(20),id(2)]);assert.equal((await db.query('select project_completion_people($1) d',[id(20)])).rows[0].d[0].id,id(2));await db.exec('reset role;set role anon');await assert.rejects(db.query('select my_project_submissions()'),/permission denied/);
  await db.exec(`reset role;insert into tasks(id,project_id,title,status,archived_at) values('${id(50)}','${id(20)}','Task work','editing_in_progress',null);insert into task_assignments(id,task_id,employee_id,status) values('${id(51)}','${id(50)}','${id(102)}','in_progress');set role authenticated`);await as(4);await assert.rejects(db.query('select submit_task_work($1)',[id(51)]),/assigned employee/);await as(2);await db.query('select submit_task_work($1)',[id(51)]);assert.ok((await db.query('select qc_workspace() d')).rows[0].d.items.some(r=>r.task==='Task work'));
  await db.exec('reset role');await db.exec("update qc_reviews set coordinator_released_at=null,state='checking' where task_id='"+id(50)+"'");await db.exec(await readFile('supabase/migrations/202610220004_release_confirmed_submissions.sql','utf8'));await db.exec(await readFile('supabase/migrations/202610220004_release_confirmed_submissions.sql','utf8'));const restored=(await db.query('select state,coordinator_released_at from qc_reviews where task_id=$1',[id(50)])).rows[0];assert.equal(restored.state,'checking');assert.ok(restored.coordinator_released_at);assert.equal((await db.query('select coordinator_released_at from qc_reviews where project_id=$1',[id(21)])).rows[0].coordinator_released_at,null);
+ await db.exec(`reset role;select set_config('request.jwt.claim.sub','${id(1)}',false);
+ create table teams(id uuid primary key,name text,is_active boolean);
+ insert into teams values('${id(401)}','Digital Ninjas - M',true),('${id(402)}','Digital Ninjas - W',true),('${id(403)}','Other team',true);
+ alter table projects add column start_date date;
+ alter table employees add column full_name text;update employees e set full_name=p.full_name from profiles p where p.id=e.profile_id;
+ alter table task_assignments add column assigned_at timestamptz default now();alter table task_assignments add column deadline_at timestamptz;
+ insert into profiles values('${id(5)}','Marketing lead','associate_lead',true,'${id(401)}'),('${id(6)}','Web lead','associate_lead',true,'${id(402)}');`);
+ await db.exec(await readFile('supabase/migrations/202610220007_monthly_team_projects.sql','utf8'));
+ await db.exec(`insert into projects(id,name,project_code,client_id,production_team_ids,status,is_active,rate,invoice_status,monthly_team_project,billing_month) values('${id(60)}','Monthly SMP','MONTH60','${id(30)}',array['${id(401)}'::uuid,'${id(402)}'::uuid],'planning',true,16000,'pending_billing',true,'2026-11-01');insert into project_members values('${id(60)}','${id(3)}');set role authenticated;`);
+ await as(2);await assert.rejects(db.query('select complete_monthly_project_work($1,$2)',[id(60),id(401)]),/coordinator access/);
+ await as(3);await assert.rejects(db.query('select complete_monthly_project_work($1,$2)',[id(60),id(401)]),/Finish Internal QC/);
+ await db.exec(`reset role;insert into qc_reviews(project_id,state,coordinator_released_at) values('${id(60)}','approved',now());set role authenticated;`);
+ await as(3);await assert.rejects(db.query('select complete_monthly_project_work($1,$2)',[id(60),id(403)]),/project production teams/);
+ await db.query('select complete_monthly_project_work($1,$2)',[id(60),id(401)]);
+ await db.exec('reset role');const monthly=(await db.query('select status,sales_credit_team_id,completed_by_profile_id,start_date::text,target_deadline::text from projects where id=$1',[id(60)])).rows[0];assert.equal(monthly.status,'completed');assert.equal(monthly.sales_credit_team_id,id(401));assert.equal(monthly.completed_by_profile_id,null);assert.equal(monthly.start_date,'2026-11-01');assert.equal(monthly.target_deadline,'2026-11-30');assert.equal((await db.query('select count(*) n from project_sales_credits where project_id=$1',[id(60)])).rows[0].n,0);
+ await assert.rejects(db.query(`insert into project_sales_credits(project_id,profile_id,amount) values($1,$2,100)`,[id(60),id(2)]),/one team, not employees/);
+ await assert.rejects(db.query(`update projects set rate='NaN' where id=$1`,[id(60)]),/valid monthly rate/);
+ await db.exec('set role authenticated');await as(5);assert.equal((await db.query(`select team_daily_overview(current_date-1,current_date+1) d`)).rows[0].d.monthly_sales.length,1);await as(6);assert.equal((await db.query(`select team_daily_overview(current_date-1,current_date+1) d`)).rows[0].d.monthly_sales.length,0);
+
  }finally{await db.close();}
 });

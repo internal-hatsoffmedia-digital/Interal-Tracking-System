@@ -1,4 +1,5 @@
 export interface FinanceProject {
+  monthly_team_project?:boolean;billing_month?:string|null;sales_credit_team_id?:string|null;
   sales_completed_at?:string|null; team_id?:string|null; production_team_ids?:string[]; id: string; project_code: string; name: string; client_id: string; client_name: string;
   status: string; rate: number | string | null; created_at: string; is_active: boolean; can_edit: boolean;
 }

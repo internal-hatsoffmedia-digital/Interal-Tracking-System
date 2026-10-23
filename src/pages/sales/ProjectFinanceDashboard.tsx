@@ -17,7 +17,7 @@ import './projectFinance.css';
 
 const emptyData:ProjectFinanceData={projects:[],items:[]};
 const blank=(month:string):FinanceInput=>({project_id:'',label:'',kind:'charge',amount:0,frequency:'once',start_month:month+'-01',end_month:null,notes:''});
-export default function ProjectFinanceDashboard({mode='sales'}:{mode?:'sales'|'costs'}) {
+export default function ProjectFinanceDashboard({mode='sales',onProjectDetails}:{mode?:'sales'|'costs';onProjectDetails?:(id:string)=>void}) {
   const {profile}=useAuth();
   const creditDirectory=useSalesCreditDirectory(mode==='sales');
   const userId=[profile?.id,profile?.team_id,profile?.role,mode].join(':');
@@ -110,7 +110,7 @@ export default function ProjectFinanceDashboard({mode='sales'}:{mode?:'sales'|'c
     {!loading&&!error&&<>
     <section className="finance-card"><div className="finance-card-heading"><h2>Client summary</h2><span>Selected month</span></div><SalesResults key={filterKey} filterKey={filterKey} requireApply={mode==='sales'} count={byClient.length} label="Show client summary">{limit=><div className="finance-table-scroll"><table><thead><tr>{['Client','Base project rates','Additional charges','Revenue','Expenses','Net'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{byClient.slice(0,limit).map(c=><tr key={c.id}><td>{c.name}</td><td>{financeMoney(c.projectRevenue)}</td><td>{financeMoney(c.charges)}</td><td>{financeMoney(c.revenue)}</td><td>{financeMoney(c.expenses)}</td><td>{financeMoney(c.net)}</td></tr>)}</tbody></table>{!byClient.length&&<p className="finance-table-empty">No client projects yet.</p>}</div>}</SalesResults></section>
     {mode==='sales'&&<EmployeeSalesCredits key={'credits:'+filterKey} projects={summary.projects} directory={creditDirectory.data}/>}
-    <ProjectRates key={'rates:'+filterKey} data={{...data,projects:summary.projects}} directory={creditDirectory.data} showEmployees={mode==='sales'} loading={creditDirectory.loading} error={creditDirectory.error}/>
+    <ProjectRates onOpenProject={onProjectDetails} key={'rates:'+filterKey} data={{...data,projects:summary.projects}} directory={creditDirectory.data} showEmployees={mode==='sales'} loading={creditDirectory.loading} error={creditDirectory.error}/>
     <section className="finance-card"><div className="finance-card-heading"><h2>Charges & expenses</h2><span>Selected month</span></div><SalesResults key={filterKey} filterKey={filterKey} requireApply={mode==='sales'} count={summary.items.length} label="Show charges & expenses">{limit=><div className="finance-table-scroll"><table><thead><tr>{['Project ID','Service / cost','Type','Amount','Frequency','Period','Created by / time',''].map((h,i)=><th key={i}>{h}</th>)}</tr></thead><tbody>{summary.items.slice(0,limit).map(i=>{const p=data.projects.find(p=>p.id===i.project_id)!;return<tr key={i.id}><td className="finance-code">{p.project_code}</td><td>{i.label}<small>{i.notes}</small></td><td><span className="finance-kind">{i.kind==='charge'?'Client charge':'Expense'}</span></td><td>{financeMoney(Number(i.amount))}</td><td>{i.frequency==='once'?'One time':'Monthly'}</td><td>{i.start_month.slice(0,7)}{i.frequency==='monthly'?` → ${i.end_month?.slice(0,7)??'ongoing'}`:''}</td><td>{i.creator_name}<small>{displayTime(i.created_at)}</small></td><td>{mode==='costs'&&p.can_edit&&<button onClick={()=>edit(i)}>Edit</button>}</td></tr>;})}</tbody></table>{!summary.items.length&&<p className="finance-table-empty">No additional charges or expenses for this month.</p>}</div>}</SalesResults></section></>}
   </div>;
 }

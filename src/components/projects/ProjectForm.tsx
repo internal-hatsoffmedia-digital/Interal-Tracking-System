@@ -27,6 +27,7 @@ import type { EmployeeWithTeam } from "../../types/employee";
 
 interface ProjectFormProps {
   open: boolean;
+  monthlyTeamProject?:boolean;
   selfCoordinator?:boolean;
 
   project?: ProjectWithRelations | null;
@@ -59,6 +60,8 @@ interface ProjectFormProps {
 
 
 interface ProjectFormState {
+  billing_month:string;
+  sales_credit_team_id:string;
   completed_by_profile_id:string;
   production_team_ids: string[];
   project_code: string;
@@ -85,6 +88,8 @@ interface ProjectFormState {
 
 
 const EMPTY_FORM: ProjectFormState = {
+  billing_month:new Date(Date.now()+19800000).toISOString().slice(0,7),
+  sales_credit_team_id:"",
   completed_by_profile_id:"",
   production_team_ids: [],
   project_code: "",
@@ -125,6 +130,7 @@ function formatOption(
 
 function ProjectForm({
   open,
+  monthlyTeamProject=false,
   selfCoordinator=false,
   project = null,
   clients,
@@ -143,6 +149,8 @@ function ProjectForm({
   const [completionPeople,setCompletionPeople]=useState<{id:string;name:string;employee_code?:string}[]>([]);
   const [completionError,setCompletionError]=useState('');
   useEffect(()=>{let active=true;if(!open||!project?.id)return;void supabase.rpc('project_completion_people',{p_project:project.id}).then(r=>{if(active){setCompletionPeople(r.data??[]);setCompletionError(r.error?r.error.message:'');}});return()=>{active=false;};},[open,project?.id]);
+  const isMonthly=project?.monthly_team_project??monthlyTeamProject;
+  const productionTeams=isMonthly?teams.filter(t=>["Digital Ninjas - M","Digital Ninjas - W"].includes(t.name)):teams;
   const isEditing =
     Boolean(project);
 
@@ -154,6 +162,9 @@ function ProjectForm({
     useState<ProjectFormState>(
       EMPTY_FORM,
     );
+
+  const periodStart=isMonthly?form.billing_month+'-01':form.start_date;
+  const periodEnd=isMonthly&&/^\d{4}-(0[1-9]|1[0-2])$/.test(form.billing_month)?new Date(Date.UTC(Number(form.billing_month.slice(0,4)),Number(form.billing_month.slice(5,7)),0)).toISOString().slice(0,10):form.target_deadline;
 
   const [
     validationError,
@@ -172,6 +183,8 @@ function ProjectForm({
 
     if (project) {
       setForm({
+        billing_month:project.billing_month?.slice(0,7)||EMPTY_FORM.billing_month,
+        sales_credit_team_id:project.sales_credit_team_id||"",
         completed_by_profile_id:project.completed_by_profile_id||"",
         production_team_ids: project.production_team_ids ?? [],
         project_code: String(project.project_code ?? ""),
@@ -333,9 +346,10 @@ function ProjectForm({
   ======================================================== */
 
   const validate = () => {
+    if(isMonthly&&!/^\d{4}-\d{2}$/.test(form.billing_month)){setValidationError('Choose the full project month.');return false;}
     if(form.status==='completed'){
       if(!project){setValidationError('Create the project first. Final completion is confirmed after employee submission and QC.');return false;}
-      if(!form.completed_by_profile_id){setValidationError('Select the employee who completed this project.');return false;}
+      if(isMonthly?(!form.sales_credit_team_id||!form.production_team_ids.includes(form.sales_credit_team_id)):!form.completed_by_profile_id){setValidationError(isMonthly?'Select the team to credit.':'Select the employee who completed this project.');return false;}
     }
     const requiredError=projectRequirementError(form);
     if(requiredError){setValidationError(requiredError);return false;}
@@ -422,7 +436,8 @@ function ProjectForm({
 
     const commonPayload = {
 
-      ...(form.status==='completed'?{completed_by_profile_id:form.completed_by_profile_id}:{}),
+      monthly_team_project:isMonthly,billing_month:isMonthly?form.billing_month+'-01':null,
+      ...(form.status==='completed'?(isMonthly?{sales_credit_team_id:form.sales_credit_team_id}:{completed_by_profile_id:form.completed_by_profile_id}):{}),
       category: form.category.trim() || null,
       final_link: form.final_link.trim() || null,
       remarks: form.remarks.trim() || null,
@@ -791,7 +806,8 @@ function ProjectForm({
 
               <div className="grid gap-4 sm:grid-cols-2">
 
-                <fieldset className="sm:col-span-2 rounded-xl border p-4"><legend className="px-2 text-sm font-semibold">Production teams *</legend><p className="mb-3 text-xs text-slate-500">Select every team working on this project. Assign individual employees through Tasks / Team Work.</p><div className="flex flex-wrap gap-4">{teams.map(t=><label key={t.id} className="flex items-center gap-2 text-sm"><input type="checkbox" disabled={loading} checked={form.production_team_ids.includes(t.id)} onChange={e=>setForm({...form,production_team_ids:e.target.checked?[...form.production_team_ids,t.id]:form.production_team_ids.filter(id=>id!==t.id)})}/>{t.name}</label>)}</div></fieldset>
+                {isMonthly&&<label className="sm:col-span-2 grid gap-2 text-sm">Project month *<input aria-label="Project month" type="month" required value={form.billing_month} onChange={e=>updateField('billing_month',e.target.value)} disabled={loading} className="h-11 rounded-xl border px-3"/><small className="text-slate-500">Covers the full calendar month. Choose the team to credit when the project is completed.</small></label>}
+                <fieldset className="sm:col-span-2 rounded-xl border p-4"><legend className="px-2 text-sm font-semibold">Production teams *</legend><p className="mb-3 text-xs text-slate-500">Select every team working on this project. Assign individual employees through Tasks / Team Work.</p><div className="flex flex-wrap gap-4">{productionTeams.map(t=><label key={t.id} className="flex items-center gap-2 text-sm"><input type="checkbox" disabled={loading} checked={form.production_team_ids.includes(t.id)} onChange={e=>setForm({...form,production_team_ids:e.target.checked?[...form.production_team_ids,t.id]:form.production_team_ids.filter(id=>id!==t.id)})}/>{t.name}</label>)}</div></fieldset>
                 {/* LEAD ARTIST */}
 
                 <div>
@@ -886,16 +902,14 @@ function ProjectForm({
                     <input
                       id="project-start-date"
                       type="date"
-                      value={
-                        form.start_date
-                      }
+                      value={periodStart}
                       onChange={(event) =>
                         updateField(
                           "start_date",
                           event.target.value,
                         )
                       }
-                      disabled={loading}
+                      disabled={loading||isMonthly}
                       className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50"
                     />
 
@@ -926,16 +940,14 @@ function ProjectForm({
                     <input
                       id="project-deadline"
                       type="date"
-                      value={
-                        form.target_deadline
-                      }
+                      value={periodEnd}
                       onChange={(event) =>
                         updateField(
                           "target_deadline",
                           event.target.value,
                         )
                       }
-                      disabled={loading}
+                      disabled={loading||isMonthly}
                       className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-700 outline-none transition focus:border-slate-300 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50"
                     />
 
@@ -963,7 +975,8 @@ function ProjectForm({
               </div>
 
 
-              {form.status==='completed'&&<label className="grid gap-2 text-sm mb-4">Completed by employee *<select aria-label="Completed by employee" value={form.completed_by_profile_id} onChange={e=>updateField('completed_by_profile_id',e.target.value)} disabled={loading} required><option value="">Choose the employee to credit</option>{completionPeople.map(p=><option key={p.id} value={p.id}>{p.name}{p.employee_code?` (${p.employee_code})`:""}</option>)}</select><small>The full project rate will be credited to the selected contributor. New completions require QC approval.</small>{completionError&&<span role="alert">{completionError}</span>}{!completionPeople.length&&<small>No verified contributors yet. Assign the employee to this project first.</small>}</label>}
+              {form.status==='completed'&&!isMonthly&&<label className="grid gap-2 text-sm mb-4">Completed by employee *<select aria-label="Completed by employee" value={form.completed_by_profile_id} onChange={e=>updateField('completed_by_profile_id',e.target.value)} disabled={loading} required><option value="">Choose the employee to credit</option>{completionPeople.map(p=><option key={p.id} value={p.id}>{p.name}{p.employee_code?` (${p.employee_code})`:""}</option>)}</select><small>The full project rate will be credited to the selected contributor. New completions require QC approval.</small>{completionError&&<span role="alert">{completionError}</span>}{!completionPeople.length&&<small>No verified contributors yet. Assign the employee to this project first.</small>}</label>}
+              {isMonthly&&form.status==='completed'&&<label className="grid gap-2 text-sm mb-4">Credit full rate to team *<select aria-label="Credit full rate to team" value={form.sales_credit_team_id} onChange={e=>updateField('sales_credit_team_id',e.target.value)} disabled={loading} required className="h-11 rounded-xl border px-3"><option value="">Choose the team to credit</option>{productionTeams.filter(t=>form.production_team_ids.includes(t.id)).map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select><small>The full monthly rate goes to this team. Final completion requires QC approval.</small></label>}
               <div className="grid gap-4 sm:grid-cols-3">
 
                 {/* STATUS */}
