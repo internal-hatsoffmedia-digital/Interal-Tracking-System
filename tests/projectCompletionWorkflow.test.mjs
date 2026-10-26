@@ -63,5 +63,21 @@ test('employee submission, QC, coordinator completion and full employee credit a
  await assert.rejects(db.query(`update projects set rate='NaN' where id=$1`,[id(60)]),/valid monthly rate/);
  await db.exec('set role authenticated');await as(5);assert.equal((await db.query(`select team_daily_overview(current_date-1,current_date+1) d`)).rows[0].d.monthly_sales.length,1);await as(6);assert.equal((await db.query(`select team_daily_overview(current_date-1,current_date+1) d`)).rows[0].d.monthly_sales.length,0);
 
+
+ // Optional QC rollout archives the active queue without deleting review history.
+ await db.exec('reset role');const reviewCount=(await db.query('select count(*) n from qc_reviews')).rows[0].n;const noteCount=(await db.query('select count(*) n from qc_notes')).rows[0].n;
+ await db.exec(await readFile('supabase/migrations/202610260001_optional_qc_workflow.sql','utf8'));
+ assert.equal((await db.query('select count(*) n from qc_reviews')).rows[0].n,reviewCount);assert.equal((await db.query('select count(*) n from qc_notes')).rows[0].n,noteCount);assert.equal((await db.query('select count(*) n from qc_reviews where coordinator_released_at is not null')).rows[0].n,0);
+ await db.exec('set role authenticated');await as(1);assert.equal((await db.query('select qc_workspace() d')).rows[0].d.items.length,0);await assert.rejects(db.query('select qc_update($1,$2)',[pendingReview,'claim']),/Review unavailable/);
+ await as(3);await db.exec('reset role');await db.query("update projects set status='in_progress' where id=$1",[id(20)]);await db.exec('set role authenticated');
+ // No review and no client-review step are required for coordinator completion.
+ await db.query('select complete_project_work($1,$2)',[id(20),id(2)]);await db.exec('reset role');assert.equal((await db.query('select count(*) n from project_sales_credits where project_id=$1',[id(20)])).rows[0].n,1);
+ await db.exec('reset role');await db.query("update projects set status='internal_review' where id=$1",[id(20)]);await db.exec('set role authenticated');const fresh=(await db.query('select qc_workspace() d')).rows[0].d.items.find(r=>r.project==='Delivered website'&&!r.task);assert.ok(fresh);assert.equal(fresh.state,'waiting');
+ await db.query('select qc_route_review($1,$2)',[fresh.id,'client_review']);await db.query('select complete_project_work($1,$2)',[id(20),id(2)]);
+ // Even an unapproved monthly review does not block the chosen team's full credit.
+ await db.exec('reset role');await db.query("update projects set status='internal_review' where id=$1",[id(60)]);await db.exec('set role authenticated');await db.query('select complete_monthly_project_work($1,$2)',[id(60),id(401)]);
+ await as(2);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(2)]),/coordinator access/);await assert.rejects(db.query('select complete_monthly_project_work($1,$2)',[id(60),id(401)]),/coordinator access/);
+ await as(3);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(4)]),/verified project contributor/);
+
  }finally{await db.close();}
 });

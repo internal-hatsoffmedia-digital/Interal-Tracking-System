@@ -146,9 +146,9 @@ Team PC → Activity records new project, task, client and assignment creations 
 
 Client, Project Name, Production Teams, Rate (INR), Payment Status and Status are required. A zero rate is allowed for work with no charge. Start/End Time, Production Progress and Project / Series Title are no longer entered in the project form; historical values are preserved.
 
-In My Work, employees confirm that their task or project work is complete before it goes directly to QC. This does not finalize the project or book sales. Prior employee confirmations are restored to the QC queue; imported status labels without an employee completion record are not released automatically. Reviewers check the work in QC. The coordinator can choose Internal correction with an employee and note, or Move to client approval after QC approval. Project Edit then offers Client approval, Client correction and Completed.
+In My Work, employees confirm that their task or project work is complete before it goes directly to QC. This does not finalize the project or book sales. Prior employee confirmations are restored to the QC queue; imported status labels without an employee completion record are not released automatically. Reviewers check the work in QC. The coordinator can choose Internal correction with an employee and note, or Move to client approval. QC approval is optional. Project Edit then offers Client approval, Client correction and Completed.
 
-To select Completed, the coordinator chooses one verified project contributor. All released QC reviews for a new final completion must be approved. The project rate is credited once in full to that employee, and Completed by appears in the tracker. Users with Sales access can click the name to open that employee’s sales. Existing shared credits must be resolved by Sales leadership before choosing a single full-rate recipient.
+To select Completed, the coordinator chooses one verified project contributor. QC is optional and does not block coordinator completion or client approval. The project rate is credited once in full to that employee, and Completed by appears in the tracker. Users with Sales access can click the name to open that employee’s sales. Existing shared credits must be resolved by Sales leadership before choosing a single full-rate recipient.
 
 
 Task timer columns show the first timer start, the employee’s task completion, and focused timer hours excluding pauses. Work-date filters use IST. Performance shows employee IDs beside names and includes them in exports. Coordinator edits are saved against the signed-in profile in Team PC Activity; changing a task does not change its assigned employee.
@@ -166,6 +166,9 @@ Sales opens with result values and tables hidden. Set the filters and use the se
 
 Open Projects → SMP & EXP Projects → New monthly project. Choose the project month, client, project name, rate, payment status and production team(s): Digital Ninjas - M and/or Digital Ninjas - W. The start and delivery dates cover the full calendar month automatically. Individual task assignments remain separate.
 
-After the work passes Internal QC, edit the project, choose Completed and select one production team under Credit full rate to team. The full project rate is booked once, on final completion, to that team. It does not create personal employee sales credits or split the rate between teams. Existing regular projects retain their employee-credit workflow.
+Edit the project, choose Completed and select one production team under Credit full rate to team. The full project rate is booked once, on final completion, to that team. It does not create personal employee sales credits or split the rate between teams. Existing regular projects retain their employee-credit workflow.
 
 Project details in this tab opens the project form on the same page. Save refreshes the displayed finances. Existing projects are not automatically converted to monthly billing.
+
+
+On 26 October 2026 the active QC queue is cleared while review history and notes remain stored. Fresh employee confirmations and coordinator submissions populate the queue from this rollout onwards. Coordinators can send projects to client approval or complete them without a QC approval or client-review step. Existing contributor/team selection and sales-credit checks still apply.
