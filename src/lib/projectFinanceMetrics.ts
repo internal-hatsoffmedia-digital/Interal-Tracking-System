@@ -43,7 +43,7 @@ export function financeClients(data: ProjectFinanceData): [string,string][] {
 export function financeForTeam(data:ProjectFinanceData, teamId:string):ProjectFinanceData {
  if(!teamId)return data;
  const name=data.teams?.find(t=>t.id===teamId)?.name;
- const projects=data.projects.filter(p=>p.monthly_team_project&&p.sales_credit_team_id?p.sales_credit_team_id===teamId:p.team_id===teamId||p.production_team_ids?.includes(teamId));
+ const projects=data.projects.filter(p=>p.sales_credit_team_id?p.sales_credit_team_id===teamId:p.team_id===teamId||p.production_team_ids?.includes(teamId));
  const ids=new Set(projects.map(p=>p.id));
  return {...data,projects,items:data.items.filter(i=>ids.has(i.project_id)),opening_periods:[],
  opening_sales:(data.opening_sales??[]).filter(s=>s.team_name===name)};

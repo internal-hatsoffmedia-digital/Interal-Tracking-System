@@ -3,11 +3,11 @@ import {useState} from 'react';
 import {supabase} from '../../lib/supabase';
 import {financeMoney} from '../../lib/projectFinanceMetrics';
 import type {FinanceProject} from '../../types/projectFinance';
-export default function EmployeeSalesCredits({projects,directory}:{projects:FinanceProject[];directory:SalesCreditDirectory}){
+export default function EmployeeSalesCredits({projects,directory,teams=[]}:{projects:FinanceProject[];directory:SalesCreditDirectory;teams?:{id:string;name:string}[]}){
  const {people,credits}=directory;
  const [project,setProject]=useState(''),[person,setPerson]=useState(''),[amount,setAmount]=useState('');
  const [error,setError]=useState(''),[notice,setNotice]=useState(''),[saving,setSaving]=useState(false);
- const completed=projects.filter(p=>!p.monthly_team_project&&p.status==='completed'&&p.sales_completed_at&&p.rate!=null);
+ const completed=projects.filter(p=>!p.monthly_team_project&&!p.sales_credit_team_id&&!teams.some(t=>['Digital Ninjas - M','Digital Ninjas - W'].includes(t.name)&&p.production_team_ids?.includes(t.id))&&p.status==='completed'&&p.sales_completed_at&&p.rate!=null);
  const selected=completed.find(p=>p.id===project);const allocated=credits.filter(c=>c.project_id===project).reduce((sum,c)=>sum+Number(c.amount),0);
  async function save(event:React.FormEvent){event.preventDefault();setSaving(true);setError('');setNotice('');try{const {error}=await supabase.rpc('set_project_sales_credit',{p_project:project,p_profile:person,p_amount:Number(amount)});if(error)throw error;window.dispatchEvent(new Event('sales-credits-updated'));setNotice('Sales credit saved. The employee dashboard updates within one minute.');}catch(e){setError(e instanceof Error?e.message:(e as {message?:string})?.message??'Unable to save sales credit.');}finally{setSaving(false);}}
  return <section className="finance-card"><div className="finance-card-heading"><h2>Credit employee sales</h2><span>Completed project base rates only</span></div>

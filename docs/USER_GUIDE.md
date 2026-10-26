@@ -172,3 +172,8 @@ Project details in this tab opens the project form on the same page. Save refres
 
 
 On 26 October 2026 the active QC queue is cleared while review history and notes remain stored. Fresh employee confirmations and coordinator submissions populate the queue from this rollout onwards. Coordinators can send projects to client approval or complete them without a QC approval or client-review step. Existing contributor/team selection and sales-credit checks still apply.
+
+
+### Digital Ninjas team completion
+
+Projects assigned to Digital Ninjas - M or Digital Ninjas - W show Completed by team when Completed is selected, including existing SMP projects created before monthly billing was introduced. Choose one of those selected production teams for the full project rate. No personal employee credit is created. Existing project dates and billing type stay unchanged. Projects belonging to other production teams retain employee completion. Previously allocated personal credits are preserved and must be resolved by Sales leadership before changing to team credit.

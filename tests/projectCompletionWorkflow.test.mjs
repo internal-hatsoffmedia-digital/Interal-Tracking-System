@@ -79,5 +79,16 @@ test('employee submission, QC, coordinator completion and full employee credit a
  await as(2);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(2)]),/coordinator access/);await assert.rejects(db.query('select complete_monthly_project_work($1,$2)',[id(60),id(401)]),/coordinator access/);
  await as(3);await assert.rejects(db.query('select complete_project_work($1,$2)',[id(20),id(4)]),/verified project contributor/);
 
+
+ // Existing SMP projects use team completion based on production team, without converting billing dates.
+ await db.exec(`reset role;insert into projects(id,name,project_code,client_id,production_team_ids,status,is_active,rate,invoice_status,start_date,target_deadline) values('${id(61)}','Existing SMP','SMP61','${id(30)}',array['${id(401)}'::uuid],'in_progress',true,16000,'pending_billing','2026-10-03','2026-10-31');insert into project_members values('${id(61)}','${id(3)}');`);
+ await db.exec(await readFile('supabase/migrations/202610260002_digital_ninjas_team_completion.sql','utf8'));
+ await db.exec('set role authenticated');await as(3);
+ await assert.rejects(db.query('select complete_monthly_project_work($1,$2)',[id(61),id(402)]),/Digital Ninjas production team/);
+ await db.query('select complete_monthly_project_work($1,$2)',[id(61),id(401)]);
+ await db.exec('reset role');const existing=(await db.query('select * from projects where id=$1',[id(61)])).rows[0];assert.equal(existing.monthly_team_project,false);assert.equal(existing.sales_credit_team_id,id(401));assert.equal(existing.completed_by_profile_id,null);assert.equal(existing.start_date.toISOString().slice(0,10),'2026-10-03');assert.equal((await db.query('select count(*) n from project_sales_credits where project_id=$1',[id(61)])).rows[0].n,0);
+ await assert.rejects(db.query('insert into project_sales_credits(project_id,profile_id,amount) values($1,$2,16000)',[id(61),id(2)]),/one team, not employees/);
+ await db.exec('set role authenticated');await as(5);assert.ok((await db.query('select team_daily_overview(current_date,current_date) d')).rows[0].d.monthly_sales.some(p=>p.project_id===id(61)));
+
  }finally{await db.close();}
 });

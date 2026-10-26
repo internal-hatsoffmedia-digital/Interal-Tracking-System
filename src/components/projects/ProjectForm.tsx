@@ -163,6 +163,8 @@ function ProjectForm({
       EMPTY_FORM,
     );
 
+  const creditTeams=teams.filter(t=>["Digital Ninjas - M","Digital Ninjas - W"].includes(t.name)&&form.production_team_ids.includes(t.id));
+  const isTeamCompletion=isMonthly||creditTeams.length>0;
   const periodStart=isMonthly?form.billing_month+'-01':form.start_date;
   const periodEnd=isMonthly&&/^\d{4}-(0[1-9]|1[0-2])$/.test(form.billing_month)?new Date(Date.UTC(Number(form.billing_month.slice(0,4)),Number(form.billing_month.slice(5,7)),0)).toISOString().slice(0,10):form.target_deadline;
 
@@ -349,7 +351,7 @@ function ProjectForm({
     if(isMonthly&&!/^\d{4}-\d{2}$/.test(form.billing_month)){setValidationError('Choose the full project month.');return false;}
     if(form.status==='completed'){
       if(!project){setValidationError('Create the project first. Then edit it to confirm final completion and sales credit.');return false;}
-      if(isMonthly?(!form.sales_credit_team_id||!form.production_team_ids.includes(form.sales_credit_team_id)):!form.completed_by_profile_id){setValidationError(isMonthly?'Select the team to credit.':'Select the employee who completed this project.');return false;}
+      if(isTeamCompletion?(!form.sales_credit_team_id||!creditTeams.some(t=>t.id===form.sales_credit_team_id)):!form.completed_by_profile_id){setValidationError(isTeamCompletion?'Select the team to credit.':'Select the employee who completed this project.');return false;}
     }
     const requiredError=projectRequirementError(form);
     if(requiredError){setValidationError(requiredError);return false;}
@@ -437,7 +439,7 @@ function ProjectForm({
     const commonPayload = {
 
       monthly_team_project:isMonthly,billing_month:isMonthly?form.billing_month+'-01':null,
-      ...(form.status==='completed'?(isMonthly?{sales_credit_team_id:form.sales_credit_team_id}:{completed_by_profile_id:form.completed_by_profile_id}):{}),
+      ...(form.status==='completed'?(isTeamCompletion?{sales_credit_team_id:form.sales_credit_team_id}:{completed_by_profile_id:form.completed_by_profile_id}):{}),
       category: form.category.trim() || null,
       final_link: form.final_link.trim() || null,
       remarks: form.remarks.trim() || null,
@@ -975,8 +977,8 @@ function ProjectForm({
               </div>
 
 
-              {form.status==='completed'&&!isMonthly&&<label className="grid gap-2 text-sm mb-4">Completed by employee *<select aria-label="Completed by employee" value={form.completed_by_profile_id} onChange={e=>updateField('completed_by_profile_id',e.target.value)} disabled={loading} required><option value="">Choose the employee to credit</option>{completionPeople.map(p=><option key={p.id} value={p.id}>{p.name}{p.employee_code?` (${p.employee_code})`:""}</option>)}</select><small>The full project rate will be credited to the selected contributor. QC is optional; the coordinator confirms final completion.</small>{completionError&&<span role="alert">{completionError}</span>}{!completionPeople.length&&<small>No verified contributors yet. Assign the employee to this project first.</small>}</label>}
-              {isMonthly&&form.status==='completed'&&<label className="grid gap-2 text-sm mb-4">Credit full rate to team *<select aria-label="Credit full rate to team" value={form.sales_credit_team_id} onChange={e=>updateField('sales_credit_team_id',e.target.value)} disabled={loading} required className="h-11 rounded-xl border px-3"><option value="">Choose the team to credit</option>{productionTeams.filter(t=>form.production_team_ids.includes(t.id)).map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select><small>The full monthly rate goes to this team. The coordinator confirms final completion; QC is optional.</small></label>}
+              {form.status==='completed'&&!isTeamCompletion&&<label className="grid gap-2 text-sm mb-4">Completed by employee *<select aria-label="Completed by employee" value={form.completed_by_profile_id} onChange={e=>updateField('completed_by_profile_id',e.target.value)} disabled={loading} required><option value="">Choose the employee to credit</option>{completionPeople.map(p=><option key={p.id} value={p.id}>{p.name}{p.employee_code?` (${p.employee_code})`:""}</option>)}</select><small>The full project rate will be credited to the selected contributor. QC is optional; the coordinator confirms final completion.</small>{completionError&&<span role="alert">{completionError}</span>}{!completionPeople.length&&<small>No verified contributors yet. Assign the employee to this project first.</small>}</label>}
+              {isTeamCompletion&&form.status==='completed'&&<label className="grid gap-2 text-sm mb-4">Completed by team *<select aria-label="Completed by team" value={form.sales_credit_team_id} onChange={e=>updateField('sales_credit_team_id',e.target.value)} disabled={loading} required className="h-11 rounded-xl border px-3"><option value="">Choose the team to credit</option>{creditTeams.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select><small>The full project rate goes to this team. The coordinator confirms final completion; QC is optional.</small></label>}
               <div className="grid gap-4 sm:grid-cols-3">
 
                 {/* STATUS */}
