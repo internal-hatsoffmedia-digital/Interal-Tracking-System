@@ -369,3 +369,17 @@ test('solo completed projects credit their contributor once and team leads see o
  await assert.rejects(()=>as(10,"select team_daily_overview(current_date,current_date)"),/active team lead/);
  await assert.rejects(()=>as(3,"select team_daily_overview(current_date,current_date-1)"),/valid date range/);
 });
+
+
+test('coordinator cover options include Flow Force leads and artist directories preserve scope',async()=>{
+ await db.exec('reset role');await db.exec(await readFile(new URL('../supabase/migrations/202610270001_project_delete_and_assignment_options.sql',import.meta.url),'utf8'));
+ const options=(await as(2,'select * from project_coordinator_options()')).rows;
+ assert.ok(options.some(p=>p.profile_id===id(2)));assert.ok(options.some(p=>p.profile_id===id(7)));
+ const artists=(await as(2,'select * from task_artist_options()')).rows;assert.ok(artists.some(e=>e.profile_id===id(10)));assert.ok(artists.some(e=>e.profile_id===id(11)));assert.ok(!Object.keys(artists[0]).includes('email'));
+ const scoped=(await as(4,'select * from task_artist_options()')).rows;assert.ok(scoped.length);assert.ok(scoped.every(e=>e.team_id===id(102)));
+ assert.equal((await as(10,'select * from task_artist_options()')).rows.length,0);
+ const project=(await as(2,"insert into projects(name,client_id,lead_employee_id) values('Cover assignment',$1,$2) returning id",[id(50),id(202)])).rows[0];
+ assert.ok((await as(2,'select * from project_members where project_id=$1',[project.id])).rows.some(m=>m.profile_id===id(2)));
+ await assert.rejects(()=>as(2,'select set_project_active($1,false)',[project.id]),/Only Admin and Manager/);
+ await as(1,'select set_project_active($1,false)',[project.id]);assert.equal((await as(1,'select is_active from projects where id=$1',[project.id])).rows[0].is_active,false);await as(1,'select set_project_active($1,true)',[project.id]);
+});

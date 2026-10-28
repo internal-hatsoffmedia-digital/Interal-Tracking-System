@@ -23,7 +23,7 @@ import TaskTable from "../../components/tasks/TaskTable";
 import { useAuth } from "../../context/AuthContext";
 
 import { getActiveClients } from "../../services/clients/clients.service";
-import { getActiveEmployees } from "../../services/employees/employees.service";
+import { getTaskArtists } from "../../services/employees/employees.service";
 import { getActiveProjects } from "../../services/projects/projects.service";
 
 import {
@@ -34,7 +34,6 @@ import {
 
 import {
   createTaskAssignment,
-  updateTaskAssignment,
 } from "../../services/tasks/taskAssignments.service";
 
 import type { Client } from "../../types/client";
@@ -192,7 +191,7 @@ function Tasks() {
             getTasks(),
             getActiveClients(),
             getActiveProjects(),
-            getActiveEmployees(),
+            getTaskArtists(),
           ]);
 
         /* -----------------------------------------------
@@ -513,15 +512,14 @@ function Tasks() {
             await updateTask(
               editingTask.id,
               taskData as UpdateTaskInput,
+              canManage && assignedEmployeeId && editingTask.assignment?.id ? {
+                id:editingTask.assignment.id,employee_id:assignedEmployeeId,
+                notes:assignmentNotes||null,commitment_confirmed:commitmentConfirmed,
+              }:undefined,
             );
 
           if (canManage && assignedEmployeeId) {
-            if (editingTask.assignment?.id) {
-              await updateTaskAssignment(editingTask.assignment.id, {
-                employee_id: assignedEmployeeId,
-                notes: assignmentNotes || null,
-              });
-            } else {
+            if (!editingTask.assignment?.id) {
               await createTaskAssignment({ task_id: editingTask.id, employee_id: assignedEmployeeId, notes: assignmentNotes || null, committed_at: updatedTask.due_date!, commitment_confirmed: commitmentConfirmed });
             }
           }

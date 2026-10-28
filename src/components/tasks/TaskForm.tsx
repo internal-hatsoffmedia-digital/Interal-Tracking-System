@@ -712,11 +712,12 @@ function TaskForm({
       return;
     }
 
-    if (assignedEmployeeId && !task?.assignment?.id) {
-      if (!dueDate) { setFormError('Enter the committed completion date and time (IST).'); return; }
-      const committedTimestamp = Date.parse(dueDate + ':00+05:30');
-      if (!Number.isFinite(committedTimestamp) || committedTimestamp <= Date.now()) { setFormError('Committed completion time must be a valid future date and time (IST).'); return; }
-      if (!commitmentConfirmed) { setFormError('Confirm the agreed completion time with the assignee after setting the deadline.'); return; }
+    const assignmentChanged=!!assignedEmployeeId && (!task?.assignment?.id || assignedEmployeeId!==task.assignment.employee_id || new Date(dueDate+':00+05:30').getTime()!==new Date(task.assignment.committed_at??task.assignment.deadline_at??task.due_date??'').getTime());
+    if (assignmentChanged) {
+      if (!dueDate) { setFormError('Enter the agreed completion date and time (IST).'); return; }
+      const committedTimestamp=Date.parse(dueDate+':00+05:30');
+      if (!Number.isFinite(committedTimestamp) || (!isEdit && committedTimestamp<=Date.now())) { setFormError(isEdit?'Enter a valid completion date and time (IST).':'Committed completion time must be in the future (IST).'); return; }
+      if (!commitmentConfirmed) { setFormError('Confirm the agreed or corrected completion time with the assignee.'); return; }
     }
     if(assignedEmployeeId&&!eligibleArtists.some(e=>e.id===assignedEmployeeId)){setFormError('Choose an active artist from the selected team.');return;}
     const effectiveClientId =
@@ -1590,7 +1591,7 @@ function TaskForm({
                   />
                 </div>
 
-                {assignedEmployeeId&&!task?.assignment?.id&&<label className="col-span-full flex items-start gap-3 rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-sm text-black"><input type="checkbox" checked={commitmentConfirmed} onChange={e=>setCommitmentConfirmed(e.target.checked)} required/>I discussed and agreed the delivery deadline above with the assignee before assigning this task.</label>}
+                {assignedEmployeeId&&<label className="col-span-full flex items-start gap-3 rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-sm text-black"><input type="checkbox" checked={commitmentConfirmed} onChange={e=>setCommitmentConfirmed(e.target.checked)}/>I confirm the artist and agreed completion time above, including any correction to a previous date.</label>}
                 {/* ESTIMATED */}
 
                 <div>

@@ -82,6 +82,7 @@ export interface TaskWithRelations
       email: string;
       job_title: string | null;
       team_id: string | null;
+      team_name?:string|null;
     } | null;
   } | null;
   assignments?: NonNullable<TaskWithRelations['assignment']>[];

@@ -90,5 +90,16 @@ test('employee submission, QC, coordinator completion and full employee credit a
  await assert.rejects(db.query('insert into project_sales_credits(project_id,profile_id,amount) values($1,$2,16000)',[id(61),id(2)]),/one team, not employees/);
  await db.exec('set role authenticated');await as(5);assert.ok((await db.query('select team_daily_overview(current_date,current_date) d')).rows[0].d.monthly_sales.some(p=>p.project_id===id(61)));
 
+
+ // Delete/restore is independent from delivery validation and is limited to Admin/Manager.
+ await db.exec(`reset role;create table auth.users(id uuid primary key);insert into auth.users select id from profiles;alter table teams add column team_type text default 'production';insert into teams values('${id(10)}','Flow Force',true,'flow_force');alter table employees add column team_id uuid;update employees e set team_id=p.team_id from profiles p where p.id=e.profile_id;insert into profiles values('${id(7)}','Manager','manager',true,null),('${id(8)}','Director','director',true,null),('${id(9)}','Muskan','associate_lead',true,'${id(10)}');insert into employees(id,profile_id,is_active,full_name,employee_code,team_id) values('${id(209)}','${id(9)}',true,'Muskan','EMP-209','${id(10)}'),('${id(203)}','${id(3)}',true,'PC','EMP-203','${id(10)}');insert into auth.users select id from profiles on conflict do nothing;create function private.visible_worker(eid uuid) returns boolean language sql as $$select true$$;`);
+ await db.exec("alter table projects add column updated_at timestamptz default now();create function private.is_manager() returns boolean language sql as $$select private.role_of(auth.uid()) in ('admin','manager','associate_lead','project_coordinator')$$;");
+ await db.exec(await readFile('supabase/migrations/202610270001_project_delete_and_assignment_options.sql','utf8'));
+ await db.exec('set role authenticated');
+ for(const n of [2,3,5,8,9]){await as(n);await assert.rejects(db.query('select set_project_active($1,false)',[id(20)]),/Only Admin and Manager/);}
+ for(const n of [1,7]){await as(n);await db.query('select set_project_active($1,false)',[id(20)]);await db.query('select set_project_active($1,true)',[id(20)]);}
+ await as(3);await db.exec('reset role');await assert.rejects(db.query('update projects set is_active=false where id=$1',[id(20)]),/Only Admin and Manager/);
+ await db.exec('set role authenticated');await as(9);const options=(await db.query('select * from project_coordinator_options()')).rows;assert.ok(options.some(p=>p.profile_id===id(9)));assert.ok(options.some(p=>p.profile_id===id(3)));const artists=(await db.query('select * from task_artist_options()')).rows;assert.ok(artists.some(e=>e.profile_id===id(2)));assert.ok(!Object.keys(artists[0]).some(k=>['email','phone','date_of_birth'].includes(k)));await as(2);assert.equal((await db.query('select * from task_artist_options()')).rows.length,0);
+
  }finally{await db.close();}
 });

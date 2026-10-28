@@ -18,7 +18,7 @@ import TaskAssignmentForm from "../../components/tasks/TaskAssignmentForm";
 import TaskAssignmentTable from "../../components/tasks/TaskAssignmentTable";
 
 import {
-  getActiveEmployees,
+  getTaskArtists,
 } from "../../services/employees/employees.service";
 
 import {
@@ -182,7 +182,7 @@ function TaskAssignments() {
         await Promise.allSettled([
           getTaskAssignments(),
           getTasks(),
-          getActiveEmployees(),
+          getTaskArtists(),
           getTeams(),
         ]);
 

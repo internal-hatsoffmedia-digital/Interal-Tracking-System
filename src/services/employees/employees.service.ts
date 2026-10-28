@@ -388,3 +388,9 @@ export async function assignEmployeeToTeam(
     },
   );
 }
+// Minimal, server-scoped directory for work assignment controls.
+export async function getTaskArtists():Promise<EmployeeWithTeam[]> {
+ const {data,error}=await supabase.rpc('task_artist_options');
+ if(error)throw new Error('Unable to load artists: '+error.message);
+ return (data??[]).map((p:any)=>({...p,team:p.team_id?{id:p.team_id,name:p.team_name}:null})) as EmployeeWithTeam[];
+}

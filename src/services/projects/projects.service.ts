@@ -604,13 +604,9 @@ export async function updateProject(
    SET PROJECT ACTIVE STATUS
 ========================================================= */
 
-export async function setProjectStatus(
-  id: string,
-  isActive: boolean,
-): Promise<Project> {
-  return updateProject(id, {
-    is_active: isActive,
-  });
+export async function setProjectStatus(id:string,isActive:boolean):Promise<void> {
+ const {error}=await supabase.rpc('set_project_active',{p_project:id,p_active:isActive});
+ if(error)throw new Error(error.message);
 }
 
 /* =========================================================

@@ -1,3 +1,4 @@
+import {getTaskArtists} from '../employees/employees.service';
 import { supabase } from "../../lib/supabase";
 
 import type {
@@ -36,6 +37,7 @@ interface EmployeeRelation {
   email: string;
   job_title: string | null;
   team_id: string | null;
+  team_name?:string|null;
 }
 
 interface AssignmentRelation {
@@ -63,6 +65,7 @@ async function getTaskRelations() {
     assignmentsResult,
     employeesResult,
     profilesResult,
+    artistDirectory,
   ] = await Promise.all([
     supabase
       .from("clients")
@@ -96,14 +99,15 @@ async function getTaskRelations() {
     supabase
       .from("employees")
       .select(
-        "id, full_name, employee_code, email, job_title, team_id, profile_id",
+        "id, full_name, employee_code, team_id, profile_id",
       ),
 
     supabase
       .from("profiles")
       .select(
-        "id, full_name, email, role, team_id",
+        "id, full_name, role, team_id",
       ),
+    getTaskArtists(),
   ]);
 
 
@@ -139,8 +143,10 @@ async function getTaskRelations() {
         []) as AssignmentRelation[],
 
     employees:
-      (employeesResult.data ??
-        []) as (EmployeeRelation & { profile_id?: string | null })[],
+      [...new Map([
+        ...(employeesResult.data??[]).map(e=>[e.id,{...e,email:'',job_title:null}] as const),
+        ...artistDirectory.map(e=>[e.id,{...e,email:'',job_title:null,team_name:e.team?.name}] as const),
+      ]).values()] as (EmployeeRelation & {profile_id?:string|null})[],
 
     profiles:
       (profilesResult.data ??
@@ -618,6 +624,7 @@ export async function createTask(
 export async function updateTask(
   id: string,
   input: UpdateTaskInput,
+  assignment?: {id:string;employee_id:string;notes:string|null;commitment_confirmed:boolean},
 ): Promise<Task> {
   const updates: Record<
     string,
@@ -802,6 +809,15 @@ export async function updateTask(
     );
   }
 
+
+  if (assignment) {
+    const {data,error}=await supabase.rpc('edit_task_with_assignment',{
+      p_task:id,p_assignment:assignment.id,p_patch:updates,p_employee:assignment.employee_id,
+      p_notes:assignment.notes,p_confirmed:assignment.commitment_confirmed,
+    });
+    if(error)throw new Error(`Unable to save task: ${error.message}`);
+    return data as Task;
+  }
 
   const {
     data,

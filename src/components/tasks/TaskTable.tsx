@@ -14,7 +14,7 @@ export default function TaskTable({tasks,loading,onEdit,onStatusChange}:Props) {
     return()=>{active=false;clearInterval(poll);clearInterval(tick);};},[tasks]);
   const rows=tasks.flatMap(task=> {
     const assignments=task.assignments?.length?task.assignments:task.assignment?[task.assignment]:[];
-    return (assignments.length?assignments:[null]).map(assignment=>({task,assignment,work:taskTimerSummary(logs.filter(l=>l.assignment_id===assignment?.id),day,now)}));
+    return (assignments.length?assignments:[null]).map(assignment=>({task,assignment,work:taskTimerSummary(logs.filter(l=>l.assignment_id===assignment?.id&&l.employee_id===assignment?.employee_id),day,now)}));
   }).filter(row=>!day||row.work.count>0||row.task.planned_date===day);
   const visibleProjects=new Set(tasks.map(t=>t.project_id));
   const focus=projectFocusSummary(logs.filter(l=>!!l.project_id&&visibleProjects.has(l.project_id)),day,now);
@@ -28,7 +28,7 @@ export default function TaskTable({tasks,loading,onEdit,onStatusChange}:Props) {
       const projectFocus=focus.find(f=>f.key===task.project_id+':'+assignment?.employee_id);
       return <tr key={task.id+':'+(assignment?.id??'unassigned')} className="border-t border-slate-100 align-top hover:bg-slate-50">
         <td className="p-3 font-mono">{task.project?.project_code||'—'}</td><td className="p-3 whitespace-nowrap">{task.project?.rate == null ? 'Not set' : new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(task.project.rate)}</td><td className="p-3">{task.client?.name||task.project?.client?.name||'—'}</td><td className="p-3">{task.project?.name||'—'}</td><td className="p-3 font-semibold">{task.title}</td><td className="p-3">{task.category.replaceAll('_',' ')}</td><td className="p-3 capitalize">{task.revision_status.replaceAll('_',' ')}</td><td className="p-3">{link?<a href={link} target="_blank" rel="noreferrer" className="underline">Open file</a>:'—'}</td>
-        <td className="p-3">{teams.find(t=>t.id===assignment?.employee?.team_id)?.name||'—'}</td><td className="p-3">{assignment?.employee?.full_name||'Unassigned'}</td>
+        <td className="p-3">{assignment?.employee?.team_name||teams.find(t=>t.id===assignment?.employee?.team_id)?.name||'—'}</td><td className="p-3">{assignment?.employee?.full_name||(assignment?'Artist unavailable':'Unassigned')}<small className="block text-slate-500">{assignment?.employee?.employee_code}</small></td>
         <td className="p-3 whitespace-nowrap">{displayTime(assignment?.committed_at ?? assignment?.deadline_at ?? task.due_date)}<p className="mt-1 text-slate-500">{task.estimated_hours}h estimated</p></td><td className="p-3 whitespace-nowrap">{displayTime(work.start)}</td><td className="p-3 whitespace-nowrap">{displayTime(work.end??assignment?.completed_at)}</td><td className="p-3">{error?'Unavailable':<><strong>{work.hours.toFixed(2)}h task</strong>{projectFocus&&<small className="block mt-1 text-slate-500">{projectFocus.hours.toFixed(2)}h project total{projectFocus.projectHours>0&&<> · {projectFocus.projectHours.toFixed(2)}h project-only</>}</small>}</>}</td><td className="p-3 capitalize">{task.status.replaceAll('_',' ')}{assignment&&<p className="mt-1 text-slate-500">Assignment: {assignment.status.replaceAll('_',' ')}</p>}</td>
         <td className="p-3"><div className="flex gap-3"><button onClick={()=>onEdit(task)} className="underline">Edit</button>{onStatusChange&&<button onClick={()=>onStatusChange(task)} className="underline">{task.archived_at?"Restore":"Delete"}</button>}</div></td>
       </tr>;

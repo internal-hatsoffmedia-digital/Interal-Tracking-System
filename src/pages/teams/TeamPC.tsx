@@ -33,7 +33,7 @@ export default function TeamPC({ownTeam=false}:{ownTeam?:boolean}) {
     const data = loaded?.viewer === viewer ? loaded.data : null;
     const person = (id: string) => data?.people.find(p => p.id === id)?.full_name || 'Name unavailable';
     const worker = (id: string) => data?.teamMembers.find(p => p.id === id);
-    const teamName = (id: string) => data?.teams.find(t => t.id === id)?.name || 'No team';
+    const teamName = (id: string|null|undefined) => data?.teams.find(t => t.id === id)?.name || 'No team';
     const task = (id: string) => data?.tasks.find(t => t.id === id);
     const projectName = (id: string) => data?.projects.find(p => p.id === id)?.name || 'Project unavailable';
     const selectedPC = data?.coordinators.some(p => p.id === coordinator) ? coordinator : '';

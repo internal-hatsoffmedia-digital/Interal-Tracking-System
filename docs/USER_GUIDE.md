@@ -177,3 +177,13 @@ On 26 October 2026 the active QC queue is cleared while review history and notes
 ### Digital Ninjas team completion
 
 Projects assigned to Digital Ninjas - M or Digital Ninjas - W show Completed by team when Completed is selected, including existing SMP projects created before monthly billing was introduced. Choose one of those selected production teams for the full project rate. No personal employee credit is created. Existing project dates and billing type stay unchanged. Projects belonging to other production teams retain employee completion. Previously allocated personal credits are preserved and must be resolved by Sales leadership before changing to team credit.
+
+### Project access and coordinator cover
+
+Only Admin and Manager can delete or restore projects. Deletion is recoverable and preserves linked work and sales history. Project Coordinators, Directors and Associate Leads do not have project deletion access.
+
+Flow Force Associate Leads, including Muskan, can cover coordinator work. In New project, choose an active coordinator or the coordination lead under Initial Project Coordinator. Production artist choices use the active assignment directory in Create/Edit Task and Team PC. The Flow Force lead dashboard also has a Production artists & work filter; the sales summary above continues to show the lead's own team.
+
+### Correcting a task assignment
+
+Open Tasks → Edit. Coordinators can change the artist, planned date and agreed completion time, including correcting a previous-day deadline on an existing task. Confirm the artist and agreed time when either changes, then Save Changes. Task details and the existing assignment save together. Team PC Activity records the actor and changed fields. Reassigning resets the assignment to Assigned and closes the previous artist's running timer; existing recorded sessions stay owned by the original worker. New assignments still require an agreed future deadline.
