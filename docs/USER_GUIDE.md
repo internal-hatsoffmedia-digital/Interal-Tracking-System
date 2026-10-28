@@ -187,3 +187,6 @@ Flow Force Associate Leads, including Muskan, can cover coordinator work. In New
 ### Correcting a task assignment
 
 Open Tasks → Edit. Coordinators can change the artist, planned date and agreed completion time, including correcting a previous-day deadline on an existing task. Confirm the artist and agreed time when either changes, then Save Changes. Task details and the existing assignment save together. Team PC Activity records the actor and changed fields. Reassigning resets the assignment to Assigned and closes the previous artist's running timer; existing recorded sessions stay owned by the original worker. New assignments still require an agreed future deadline.
+
+
+In SMP & EXP Projects, Admin and Manager can select Delete project directly in the Project rates table and confirm recoverable deletion. Deleted projects are hidden from this active-work list. Select Show deleted projects to restore one. Recorded sales and historical work remain preserved; deleting an active project does not erase its financial history. Project Coordinators, Associate Leads and Directors do not receive delete controls.

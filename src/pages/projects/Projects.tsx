@@ -21,7 +21,7 @@ import type { CreateProjectInput, UpdateProjectInput } from '../../types/project
 export default function Projects() {
   const {profile}=useAuth();
   const navigate=useNavigate();
-  const [deleting,setDeleting]=useState<ManagedProject|null>(null);
+  const [deleting,setDeleting]=useState<Pick<ManagedProject,'id'|'name'|'is_active'>|null>(null);
   const [editing, setEditing] = useState<ManagedProject | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -78,7 +78,7 @@ export default function Projects() {
     {error && !open && <p role="alert" className="text-red-700">{error}</p>}
     <nav aria-label="Project sections" className="flex gap-2"><button className={`rounded-xl border px-4 py-2 text-sm font-semibold ${tab==='projects'?'bg-[#ffcc00] text-black':'bg-white text-black'}`} aria-pressed={tab==='projects'} onClick={()=>setTab('projects')}>Projects</button>{financeAccess&&<button className={`rounded-xl border px-4 py-2 text-sm font-semibold ${tab==='costs'?'bg-[#ffcc00] text-black':'bg-white text-black'}`} aria-pressed={tab==='costs'} onClick={()=>setTab('costs')}>SMP &amp; EXP Projects</button>}</nav>
     {tab==='projects'&&<ProjectArtistWork/>}
-    {tab==='projects'?<ProjectWorkspace revision={revision} onSchemaReady={setSchemaReady} onDelete={canDelete?setDeleting:undefined} onEdit={p=>void openForm(p)} />:financeAccess&&<ProjectFinanceDashboard key={revision} mode="costs" onProjectDetails={async id=>{setBusy(true);try{const result=await loadProjectWorkspace(profile?.role==='admin');const selected=result.projects.find(p=>p.id===id);if(!selected)throw new Error('Project unavailable');await openForm(selected);}catch(e){setError(e instanceof Error?e.message:'Unable to open project');}finally{setBusy(false);}}}/>}
+    {tab==='projects'?<ProjectWorkspace revision={revision} onSchemaReady={setSchemaReady} onDelete={canDelete?setDeleting:undefined} onEdit={p=>void openForm(p)} />:financeAccess&&<ProjectFinanceDashboard key={revision} mode="costs" onProjectDelete={canDelete?setDeleting:undefined} onProjectDetails={async id=>{setBusy(true);try{const result=await loadProjectWorkspace(profile?.role==='admin');const selected=result.projects.find(p=>p.id===id);if(!selected)throw new Error('Project unavailable');await openForm(selected);}catch(e){setError(e instanceof Error?e.message:'Unable to open project');}finally{setBusy(false);}}}/>}
     {open && <><ProjectForm open={open} monthlyTeamProject={tab==='costs'&&!editing} project={editing} clients={clients} teams={teams} employees={employees} selfCoordinator={profile?.role==='project_coordinator'}
       statusOptions={editing&&['client_review','client_correction'].includes(editing.status)?['client_review','client_correction','completed']:[...new Set([...projectStatuses.filter(s=>s!=='awaiting_coordinator'),...(editing ? [editing.status]:[])])]}
       healthOptions={[...new Set(['on_track',...(editing ? [editing.health]:[])])]}
