@@ -383,3 +383,38 @@ test('coordinator cover options include Flow Force leads and artist directories 
  await assert.rejects(()=>as(2,'select set_project_active($1,false)',[project.id]),/Only Admin and Manager/);
  await as(1,'select set_project_active($1,false)',[project.id]);assert.equal((await as(1,'select is_active from projects where id=$1',[project.id])).rows[0].is_active,false);await as(1,'select set_project_active($1,true)',[project.id]);
 });
+
+test('coordinator leads create tasks and assign artists under the real legacy insert gate',async()=>{
+ await db.exec('reset role;begin');
+ try{
+  await db.exec(`drop policy fixture_tasks_write on tasks;drop policy fixture_assignment_write on task_assignments;
+   create function public.is_admin_or_coordinator() returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.profiles where id=auth.uid() and is_active and role::text in ('admin','project_coordinator'))$$;
+   create policy tasks_insert on tasks for insert to authenticated with check(public.is_admin_or_coordinator());
+   create policy legacy_task_assignee_read on tasks for select to authenticated using(exists(select 1 from public.task_assignments a join public.employees e on e.id=a.employee_id where a.task_id=tasks.id and e.profile_id=auth.uid()));
+   create policy task_assignments_insert on task_assignments for insert to authenticated with check(public.is_admin_or_coordinator() and assigned_by=auth.uid());`);
+  const project=(await as(2,"insert into projects(name,client_id,lead_employee_id) values('Coordinator task scope',$1,$2) returning id",[id(50),id(202)])).rows[0];
+  const insert="insert into tasks(project_id,title,created_by) values($1,'Lead-created task',auth.uid()) returning id";
+  await assert.rejects(()=>as(2,insert,[project.id]),/row-level security/);
+ }finally{await db.exec('rollback;reset role');}
+ // Use a fresh transaction after the expected denied statement aborted the first one.
+ await db.exec('begin');
+ try{
+  await db.exec(`drop policy fixture_tasks_write on tasks;drop policy fixture_assignment_write on task_assignments;
+   create function public.is_admin_or_coordinator() returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.profiles where id=auth.uid() and is_active and role::text in ('admin','project_coordinator'))$$;
+   create policy tasks_insert on tasks for insert to authenticated with check(public.is_admin_or_coordinator());
+   create policy legacy_task_assignee_read on tasks for select to authenticated using(exists(select 1 from public.task_assignments a join public.employees e on e.id=a.employee_id where a.task_id=tasks.id and e.profile_id=auth.uid()));
+   create policy task_assignments_insert on task_assignments for insert to authenticated with check(public.is_admin_or_coordinator() and assigned_by=auth.uid());`);
+  await db.exec((await readFile(new URL('../supabase/migrations/202610300001_coordinator_lead_task_creation.sql',import.meta.url),'utf8')).replace(/^begin;/,'').replace(/commit;\s*$/,''));
+  const project=(await as(2,"insert into projects(name,client_id,lead_employee_id) values('Coordinator task scope',$1,$2) returning id",[id(50),id(202)])).rows[0];
+  const task=(await as(2,"insert into tasks(project_id,title,created_by) values($1,'Lead-created task',auth.uid()) returning id",[project.id])).rows[0];
+  const assignment=(await as(2,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,auth.uid()) returning id',[task.id,id(210)])).rows[0];assert.ok(assignment.id);
+  assert.ok((await as(10,'select id from task_assignments where id=$1',[assignment.id])).rows.length);
+  for(const actor of [3,10]){
+   await db.exec('savepoint denied');await assert.rejects(()=>as(actor,"insert into tasks(project_id,title,created_by) values($1,'Unauthorized',auth.uid()) returning id",[project.id]),/row-level security/);await db.exec('rollback to savepoint denied');
+  }
+  await as(1,'select set_project_active($1,false)',[project.id]);
+  assert.equal((await as(2,'select private.coordinator_task_writer($1) allowed',[project.id])).rows[0].allowed,false);
+  await as(1,'select set_project_active($1,true)',[project.id]);
+  await db.exec('savepoint spoof');await assert.rejects(()=>as(2,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,$3)',[task.id,id(211),id(7)]),/row-level security/);await db.exec('rollback to savepoint spoof');
+ }finally{await db.exec('rollback;reset role');}
+});
