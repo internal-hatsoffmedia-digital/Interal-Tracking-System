@@ -4,7 +4,7 @@ import {useNavigate} from 'react-router-dom';
 import ProjectFinanceDashboard from '../sales/ProjectFinanceDashboard';
 import {useProjectFinanceAccess} from '../../hooks/useProjectFinanceAccess';
 import {supabase} from "../../lib/supabase";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import ProjectWorkspace from '../../components/projects/ProjectWorkspace';
 import ProjectForm from '../../components/projects/ProjectForm';
@@ -30,7 +30,20 @@ export default function Projects() {
   const [employees, setEmployees] = useState<EmployeeWithTeam[]>([]);
   const [revision, setRevision] = useState(0);
   const [schemaReady,setSchemaReady]=useState(false);
-  const canCreate = profile?.is_active && profile.role === 'project_coordinator';
+  const [creationAccess,setCreationAccess] = useState<{profileId:string; allowed:boolean}>();
+  const canCreate = profile?.is_active && (
+    profile.role === 'project_coordinator' ||
+    (profile.role === 'associate_lead' && creationAccess?.profileId === profile.id && creationAccess.allowed)
+  );
+  useEffect(() => {
+    if (profile?.role !== 'associate_lead' || !profile.is_active) return;
+    let active = true;
+    const profileId = profile.id;
+    void supabase.rpc('project_creation_access').then(({data,error}) => {
+      if (active) setCreationAccess({profileId, allowed: !error && data === true});
+    });
+    return () => { active = false; };
+  }, [profile?.id,profile?.role,profile?.team_id,profile?.is_active]);
   const canDelete=profile?.role==='admin'||profile?.role==='manager';
   const financeAccess = useProjectFinanceAccess();
   const [tab,setTab]=useState<'projects'|'costs'>('projects');

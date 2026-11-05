@@ -447,7 +447,7 @@ test('coordinator task lifecycle covers edit, status, reassignment, archive and 
  }finally{await db.exec('rollback;reset role');}
 });
 
-test('team associate lead creates and assigns team tasks while only coordinators create projects', async()=>{
+test('team associate lead creates and assigns team tasks and only coordinators and their associate leads create projects', async()=>{
  await db.exec('reset role;begin');
  try {
   await db.exec(`drop policy fixture_tasks_write on tasks;drop policy fixture_assignment_write on task_assignments;
@@ -473,5 +473,18 @@ test('team associate lead creates and assigns team tasks while only coordinators
    await db.exec('rollback to savepoint denied');
   }
   assert.ok((await as(7,"insert into projects(name,client_id) values('Coordinator project',$1) returning id",[id(50)])).rows[0].id);
+  await db.exec('reset role');
+  const followup=await readFile(new URL('../supabase/migrations/202611050002_coordinator_lead_project_creation.sql',import.meta.url),'utf8');
+  await db.exec(followup.trimStart().replace(/^begin;/,'').replace(/commit;\s*$/,''));
+  for (const actor of [2,7]) {
+   assert.equal((await as(actor,'select project_creation_access() allowed')).rows[0].allowed,true);
+   assert.ok((await as(actor,"insert into projects(name,client_id) values('Coordinator team project',$1) returning id",[id(50)])).rows[0].id);
+  }
+  for (const actor of [1,3,9,10,14]) {
+   assert.equal((await as(actor,'select project_creation_access() allowed')).rows[0].allowed,false);
+   await db.exec('savepoint denied_followup');
+   await assert.rejects(()=>as(actor,"insert into projects(name,client_id) values('Forbidden project',$1)",[id(50)]),/Only project coordinators/);
+   await db.exec('rollback to savepoint denied_followup');
+  }
  } finally {await db.exec('rollback;reset role');}
 });
