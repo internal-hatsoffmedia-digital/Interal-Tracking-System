@@ -1,0 +1,4 @@
+export type WorkDateRange={from:string;through:string};
+export function indiaDay(value:string|Date=new Date()):string {const date=new Date(value);return Number.isNaN(date.getTime())?'':new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);}
+export function workDatePreset(preset:string,now:Date=new Date()):WorkDateRange {const today=indiaDay(now);const d=new Date(today+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);const monday=d.toISOString().slice(0,10);return {from:preset==='week'||preset==='monday'?monday:today,through:preset==='monday'?monday:today};}
+export function inWorkRange(value:string|null|undefined,range:WorkDateRange):boolean {const day=value?(/^\d{4}-\d{2}-\d{2}$/.test(value)?value:indiaDay(value)):'';return !!day&&(!range.from||day>=range.from)&&(!range.through||day<=range.through);}

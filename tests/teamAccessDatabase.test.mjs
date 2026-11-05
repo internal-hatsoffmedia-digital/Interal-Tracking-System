@@ -418,3 +418,60 @@ test('coordinator leads create tasks and assign artists under the real legacy in
   await db.exec('savepoint spoof');await assert.rejects(()=>as(2,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,$3)',[task.id,id(211),id(7)]),/row-level security/);await db.exec('rollback to savepoint spoof');
  }finally{await db.exec('rollback;reset role');}
 });
+
+test('coordinator task lifecycle covers edit, status, reassignment, archive and restore with real legacy update gates',async()=>{
+ await db.exec('reset role');for(const status of ['editing_in_progress','internal_review','client_review','approved_delivered','on_hold'])await db.exec(`alter type public.task_status add value if not exists '${status}'`);await db.exec('begin');
+ try{
+  await db.exec(`drop policy fixture_tasks_write on tasks;drop policy fixture_assignment_write on task_assignments;
+   create function public.is_admin_or_coordinator() returns boolean language sql stable security definer set search_path='' as $$select exists(select 1 from public.profiles where id=auth.uid() and is_active and role::text in ('admin','project_coordinator'))$$;
+   create policy tasks_insert on tasks for insert to authenticated with check(public.is_admin_or_coordinator());
+   create policy tasks_update on tasks for update to authenticated using(public.is_admin_or_coordinator() or exists(select 1 from task_assignments a join employees e on e.id=a.employee_id where a.task_id=tasks.id and e.profile_id=auth.uid())) with check(public.is_admin_or_coordinator() or exists(select 1 from task_assignments a join employees e on e.id=a.employee_id where a.task_id=tasks.id and e.profile_id=auth.uid()));
+   create policy task_assignments_insert on task_assignments for insert to authenticated with check(public.is_admin_or_coordinator() and assigned_by=auth.uid());
+   create policy task_assignments_update on task_assignments for update to authenticated using(public.is_admin_or_coordinator() or exists(select 1 from employees e where e.id=task_assignments.employee_id and e.profile_id=auth.uid())) with check(public.is_admin_or_coordinator() or exists(select 1 from employees e where e.id=task_assignments.employee_id and e.profile_id=auth.uid()));`);
+  await db.exec((await readFile(new URL('../supabase/migrations/202610300001_coordinator_lead_task_creation.sql',import.meta.url),'utf8')).replace(/^begin;/,'').replace(/commit;\s*$/,''));
+  const project=(await as(2,"insert into projects(name,client_id,lead_employee_id) values('Lifecycle scope',$1,$2) returning id",[id(50),id(207)])).rows[0];
+  const task=(await as(7,"insert into tasks(project_id,title,created_by) values($1,'Coordinator cover lifecycle',auth.uid()) returning id",[project.id])).rows[0];
+  const assignment=(await as(7,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,auth.uid()) returning id',[task.id,id(210)])).rows[0];
+  await db.exec('savepoint before_fix');await assert.rejects(()=>as(2,'select workspace_archive_task($1,true)',[task.id]),/Task unavailable/);await db.exec('rollback to savepoint before_fix');
+  await db.exec('reset role');await db.exec((await readFile(new URL('../supabase/migrations/202610300002_coordinator_task_lifecycle.sql',import.meta.url),'utf8')).replace(/^begin;/,'').replace(/commit;\s*$/,''));
+  assert.equal((await as(2,'select task_management_access() allowed')).rows[0].allowed,true);
+  for(const actor of [3,9,10])assert.equal((await as(actor,'select task_management_access() allowed')).rows[0].allowed,false);
+  let changed=(await as(2,"update tasks set title='Cover edit',status='editing_in_progress' where id=$1 returning id,created_by",[task.id])).rows[0];assert.equal(changed.created_by,id(7));
+  for(const status of ['internal_review','client_review','approved_delivered','on_hold','not_started'])assert.ok((await as(2,'update tasks set status=$1 where id=$2 returning id',[status,task.id])).rows.length);
+  await as(2,'select workspace_archive_task($1,true)',[task.id]);assert.ok((await as(2,'select archived_at from tasks where id=$1',[task.id])).rows[0].archived_at);
+  await as(2,'select workspace_archive_task($1,false)',[task.id]);assert.equal((await as(2,'select archived_at from tasks where id=$1',[task.id])).rows[0].archived_at,null);
+  const a=(await as(2,'update task_assignments set employee_id=$1,notes=$2 where id=$3 returning assigned_by',[id(211),'Cover assignment',assignment.id])).rows[0];assert.equal(a.assigned_by,id(7));assert.ok((await as(11,'select id from task_assignments where id=$1',[assignment.id])).rows.length);
+  for(const [sql,params] of [['update tasks set created_by=$1 where id=$2',[id(2),task.id]],['update task_assignments set assigned_by=$1 where id=$2',[id(2),assignment.id]]]){await db.exec('savepoint provenance');await assert.rejects(()=>as(2,sql,params),/provenance/);await db.exec('rollback to savepoint provenance');}
+  for(const actor of [3,10])assert.equal((await as(actor,"update tasks set title='Denied edit' where id=$1 returning id",[task.id])).rows.length,0);
+  await db.exec('savepoint denied_archive');await assert.rejects(()=>as(11,'select workspace_archive_task($1,true)',[task.id]),/Only task managers/);await db.exec('rollback to savepoint denied_archive');
+ }finally{await db.exec('rollback;reset role');}
+});
+
+test('team associate lead creates and assigns team tasks while only coordinators create projects', async()=>{
+ await db.exec('reset role;begin');
+ try {
+  await db.exec(`drop policy fixture_tasks_write on tasks;drop policy fixture_assignment_write on task_assignments;
+   update profiles set team_id='${id(101)}' where id='${id(3)}';
+   update profiles set is_active=true where id='${id(10)}';
+   update teams set is_active=true where id='${id(101)}';`);
+  const scoped=(await as(1,"insert into projects(name,client_id,production_team_ids,is_active) values('Creative scope',$1,$2,true) returning id",[id(50),[id(101)]])).rows[0];
+  await db.exec('reset role');
+  const migration=await readFile(new URL('../supabase/migrations/202611050001_team_task_creation.sql',import.meta.url),'utf8');
+  await db.exec(migration.replace(/^begin;/,'').replace(/commit;\s*$/,''));
+  assert.deepEqual((await as(3,'select id from get_active_projects_for_tasks()')).rows.map(p=>p.id),[scoped.id]);
+  const task=(await as(3,"insert into tasks(project_id,title,created_by) values($1,'Creative task',auth.uid()) returning id",[scoped.id])).rows[0];
+  const assignment=(await as(3,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,auth.uid()) returning id',[task.id,id(210)])).rows[0];
+  assert.equal((await as(10,'select id from task_assignments where id=$1',[assignment.id])).rows.length,1);
+  for(const [actor,sql,params] of [
+   [3,"insert into tasks(project_id,title,created_by) values($1,'Other team',auth.uid())",[id(302)]],
+   [3,'insert into task_assignments(task_id,employee_id,assigned_by) values($1,$2,auth.uid())',[task.id,id(211)]],
+   [2,"insert into projects(name,client_id) values('Forbidden project',$1)",[id(50)]],
+   [1,"insert into projects(name,client_id) values('Forbidden project',$1)",[id(50)]],
+  ]) {
+   await db.exec('savepoint denied');
+   await assert.rejects(()=>as(actor,sql,params),/row-level security|Only project coordinators/);
+   await db.exec('rollback to savepoint denied');
+  }
+  assert.ok((await as(7,"insert into projects(name,client_id) values('Coordinator project',$1) returning id",[id(50)])).rows[0].id);
+ } finally {await db.exec('rollback;reset role');}
+});

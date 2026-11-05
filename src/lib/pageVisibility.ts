@@ -5,6 +5,7 @@ export function rolePageDefault(role:string|undefined,page:string):boolean {
  return true;
 }
 export function pageVisible(role:string|undefined,page:string,override?:boolean|null):boolean {
+ if(['qc','qc-activity'].includes(page))return false;
  if(page==='sales'&&['employee','project_coordinator'].includes(role||''))return false;
  return override??rolePageDefault(role,page);
 }

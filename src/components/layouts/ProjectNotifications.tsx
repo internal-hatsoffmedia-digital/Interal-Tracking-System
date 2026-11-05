@@ -18,7 +18,7 @@ export default function ProjectNotifications() {
   const load = useCallback(async () => {
     const request = ++requests.current;
     setLoading(true);setError('');
-    try { const data = await loadProjectNotifications(); if(request===requests.current)setRows(data.filter(row=>row.entity_type!=='sales_lead')); }
+    try { const data = await loadProjectNotifications(); if(request===requests.current)setRows(data.filter(row=>row.entity_type!=='sales_lead' && row.entity_type!=='qc')); }
     catch(e) { if(request===requests.current){setRows([]);setError(e instanceof Error ? e.message : 'Unable to load notifications');} }
     finally { if(request===requests.current)setLoading(false); }
   }, []);

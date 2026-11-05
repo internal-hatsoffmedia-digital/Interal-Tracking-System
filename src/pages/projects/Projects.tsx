@@ -3,7 +3,6 @@ import ProjectArtistWork from '../../components/projects/ProjectArtistWork';
 import {useNavigate} from 'react-router-dom';
 import ProjectFinanceDashboard from '../sales/ProjectFinanceDashboard';
 import {useProjectFinanceAccess} from '../../hooks/useProjectFinanceAccess';
-import {useProjectManagement} from "../../hooks/useProjectManagement";
 import {supabase} from "../../lib/supabase";
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
@@ -31,11 +30,12 @@ export default function Projects() {
   const [employees, setEmployees] = useState<EmployeeWithTeam[]>([]);
   const [revision, setRevision] = useState(0);
   const [schemaReady,setSchemaReady]=useState(false);
-  const manager = useProjectManagement();
+  const canCreate = profile?.is_active && profile.role === 'project_coordinator';
   const canDelete=profile?.role==='admin'||profile?.role==='manager';
   const financeAccess = useProjectFinanceAccess();
   const [tab,setTab]=useState<'projects'|'costs'>('projects');
   async function openForm(project: ManagedProject | null) {
+    if (!project && !canCreate) return;
     setBusy(true); setError('');
     try {
       const results = await Promise.allSettled([getClients(), supabase.rpc("project_coordinator_options"),supabase.from('teams').select('id,name').eq('is_active',true).order('name')]);
@@ -74,10 +74,10 @@ export default function Projects() {
     {deleting&&<div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"><section role="dialog" aria-modal="true" aria-labelledby="delete-project-title" className="w-full max-w-md rounded-2xl bg-white p-6 space-y-4"><h2 id="delete-project-title" className="text-xl font-semibold">{deleting.is_active?'Delete project?':'Restore project?'}</h2><p>{deleting.name}</p><p className="text-sm text-slate-500">Delete removes the project from active work. Tasks, time records and activity history are kept. You can restore the project from this list.</p>{error&&<p role="alert">{error}</p>}<div className="flex gap-3"><button disabled={busy} onClick={()=>setDeleting(null)}>Cancel</button><button className="rounded-xl bg-red-600 text-white px-4 py-2" disabled={busy} onClick={()=>void removeProject()}>{deleting.is_active?'Confirm delete':'Restore project'}</button></div></section></div>}
 
     <div className="flex justify-between gap-4"><div><h1 className="text-2xl font-semibold">Projects</h1><p className="text-sm text-slate-500">Assignments, progress, and team visibility.</p></div>
-      {manager && schemaReady && <button disabled={busy} className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50" onClick={()=>void openForm(null)}>{tab==='costs'?'New monthly project':'New project'}</button>}</div>
+      {canCreate && schemaReady && <button disabled={busy} className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white disabled:opacity-50" onClick={()=>void openForm(null)}>{tab==='costs'?'New monthly project':'New project'}</button>}</div>
     {error && !open && <p role="alert" className="text-red-700">{error}</p>}
     <nav aria-label="Project sections" className="flex gap-2"><button className={`rounded-xl border px-4 py-2 text-sm font-semibold ${tab==='projects'?'bg-[#ffcc00] text-black':'bg-white text-black'}`} aria-pressed={tab==='projects'} onClick={()=>setTab('projects')}>Projects</button>{financeAccess&&<button className={`rounded-xl border px-4 py-2 text-sm font-semibold ${tab==='costs'?'bg-[#ffcc00] text-black':'bg-white text-black'}`} aria-pressed={tab==='costs'} onClick={()=>setTab('costs')}>SMP &amp; EXP Projects</button>}</nav>
-    {tab==='projects'&&<ProjectArtistWork/>}
+    {tab==='projects'&&<details><summary>Historical project artists &amp; coordinators</summary><ProjectArtistWork/></details>}
     {tab==='projects'?<ProjectWorkspace revision={revision} onSchemaReady={setSchemaReady} onDelete={canDelete?setDeleting:undefined} onEdit={p=>void openForm(p)} />:financeAccess&&<ProjectFinanceDashboard key={revision} mode="costs" onProjectDelete={canDelete?setDeleting:undefined} onProjectDetails={async id=>{setBusy(true);try{const result=await loadProjectWorkspace(profile?.role==='admin');const selected=result.projects.find(p=>p.id===id);if(!selected)throw new Error('Project unavailable');await openForm(selected);}catch(e){setError(e instanceof Error?e.message:'Unable to open project');}finally{setBusy(false);}}}/>}
     {open && <><ProjectForm open={open} monthlyTeamProject={tab==='costs'&&!editing} project={editing} clients={clients} teams={teams} employees={employees} selfCoordinator={profile?.role==='project_coordinator'}
       statusOptions={editing&&['client_review','client_correction'].includes(editing.status)?['client_review','client_correction','completed']:[...new Set([...projectStatuses.filter(s=>s!=='awaiting_coordinator'),...(editing ? [editing.status]:[])])]}

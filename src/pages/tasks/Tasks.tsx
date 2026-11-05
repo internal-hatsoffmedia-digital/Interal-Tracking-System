@@ -1,3 +1,7 @@
+import WorkDateFilter from '../../components/WorkDateFilter';
+import {inWorkRange,workDatePreset} from '../../lib/workDateRange';
+import {useAuth} from '../../context/AuthContext';
+import {useTaskManagement} from '../../hooks/useTaskManagement';
 import {taskCategories} from '../../lib/taskCategories';
 import {
   CheckCircle2,
@@ -20,7 +24,7 @@ import TaskFilters from "../../components/tasks/TaskFilters";
 import TaskForm from "../../components/tasks/TaskForm";
 import TaskTable from "../../components/tasks/TaskTable";
 
-import { useAuth } from "../../context/AuthContext";
+
 
 import { getActiveClients } from "../../services/clients/clients.service";
 import { getTaskArtists } from "../../services/employees/employees.service";
@@ -61,8 +65,10 @@ interface SelectOption {
 ========================================================= */
 
 function Tasks() {
-  const { profile } = useAuth();
-  const canManage = ["admin", "associate_lead", "project_coordinator"].includes(profile?.role ?? "");
+
+  const canManage = useTaskManagement();
+  const {profile} = useAuth();
+  const canCreate = canManage || Boolean(profile?.is_active && profile.role === 'associate_lead' && profile.team_id);
   const [actionTask, setActionTask] = useState<TaskWithRelations | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -91,6 +97,7 @@ function Tasks() {
      FILTER STATE
   ======================================================== */
 
+  const [dateRange,setDateRange]=useState(()=>workDatePreset('today'));
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
@@ -138,17 +145,14 @@ function Tasks() {
       value: "not_started",
       label: "Not Started / In Queue",
     },
-    {
-      value: "raw_footage_received",
-      label: "Raw Footage Received",
-    },
+
     {
       value: "editing_in_progress",
       label: "Work in Progress",
     },
     {
       value: "internal_review",
-      label: "Internal QC",
+      label: "Internal review",
     },
     {
       value: "client_review",
@@ -298,6 +302,7 @@ function Tasks() {
 
       return tasks.filter(
         (task) => {
+          if (!inWorkRange(task.due_date || task.created_at,dateRange)) return false;
           if (!!(task as TaskWithRelations & {archived_at?:string}).archived_at !== showArchived) return false;
           const matchesSearch =
             !searchTerm ||
@@ -379,6 +384,7 @@ function Tasks() {
     }, [
       tasks,
       showArchived,
+      dateRange,
       search,
       statusFilter,
       priorityFilter,
@@ -397,7 +403,7 @@ function Tasks() {
       let estimatedHours = 0;
       let actualHours = 0;
 
-      tasks.forEach(
+      filteredTasks.forEach(
         (task) => {
           if (
             task.status ===
@@ -430,13 +436,13 @@ function Tasks() {
       );
 
       return {
-        total: tasks.length,
+        total: filteredTasks.length,
         completed,
         onHold,
         estimatedHours,
         actualHours,
       };
-    }, [tasks]);
+    }, [filteredTasks]);
 
   /* =======================================================
      CREATE TASK
@@ -738,6 +744,7 @@ function Tasks() {
 
   return (
     <div className="space-y-6">
+      <WorkDateFilter value={dateRange} onChange={setDateRange}/><p className="text-xs">Tasks use committed dates, or creation dates when no deadline is set.</p>
       <div className="mb-5 flex flex-wrap items-center gap-3"><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={showArchived} onChange={e=>setShowArchived(e.target.checked)}/>Show archived tasks</label>{canManage && <select aria-label="Choose task actions" className="max-w-full rounded-lg border bg-white p-2 text-sm" value="" onChange={e=>setActionTask(tasks.find(t=>t.id===e.target.value) ?? null)}><option value="">Task actions — status, delete or restore</option>{filteredTasks.map(t=><option value={t.id} key={t.id}>{t.title}</option>)}</select>}</div>
       {actionTask && <TaskActions task={actionTask} onClose={()=>setActionTask(null)} onSaved={()=>loadData(true)}/>}
       {/* =================================================
@@ -807,7 +814,7 @@ function Tasks() {
 
           {/* NEW TASK */}
 
-          <button
+          {canCreate&&<button
             type="button"
             onClick={
               handleCreateTask
@@ -833,7 +840,7 @@ function Tasks() {
             />
 
             New Task
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -981,7 +988,7 @@ function Tasks() {
           TASK VIEWS (ClickUp Style List / Board / Table)
       ================================================== */}
 
-      <TaskTable tasks={filteredTasks} loading={loading} onEdit={handleEditTask}
+      <TaskTable tasks={filteredTasks} loading={loading} onEdit={canManage?handleEditTask:undefined}
         onStatusChange={canManage ? handleStatusChange : undefined} />
 
       {/* =================================================
