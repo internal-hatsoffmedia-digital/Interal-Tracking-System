@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 
+import { isClientLink } from "../../lib/clientLinks";
 import type {
   Client,
   CreateClientInput,
@@ -43,6 +44,7 @@ interface ClientFormState {
   email: string;
   phone: string;
   notes: string;
+  links: string;
   assigned_coordinator_id: string;
 }
 
@@ -54,6 +56,7 @@ const EMPTY_FORM: ClientFormState = {
   email: "",
   phone: "",
   notes: "",
+  links: "",
   assigned_coordinator_id: "",
 };
 
@@ -120,6 +123,7 @@ function ClientForm({
           client.phone ?? "",
         notes:
           client.notes ?? "",
+        links: (client.links ?? []).join("\n"),
         assigned_coordinator_id:
           client.assigned_coordinator_id ?? "",
       });
@@ -267,7 +271,13 @@ function ClientForm({
     }
 
 
+    const links = [...new Set(form.links.split(/\r?\n/).map(link => link.trim()).filter(Boolean))];
+    if (links.length > 20 || links.some(link => !isClientLink(link))) {
+      setValidationError("Enter up to 20 valid HTTP or HTTPS links, one per line.");
+      return;
+    }
     const payload = {
+      ...(links.length || client?.links?.length ? { links } : {}),
       name: form.name.trim(),
 
       short_name:
@@ -749,6 +759,12 @@ function ClientForm({
 
             <section>
 
+              <label className="grid gap-2 text-sm font-medium">
+                Client links (one per line)
+                <textarea rows={3} placeholder="https://example.com" value={form.links}
+                  onChange={event => updateField("links", event.target.value)}
+                  disabled={loading} className="rounded-xl border border-slate-200 p-3" />
+              </label>
               <label
                 htmlFor="client-notes"
                 className="mb-1.5 block text-xs font-medium text-slate-600"

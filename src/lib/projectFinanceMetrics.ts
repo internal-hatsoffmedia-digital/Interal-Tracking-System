@@ -7,9 +7,11 @@ export function itemApplies(item: FinanceItem, month: string) {
   const first=item.start_month.slice(0,7),last=item.end_month?.slice(0,7);
   return item.frequency==='once' ? month===first : month>=first && (!last || month<=last);
 }
-export const financeBookingMonth=(p:FinanceProject)=>p.status==='completed'&&p.sales_completed_at?financeMonth(p.sales_completed_at):null;
+export const isActiveFinanceProject=(p:Pick<FinanceProject,'is_active'>)=>p.is_active!==false;
+export const isBookedFinanceProject=(p:FinanceProject)=>isActiveFinanceProject(p)&&!['rejected','cancelled'].includes(p.status)&&!!p.sales_completed_at;
+export const financeBookingMonth=(p:FinanceProject)=>isBookedFinanceProject(p)&&p.sales_completed_at?financeMonth(p.sales_completed_at):null;
 export function financeSummary(data: ProjectFinanceData, month: string, clientId='', projectId='') {
-  const projects=data.projects.filter(p=>(!clientId||p.client_id===clientId)&&(!projectId||p.id===projectId));
+  const projects=data.projects.filter(p=>isActiveFinanceProject(p)&&(!clientId||p.client_id===clientId)&&(!projectId||p.id===projectId));
   const projectIds=new Set(projects.map(p=>p.id));
   const items=data.items.filter(i=>{
     if(!projectIds.has(i.project_id))return false;
@@ -35,7 +37,7 @@ export function trailingFinanceMonths(month: string) {
 }
 
 export function financeClients(data: ProjectFinanceData): [string,string][] {
-  const names=new Map(data.projects.map(p=>[p.client_id,p.client_name]));
+  const names=new Map(data.projects.filter(isActiveFinanceProject).map(p=>[p.client_id,p.client_name]));
   for(const client of data.clients??[])names.set(client.id,client.name);
   return [...names.entries()].sort((a,b)=>a[1].localeCompare(b[1]));
 }

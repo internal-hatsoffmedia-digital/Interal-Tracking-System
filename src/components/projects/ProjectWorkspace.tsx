@@ -1,3 +1,5 @@
+import WorkDateFilter from '../WorkDateFilter';
+import {inWorkRange,workDatePreset} from '../../lib/workDateRange';
 import { getTasks } from '../../services/tasks/tasks.service';
 import { displayTime, readVisibleRows, type Team } from '../tracker/trackerData';
 import ProjectTracker from '../tracker/ProjectTracker';
@@ -43,8 +45,8 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, onDelete, 
   const [member, setMember] = useState('');
   const [assigner, setAssigner] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
+  const [dateRange,setDateRange]=useState(()=>workDatePreset('all'));
+
   const [incomplete, setIncomplete] = useState(false);
   const [associateOnly, setAssociateOnly] = useState(false);
   const [selection, setSelection] = useState<{ url: string; id: string | null } | null>(null);
@@ -79,7 +81,7 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, onDelete, 
     (!search || `${p.name} ${p.project_code ?? ''} ${p.client?.name ?? ''}`.toLowerCase().includes(search.toLowerCase())) &&
     (!status || p.status === status) && (!member || p.project_members.some(m => m.access_kind === 'assignee' && m.profile_id === member)) &&
     (!assigner || p.assigned_by === assigner) && (!deadline || (p.target_deadline && p.target_deadline <= deadline)) &&
-    (!from || p.created_at.slice(0, 10) >= from) && (!to || p.created_at.slice(0, 10) <= to) &&
+    (mode!=='projects'||inWorkRange(p.target_deadline || p.created_at,dateRange)) &&
     (!incomplete || missingFields(p).length > 0) && (!associateOnly || p.associate_assigned);
   const visible = projects.filter(matchesFilters);
   const stats = summarizeProjects(visible);
@@ -129,6 +131,7 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, onDelete, 
     </div></div>
     {error && <p role="alert" className="rounded-xl bg-red-950/40 border border-red-500/30 p-3 text-red-300 text-xs">{error}</p>}
     {mode === 'projects' && profile?.role === 'admin' && !loading && !error && <ProjectAdministration people={people} onSaved={load} />}
+      {mode==='projects'&&<><WorkDateFilter value={dateRange} onChange={setDateRange}/><p className="text-xs">Projects use delivery dates, or creation dates when no delivery date is set.</p></>}
     <div className="project-stats grid grid-cols-2 gap-3 lg:grid-cols-6">{Object.entries({ Total: stats.total, Ongoing: stats.ongoing, Completed: stats.completed,
       'On hold': stats.onHold, Overdue: stats.overdue, Incomplete: stats.incomplete }).map(([key, value]) =>
       <div key={key} className="rounded-xl border border-slate-800 bg-slate-900/90 p-3.5"><p className="text-xs font-medium text-slate-400">{key}</p><p className="text-2xl font-bold text-white mt-1">{loading ? '…' : value}</p></div>)}</div>
@@ -138,13 +141,11 @@ export default function ProjectWorkspace({ mode = 'projects', onEdit, onDelete, 
       <label className="grid gap-1 text-xs font-medium text-slate-400">Team member / assignee<select className={input} value={member} onChange={e => setMember(e.target.value)}><option value="">All assignees</option>{people.filter(u => projects.some(p => p.project_members.some(m => m.profile_id === u.id && m.access_kind === 'assignee'))).map(u => <option key={u.id} value={u.id}>{u.full_name ?? u.id}</option>)}</select></label>
       <label className="grid gap-1 text-xs font-medium text-slate-400">Assigned by<select className={input} value={assigner} onChange={e => setAssigner(e.target.value)}><option value="">All assigners</option>{people.filter(u => projects.some(p => p.assigned_by === u.id)).map(u => <option key={u.id} value={u.id}>{u.full_name ?? u.id}</option>)}</select></label>
       <label className="grid gap-1 text-xs font-medium text-slate-400">Deadline through<input type="date" className={input} value={deadline} onChange={e => setDeadline(e.target.value)} /></label>
-      <label className="grid gap-1 text-xs font-medium text-slate-400">Created from<input type="date" className={input} value={from} onChange={e => setFrom(e.target.value)} /></label>
-      <label className="grid gap-1 text-xs font-medium text-slate-400">Created through<input type="date" className={input} value={to} min={from} onChange={e => setTo(e.target.value)} /></label>
     </div>
     <div className="flex flex-wrap items-center gap-5 text-xs text-slate-700">{mode==='projects'&&<label className="flex items-center gap-2"><input type="checkbox" checked={showDeleted} onChange={e=>setShowDeleted(e.target.checked)}/>Show deleted projects</label>}
       <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-amber-400" checked={incomplete} onChange={e => setIncomplete(e.target.checked)} /> Incomplete information</label>
       <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="rounded border-slate-700 accent-amber-400" checked={associateOnly} onChange={e => setAssociateOnly(e.target.checked)} /> Assigned by Associate Lead</label>
-      <button className="text-amber-400 hover:text-amber-300 font-semibold underline font-medium" onClick={() => { setSearch('');setStatus('');setMember('');setAssigner('');setDeadline('');setFrom('');setTo('');setIncomplete(false);setAssociateOnly(false); }}>Clear filters</button>
+      <button className="text-amber-400 hover:text-amber-300 font-semibold underline font-medium" onClick={() => { setSearch('');setStatus('');setMember('');setAssigner('');setDeadline('');setDateRange(workDatePreset('all'));setIncomplete(false);setAssociateOnly(false); }}>Clear filters</button>
     </div>
     {loading ? <p role="status" className="text-slate-400 text-sm">Loading projects…</p> : !error && <>
       {mode === 'projects' && visible.length === 0 && <p className="py-6 text-sm text-slate-500">No accessible projects match these filters.</p>}

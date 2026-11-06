@@ -10,8 +10,8 @@ test('employee defaults hide management pages and planner; coordinators cannot o
  assert.equal(rolePageDefault('project_coordinator','sales'),false);
  for(const role of ['admin','manager','director','associate_lead'])assert.equal(rolePageDefault(role,'planner'),true);
 });
-test('member overrides are configurable but cannot grant Sales to restricted roles',()=>{
- assert.equal(pageVisible('employee','planner',true),true);
+test('overrides cannot enable hidden Planner or grant Sales to restricted roles',()=>{
+ for(const role of ['employee','admin','manager','director','associate_lead'])assert.equal(pageVisible(role,'planner',true),false);
  assert.equal(pageVisible('employee','planner',null),false);
  assert.equal(pageVisible('manager','projects',false),false);
  for(const role of ['employee','project_coordinator'])assert.equal(pageVisible(role,'sales',true),false);

@@ -356,7 +356,7 @@ function ProjectForm({
     const requiredError=projectRequirementError(form);
     if(requiredError){setValidationError(requiredError);return false;}
 
-    if (form.rate !== "" && (!Number.isFinite(Number(form.rate)) || Number(form.rate) < 0)) { setValidationError("Rate must be a non-negative number."); return false; }
+    if (form.status !== "rejected" && form.rate !== "" && (!Number.isFinite(Number(form.rate)) || Number(form.rate) < 0)) { setValidationError("Rate must be a non-negative number."); return false; }
 
 
     if (!form.client_id) {
@@ -444,7 +444,7 @@ function ProjectForm({
       final_link: form.final_link.trim() || null,
       remarks: form.remarks.trim() || null,
 
-      rate: form.rate === "" ? null : Number(form.rate),
+      rate: form.status === "rejected" || form.rate === "" ? null : Number(form.rate),
       client_id:
         form.client_id,
 
@@ -789,7 +789,7 @@ function ProjectForm({
 <datalist id="project-category-options">{taskCategories.map(c=><option key={c.value} value={c.label}/>)}</datalist><label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-category">Category<input id="tracker-category" type="text" list="project-category-options"  value={form.category} onChange={e => updateField("category", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-final_link">Final Link<input id="tracker-final_link" type="url"  value={form.final_link} onChange={e => updateField("final_link", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
 <label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-remarks">Remarks<input id="tracker-remarks" type="text"  value={form.remarks} onChange={e => updateField("remarks", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
-<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-rate">Rate (INR) *<input id="tracker-rate" required type="number" min="0" step="0.01" value={form.rate} onChange={e => updateField("rate", e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
+<label className="grid gap-1.5 text-xs font-medium text-slate-600" htmlFor="tracker-rate">Rate (INR){form.status !== "rejected" && " *"}<input id="tracker-rate" required={form.status !== "rejected"} type="number" min="0" step="0.01" value={form.status === "rejected" ? "" : form.rate} onChange={e => updateField("rate", e.target.value)} disabled={loading || form.status === "rejected"} className="h-11 rounded-xl border border-slate-200 px-3 text-sm text-slate-900" /></label>
 </div><p className="mt-2 text-xs text-slate-500">Production times are recorded through work tracking. Delivery Date is the client deadline. Rate is saved once per project in INR. Every task under this project uses the same rate, including work continued on another day.</p></section>
             {/* =================================================
                 ASSIGNMENT & DATES

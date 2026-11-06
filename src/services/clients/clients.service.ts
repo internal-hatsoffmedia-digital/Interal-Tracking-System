@@ -119,6 +119,7 @@ export async function createClient(
       email: input.email?.trim() || null,
 
       phone: input.phone?.trim() || null,
+      ...(input.links !== undefined ? { links: input.links } : {}),
 
       notes: input.notes?.trim() || null,
 
@@ -164,6 +165,7 @@ export async function updateClient(
 
     ...(input.phone !== undefined && {
       phone: input.phone?.trim() || null,
+      ...(input.links !== undefined ? { links: input.links } : {}),
     }),
 
     ...(input.notes !== undefined && {

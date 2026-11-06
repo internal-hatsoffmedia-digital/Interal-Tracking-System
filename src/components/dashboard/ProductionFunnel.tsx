@@ -280,10 +280,10 @@ export default function ProductionFunnel() {
 
         <button
           type="button"
-          onClick={() => navigate("/planner")}
+          onClick={() => navigate("/tasks")}
           className="text-xs font-semibold text-amber-700 hover:text-amber-900 font-bold transition"
         >
-          Open Weekly Planner ➔
+          Open Tasks ➔
         </button>
       </div>
     </div>

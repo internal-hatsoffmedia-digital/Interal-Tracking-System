@@ -76,3 +76,11 @@ test('sales count completion month, not creation or task dates; unfinished charg
  d.projects[0].status='completed';d.projects[0].sales_completed_at='2026-10-31T20:00:00Z';
  assert.equal(financeSummary(d,'2026-10').revenue,0);assert.equal(financeSummary(d,'2026-11').revenue,8000);assert.equal(financeSummary(d,'2026-12').revenue,0);
 });
+
+test('a project booked in October stays in October during November rework and rejection earns nothing',()=>{
+ const project={id:'p',client_id:'c',is_active:true,rate:5000,status:'in_progress',sales_completed_at:'2026-10-31T12:00:00Z'};
+ const items=[{project_id:'p',kind:'charge',amount:500,frequency:'once',start_month:'2026-10-01'}];
+ assert.equal(financeSummary({projects:[project],items},'2026-10').revenue,5500);
+ assert.equal(financeSummary({projects:[project],items},'2026-11').revenue,0);
+ assert.equal(financeSummary({projects:[{...project,status:'rejected'}],items},'2026-10').revenue,0);
+});

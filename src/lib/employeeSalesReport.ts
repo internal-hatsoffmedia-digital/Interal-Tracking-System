@@ -4,7 +4,7 @@ export interface EmployeeSaleRow extends EmployeeCredit {project_code:string;pro
 export const istSalesDay=(timestamp:string)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(timestamp));
 export function employeeSalesRows(projects:FinanceProject[],credits:EmployeeCredit[],employee:string,from:string,through:string):EmployeeSaleRow[]{
  if(!from||!through||from>through)return [];
- const byId=new Map(projects.filter(p=>p.status==='completed'&&p.sales_completed_at).map(p=>[p.id,p]));
+ const byId=new Map(projects.filter(p=>p.is_active!==false&&!['rejected','cancelled'].includes(p.status)&&p.sales_completed_at).map(p=>[p.id,p]));
  return credits.flatMap(c=>{const p=byId.get(c.project_id);if(!p||Number(c.amount)<=0||employee&&c.profile_id!==employee)return [];
  const day=istSalesDay(p.sales_completed_at!);if(day<from||day>through)return [];
  return [{...c,project_code:p.project_code,project_name:p.name,client_name:p.client_name,completion_day:day}];

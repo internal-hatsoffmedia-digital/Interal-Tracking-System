@@ -21,10 +21,12 @@ test('work timers preserve breaks, ownership, one running session, midnight and 
  insert into tasks values('${p}','${p}','Own task',null),('${p2}','${p2}','Other task',null);
  insert into task_assignments values('${a}','${p}','${u}','assigned',now()+interval '2 days');`);
  await db.exec(await readFile(new URL('../supabase/migrations/202610110002_work_timers_commitments.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/202611060003_timer_open_assignments.sql',import.meta.url),'utf8'));
+ await db.exec("update projects set status='completed' where id='"+p+"'");
  const login=async id=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role authenticated');};
  const data=async()=> (await db.query('select workspace_work_timer_data() d')).rows[0].d;
  const start=async(project=p,assignment=a)=>db.query("select workspace_work_timer('start',$1,$2)",[project,assignment]);
- await login(u);assert.equal((await data()).projects.length,1);
+ await login(u);assert.equal((await data()).projects.length,1);assert.equal((await data()).assignments[0].id,a);
  await assert.rejects(()=>start(p2,null),/assigned to you/);await assert.rejects(()=>db.exec('select * from work_timer_sessions'),/permission denied/);
  await start();let d=await data();const first=d.running.id;await start();assert.equal((await data()).running.id,first);
  await db.exec('reset role');await db.exec(`insert into project_members values('${p2}','${u}','assignee');update work_timer_sessions set started_at=now()-interval '10 minutes' where id='${first}'`);

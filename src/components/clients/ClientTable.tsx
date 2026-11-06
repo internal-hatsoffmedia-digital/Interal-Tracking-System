@@ -1,3 +1,4 @@
+import { isClientLink } from "../../lib/clientLinks";
 import {
   CheckCircle2,
   Edit3,
@@ -369,7 +370,8 @@ function ClientTable({
                           </div>
                         )}
 
-                        {!client.email &&
+                        <ClientLinks links={client.links} />
+                        {!client.links?.length && !client.email &&
                           !client.phone && (
                             <span className="text-xs text-slate-400">
                               No contact details
@@ -546,6 +548,7 @@ function ClientTable({
                   )}
 
 
+                  <ClientLinks links={client.links} />
                   {client.phone && (
                     <div className="rounded-xl bg-slate-50 p-3">
 
@@ -622,3 +625,10 @@ function ClientTable({
 }
 
 export default ClientTable;
+
+function ClientLinks({ links }: { links?: string[] }) {
+  return links?.filter(isClientLink).map(link => (
+    <a key={link} href={link} target="_blank" rel="noreferrer"
+      className="block max-w-52 truncate text-xs font-medium underline" title={link}>{link}</a>
+  ));
+}

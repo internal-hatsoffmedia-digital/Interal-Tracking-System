@@ -5,6 +5,7 @@ export interface Client {
   contact_person: string | null;
   email: string | null;
   phone: string | null;
+  links?: string[];
   notes: string | null;
   assigned_coordinator_id?: string | null;
   assigned_coordinator?: {
@@ -24,6 +25,7 @@ export interface CreateClientInput {
   contact_person?: string | null;
   email?: string | null;
   phone?: string | null;
+  links?: string[];
   notes?: string | null;
   assigned_coordinator_id?: string | null;
 }
@@ -33,6 +35,7 @@ export interface UpdateClientInput {
   contact_person?: string | null;
   email?: string | null;
   phone?: string | null;
+  links?: string[];
   notes?: string | null;
   assigned_coordinator_id?: string | null;
   is_active?: boolean;

@@ -1,8 +1,8 @@
 import type { ManagedProject } from '../types/projectAccess';
 
-export const projectStatuses = ['planning', 'in_progress', 'awaiting_coordinator', 'internal_review', 'client_review', 'client_correction', 'on_hold', 'completed'];
+export const projectStatuses = ['planning', 'in_progress', 'awaiting_coordinator', 'internal_review', 'client_review', 'client_correction', 'on_hold', 'completed', 'rejected'];
 export const isCompleted = (p: ManagedProject) => p.status === 'completed';
-export const isOngoing = (p: ManagedProject) => p.is_active && !isCompleted(p);
+export const isOngoing = (p: ManagedProject) => p.is_active && !['completed','rejected','cancelled'].includes(p.status);
 export function todayLocal() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

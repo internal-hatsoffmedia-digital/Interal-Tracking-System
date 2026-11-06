@@ -12,7 +12,6 @@ const DailyDesk = lazy(() => import('../pages/daily-desk/DailyDesk'));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const Performance = lazy(() => import("../pages/performance/CommitmentPerformance"));
 const Dashboard = lazy(() => import("../components/dashboard/Dashboard"));
-const Planner = lazy(() => import("../pages/planner/Planner"));
 const Projects = lazy(() => import("../pages/projects/Projects"));
 const Tasks = lazy(() => import("../pages/tasks/Tasks"));
 const TaskAssignments = lazy(() => import("../pages/tasks/TaskAssignments"));
@@ -68,7 +67,7 @@ function AppRouter() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/my-work" element={<MyWork />} />
-              <Route path="/planner" element={<Planner />} />
+              <Route path="/planner" element={<Navigate to="/dashboard" replace />} />
               <Route path="/timesheet" element={<Timesheet />} />
               <Route path="/performance" element={<Performance />} />
               <Route path="/reports" element={<Reports />} />

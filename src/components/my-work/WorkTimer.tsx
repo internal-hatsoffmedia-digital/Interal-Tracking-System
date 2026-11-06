@@ -17,7 +17,7 @@ export default function WorkTimer(){
  useEffect(()=>{const counter=request,initial=setTimeout(()=>void load(),0),poll=setInterval(()=>void load(),15000),clock=setInterval(()=>setTick(Date.now()),1000);const refresh=()=>void load();window.addEventListener('focus',refresh);return()=>{clearTimeout(initial);clearInterval(poll);clearInterval(clock);window.removeEventListener('focus',refresh);counter.current++;};},[load]);
  const running=data?.running;
  const projectId=running?.project_id||(data?.projects.some(p=>p.id===project)?project:data?.projects[0]?.id)||'';
- const assignmentId=running?(running.assignment_id??''):assignment;
+ const assignmentId=running?(running.assignment_id??''):(data?.assignments.some(a=>a.id===assignment&&a.project_id===projectId)?assignment:'');
  const selected=data?.assignments.find(a=>a.id===assignmentId);
  const serverClock=current?Date.parse(current.data.server_now)+Math.max(0,tick-current.received):tick;
  const studioToday=studioDay(new Date(serverClock));
