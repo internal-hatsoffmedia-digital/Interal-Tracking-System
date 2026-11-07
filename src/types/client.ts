@@ -6,6 +6,10 @@ export interface Client {
   email: string | null;
   phone: string | null;
   links?: string[];
+  lead_source?: string | null;
+  facebook_link?: string | null;
+  instagram_link?: string | null;
+  youtube_link?: string | null;
   notes: string | null;
   assigned_coordinator_id?: string | null;
   assigned_coordinator?: {
@@ -26,6 +30,10 @@ export interface CreateClientInput {
   email?: string | null;
   phone?: string | null;
   links?: string[];
+  lead_source?: string | null;
+  facebook_link?: string | null;
+  instagram_link?: string | null;
+  youtube_link?: string | null;
   notes?: string | null;
   assigned_coordinator_id?: string | null;
 }
@@ -36,6 +44,10 @@ export interface UpdateClientInput {
   email?: string | null;
   phone?: string | null;
   links?: string[];
+  lead_source?: string | null;
+  facebook_link?: string | null;
+  instagram_link?: string | null;
+  youtube_link?: string | null;
   notes?: string | null;
   assigned_coordinator_id?: string | null;
   is_active?: boolean;

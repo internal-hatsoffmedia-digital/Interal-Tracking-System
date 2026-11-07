@@ -1,3 +1,4 @@
+import {clientSocialPatch,validLeadSource} from '../../lib/clientLinks';
 import { supabase } from "../../lib/supabase";
 
 import type {
@@ -110,6 +111,8 @@ export async function createClient(
   const { data, error } = await supabase
     .from("clients")
     .insert({
+      ...clientSocialPatch(input),
+      ...(input.lead_source !== undefined ? {lead_source:input.lead_source} : {}),
       name: input.name.trim(),
 
       short_name: input.short_name?.trim() || null,
@@ -146,7 +149,11 @@ export async function updateClient(
   id: string,
   input: UpdateClientInput,
 ): Promise<Client> {
+  if (!validLeadSource(input.lead_source)) throw new Error("Choose a valid lead source.");
   const updates: Record<string, unknown> = {
+    ...(input.lead_source !== undefined ? {lead_source:input.lead_source} : {}),
+    ...clientSocialPatch(input),
+    ...(input.links !== undefined ? { links: input.links } : {}),
     ...(input.name !== undefined && {
       name: input.name.trim(),
     }),
@@ -165,7 +172,6 @@ export async function updateClient(
 
     ...(input.phone !== undefined && {
       phone: input.phone?.trim() || null,
-      ...(input.links !== undefined ? { links: input.links } : {}),
     }),
 
     ...(input.notes !== undefined && {
@@ -406,4 +412,12 @@ export async function getFlowForceCoordinators(): Promise<CoordinatorOption[]> {
     console.error("Failed to load Flow Force coordinators:", error);
     return [];
   }
+}
+
+export async function updateClientLinksAndSource(id:string,input:UpdateClientInput):Promise<Client>{
+ if(!validLeadSource(input.lead_source))throw new Error('Choose a valid lead source.');
+ const patch={...clientSocialPatch(input),...(input.lead_source!==undefined?{lead_source:input.lead_source}:{}),...(input.links!==undefined?{links:input.links}:{})};
+ const {data,error}=await supabase.rpc('set_client_links_and_source',{p_client:id,p_patch:patch});
+ if(error)throw new Error(error.message);
+ return (await attachAssignedCoordinators([data as Record<string,unknown>]))[0];
 }

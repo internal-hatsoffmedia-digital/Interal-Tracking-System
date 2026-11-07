@@ -1,3 +1,4 @@
+import ClientPreview from '../../components/clients/ClientPreview';
 import { NavLink } from "react-router-dom";
 import {
   AlertCircle,
@@ -26,6 +27,7 @@ import {
   getFlowForceCoordinators,
   setClientStatus,
   updateClient,
+  updateClientLinksAndSource,
 } from "../../services/clients/clients.service";
 
 import type {
@@ -44,6 +46,16 @@ import { supabase } from "../../lib/supabase";
 
 function Clients() {
   const { profile } = useAuth();
+  const [previewClient,setPreviewClient]=useState<Client|null>(null);
+  const [savingSourceId,setSavingSourceId]=useState<string|null>(null);
+  const detailsOnly=!!profile&&['associate_lead','manager','director'].includes(profile.role);
+  async function changeLeadSource(client:Client,source:string|null){
+    if(savingSourceId)return;
+    setSavingSourceId(client.id);setErrorMessage('');
+    try{const updated=await updateClientLinksAndSource(client.id,{lead_source:source});setClients(current=>current.map(c=>c.id===updated.id?updated:c));}
+    catch(error){setErrorMessage(error instanceof Error?error.message:'Unable to save lead source.');}
+    finally{setSavingSourceId(null);}
+  }
   const [canCreateClient, setCanCreateClient] = useState(false);
   useEffect(() => {
     let cancelled=false;
@@ -347,7 +359,7 @@ function Clients() {
         /* UPDATE */
 
         const updatedClient =
-          await updateClient(
+          await (detailsOnly?updateClientLinksAndSource:updateClient)(
             editingClient.id,
             data as UpdateClientInput,
           );
@@ -912,6 +924,9 @@ function Clients() {
           filteredClients
         }
         loading={loading}
+        onSourceChange={changeLeadSource}
+        savingSourceId={savingSourceId}
+        onPreview={setPreviewClient}
         onEdit={
           handleEditClient
         }
@@ -925,7 +940,9 @@ function Clients() {
           CLIENT FORM
       ==================================================== */}
 
+      {previewClient&&<ClientPreview client={previewClient} onClose={()=>setPreviewClient(null)} onEdit={()=>{setPreviewClient(null);handleEditClient(previewClient);}}/>}
       <ClientForm
+        detailsOnly={detailsOnly && !!editingClient}
         open={isFormOpen}
         client={editingClient}
         coordinators={coordinators}

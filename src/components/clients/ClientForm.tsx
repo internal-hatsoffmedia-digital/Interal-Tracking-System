@@ -13,7 +13,7 @@ import {
   useState,
 } from "react";
 
-import { isClientLink } from "../../lib/clientLinks";
+import { clientLeadSources, clientSocialFields, isClientLink } from "../../lib/clientLinks";
 import type {
   Client,
   CreateClientInput,
@@ -26,6 +26,7 @@ interface ClientFormProps {
   client?: Client | null;
   coordinators?: { id: string; full_name: string; employee_code?: string }[];
   loading?: boolean;
+  detailsOnly?: boolean;
   error?: string;
   onClose: () => void;
 
@@ -45,6 +46,10 @@ interface ClientFormState {
   phone: string;
   notes: string;
   links: string;
+  lead_source: string;
+  facebook_link: string;
+  instagram_link: string;
+  youtube_link: string;
   assigned_coordinator_id: string;
 }
 
@@ -57,6 +62,10 @@ const EMPTY_FORM: ClientFormState = {
   phone: "",
   notes: "",
   links: "",
+  lead_source: "",
+  facebook_link: "",
+  instagram_link: "",
+  youtube_link: "",
   assigned_coordinator_id: "",
 };
 
@@ -66,6 +75,7 @@ function ClientForm({
   client = null,
   coordinators = [],
   loading = false,
+  detailsOnly = false,
   error = "",
   onClose,
   onSubmit,
@@ -124,6 +134,10 @@ function ClientForm({
         notes:
           client.notes ?? "",
         links: (client.links ?? []).join("\n"),
+        lead_source: client.lead_source ?? "",
+        facebook_link: client.facebook_link ?? "",
+        instagram_link: client.instagram_link ?? "",
+        youtube_link: client.youtube_link ?? "",
         assigned_coordinator_id:
           client.assigned_coordinator_id ?? "",
       });
@@ -276,7 +290,17 @@ function ClientForm({
       setValidationError("Enter up to 20 valid HTTP or HTTPS links, one per line.");
       return;
     }
+    for (const [field,label] of clientSocialFields) {
+      if (form[field].trim() && !isClientLink(form[field].trim())) {
+        setValidationError(label+": enter a valid HTTP or HTTPS link.");
+        return;
+      }
+    }
     const payload = {
+      lead_source: form.lead_source || null,
+      facebook_link: form.facebook_link.trim() || null,
+      instagram_link: form.instagram_link.trim() || null,
+      youtube_link: form.youtube_link.trim() || null,
       ...(links.length || client?.links?.length ? { links } : {}),
       name: form.name.trim(),
 
@@ -463,7 +487,7 @@ function ClientForm({
                 CLIENT INFORMATION
             ================================================== */}
 
-            <section>
+            <fieldset disabled={detailsOnly}>
 
               <div className="mb-3">
 
@@ -645,14 +669,14 @@ function ClientForm({
 
               </div>
 
-            </section>
+            </fieldset>
 
 
             {/* =================================================
                 CONTACT DETAILS
             ================================================== */}
 
-            <section>
+            <fieldset disabled={detailsOnly}>
 
               <div className="mb-3">
 
@@ -750,7 +774,7 @@ function ClientForm({
 
               </div>
 
-            </section>
+            </fieldset>
 
 
             {/* =================================================
@@ -759,6 +783,13 @@ function ClientForm({
 
             <section>
 
+              {detailsOnly&&<p className="mb-4 text-sm text-slate-500">You can update lead source and links. Core client details are managed by Admin and Project Coordinators.</p>}
+              <label className="mb-4 grid gap-2 text-sm font-medium">Lead source<select value={form.lead_source} disabled={loading} onChange={e=>updateField('lead_source',e.target.value)} className="h-11 rounded-xl border border-slate-200 px-3"><option value="">Not set</option>{clientLeadSources.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+              <fieldset className="mb-5 grid gap-4 sm:grid-cols-3"><legend className="mb-3 text-sm font-semibold">Social media links</legend>
+                {clientSocialFields.map(([field,label])=><label key={field} className="grid gap-2 text-sm font-medium">
+                  {label}<input type="url" placeholder="https://" value={form[field]} onChange={e=>updateField(field,e.target.value)} disabled={loading} className="h-11 rounded-xl border border-slate-200 px-3 text-sm"/>
+                </label>)}
+              </fieldset>
               <label className="grid gap-2 text-sm font-medium">
                 Client links (one per line)
                 <textarea rows={3} placeholder="https://example.com" value={form.links}
@@ -784,7 +815,7 @@ function ClientForm({
                   )
                 }
                 placeholder="Add any additional client information..."
-                disabled={loading}
+                disabled={loading || detailsOnly}
                 rows={4}
                 className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-300 focus:ring-4 focus:ring-slate-900/5 disabled:cursor-not-allowed disabled:bg-slate-50"
               />

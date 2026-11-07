@@ -17,3 +17,8 @@ test('overrides cannot enable hidden Planner or grant Sales to restricted roles'
  for(const role of ['employee','project_coordinator'])assert.equal(pageVisible(role,'sales',true),false);
  assert.equal(pageVisible(undefined,'dashboard'),false);
 });
+
+test('Clients stays available for Associate Leads, Managers and Directors even with a hidden-page override',()=>{
+ for(const role of ['admin','associate_lead','manager','director'])assert.equal(pageVisible(role,'clients',false),true);
+ assert.equal(pageVisible('employee','clients',false),false);
+});

@@ -1,7 +1,8 @@
-import { isClientLink } from "../../lib/clientLinks";
+import { clientLeadSources, isClientLink } from "../../lib/clientLinks";
 import {
   CheckCircle2,
   Edit3,
+  Eye,
   Mail,
   Phone,
   Power,
@@ -19,6 +20,10 @@ interface ClientTableProps {
   clients: Client[];
 
   loading?: boolean;
+
+  onPreview: (client: Client) => void;
+  onSourceChange: (client: Client, source: string|null) => void;
+  savingSourceId?: string|null;
 
   onEdit: (
     client: Client,
@@ -151,6 +156,9 @@ function ClientTable({
   clients,
   loading = false,
   onEdit,
+  onPreview,
+  onSourceChange,
+  savingSourceId,
   onToggleStatus,
 }: ClientTableProps) {
   return (
@@ -189,6 +197,7 @@ function ClientTable({
                 Contact
               </th>
 
+              <th className="px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">Lead source</th>
               <th className="w-[120px] px-5 py-4 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
                 Status
               </th>
@@ -208,7 +217,7 @@ function ClientTable({
               <tr>
 
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="p-0"
                 >
                   <ClientTableSkeleton />
@@ -223,7 +232,7 @@ function ClientTable({
                 <tr>
 
                   <td
-                    colSpan={8}
+                    colSpan={9}
                     className="p-0"
                   >
                     <EmptyClientState />
@@ -383,6 +392,7 @@ function ClientTable({
                     </td>
 
 
+                    <td className="px-5 py-5"><LeadSourceSelect client={client} onChange={onSourceChange} disabled={!!savingSourceId}/></td>
                     {/* STATUS */}
 
                     <td className="px-5 py-5">
@@ -401,7 +411,7 @@ function ClientTable({
                     <td className="px-5 py-5">
 
                       <div className="flex items-center gap-2">
-
+                        <button type="button" onClick={()=>onPreview(client)} aria-label={'Preview '+client.name} className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600"><Eye size={14}/>Preview</button>
                         <button
                           type="button"
                           onClick={() =>
@@ -568,7 +578,9 @@ function ClientTable({
 
                 {/* ACTIONS */}
 
+                <label className="mt-4 grid gap-2 text-xs font-semibold">Lead source<LeadSourceSelect client={client} onChange={onSourceChange} disabled={!!savingSourceId}/></label>
                 <div className="mt-4 flex gap-2">
+                  <button type="button" onClick={()=>onPreview(client)} aria-label={'Preview '+client.name} className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-600"><Eye size={14}/>Preview</button>
 
                   <button
                     type="button"
@@ -631,4 +643,9 @@ function ClientLinks({ links }: { links?: string[] }) {
     <a key={link} href={link} target="_blank" rel="noreferrer"
       className="block max-w-52 truncate text-xs font-medium underline" title={link}>{link}</a>
   ));
+}
+
+function LeadSourceSelect({client,onChange,disabled}:{client:Client;onChange:(client:Client,value:string|null)=>void;disabled:boolean}){
+ return <select aria-label={'Lead source for '+client.name} value={client.lead_source||''} disabled={disabled} onChange={e=>onChange(client,e.target.value||null)} className="min-w-32 rounded-lg border border-slate-200 bg-white px-2 py-2 text-xs">
+ <option value="">Not set</option>{clientLeadSources.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select>;
 }

@@ -85,6 +85,7 @@ async function getAssignmentRelations(
     tasksResult,
     employeesResult,
     profilesResult,
+    displayPeopleResult,
   ] = await Promise.all([
     taskIds.length > 0
       ? supabase
@@ -144,8 +145,12 @@ async function getAssignmentRelations(
           data: [],
           error: null,
         }),
+    supabase.rpc('assignment_display_people',{p_assignments:assignments.map(a=>a.id)}),
   ]);
 
+  if (displayPeopleResult.error && !['PGRST202','42883'].includes(displayPeopleResult.error.code)) {
+    throw new Error('Unable to load assignment display names: '+displayPeopleResult.error.message);
+  }
   if (tasksResult.error) {
     throw new Error(
       `Unable to load assignment tasks: ${tasksResult.error.message}`,
@@ -170,8 +175,10 @@ async function getAssignmentRelations(
         []) as TaskRelation[],
 
     employees:
-      (employeesResult.data ??
-        []) as EmployeeRelation[],
+      [...new Map([
+        ...(employeesResult.data ?? []).map(e=>[e.id,e] as const),
+        ...(displayPeopleResult.data ?? []).map((e:{id:string;full_name:string;employee_code:string;team_id:string|null})=>[e.id,{...e,email:'',job_title:null}] as const),
+      ]).values()] as EmployeeRelation[],
 
     profiles:
       (profilesResult.data ??
@@ -694,4 +701,4 @@ export async function deleteTaskAssignment(
       `Unable to unassign task: ${error.message}`,
     );
   }
-}
+}
