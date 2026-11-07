@@ -22,3 +22,8 @@ test('Clients stays available for Associate Leads, Managers and Directors even w
  for(const role of ['admin','associate_lead','manager','director'])assert.equal(pageVisible(role,'clients',false),true);
  assert.equal(pageVisible('employee','clients',false),false);
 });
+
+test('Sales cannot be hidden from leadership by a page override; API still decides coordination-team authority',()=>{
+ for(const role of ['admin','manager','director','associate_lead'])assert.equal(pageVisible(role,'sales',false),true);
+ for(const role of ['employee','project_coordinator'])assert.equal(pageVisible(role,'sales',true),false);
+});
