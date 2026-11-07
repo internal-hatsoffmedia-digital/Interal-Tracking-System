@@ -9,6 +9,7 @@ import "./styles/studio-ui.css";
 import "./styles/brand-palette.css";
 import "./styles/modern-workspace.css";
 import "./styles/workspace-refresh.css";
+import "./styles/hsync-brand.css";
 import {initializeTheme} from "./components/layouts/ThemeToggle";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";

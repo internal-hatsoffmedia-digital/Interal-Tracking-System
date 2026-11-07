@@ -112,8 +112,8 @@ function Landing() {
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
           <Link to="/" className="group flex items-center gap-3 transition hover:opacity-90">
             <img
-              src="/hatsoff-brand.svg"
-              alt="Hatsoff Media"
+              src="/hsync-wordmark.svg"
+              alt="Hsync"
               className="h-10 w-auto object-contain"
             />
             <div>
@@ -336,7 +336,7 @@ function Landing() {
                   {/* Preview sidebar */}
                   <div className="border-r border-slate-100 bg-white p-3">
                     <div className="mb-6">
-                      <img src="/hatsoff-brand.svg" alt="Hatsoff Media" className="mb-1 h-8 w-auto object-contain" />
+                      <img src="/hsync-wordmark.svg" alt="Hsync" className="mb-1 h-8 w-auto object-contain" />
                       <p className="text-[6px] tracking-[0.2em] text-slate-400">
                         INTERNAL FORCE
                       </p>
@@ -733,8 +733,8 @@ function Landing() {
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
             <img
-              src="/hatsoff-brand.svg"
-              alt="Hatsoff Media"
+              src="/hsync-wordmark.svg"
+              alt="Hsync"
               className="h-9 w-auto object-contain"
             />
             <div>

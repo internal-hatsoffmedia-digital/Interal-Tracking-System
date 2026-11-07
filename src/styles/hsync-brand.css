@@ -1,0 +1,16 @@
+/* Approved Hsync identity. Keep the original logo pixels and gold palette. */
+html #root .future-brand img[src="/hsync-wordmark.svg"] {width:170px;height:48px;max-width:100%;object-fit:contain;background:#fff;padding:4px;border-radius:10px;box-shadow:none;}
+html #root .future-brand .hsync-sidebar-brand {display:block;width:170px;max-width:100%;line-height:0;}
+html #root .future-brand>a {min-width:0;}
+html #root .future-brand .hsync-compact-mark {display:none;}
+html #root .brand-login img[src="/hsync-wordmark.svg"] {width:156px;height:48px;object-fit:contain;background:#fff;padding:5px;border-radius:9px;}
+html #root img[src="/hsync-wordmark.svg"] {flex-shrink:0;}
+@media(min-width:1024px) {
+ html #root .future-sidebar.is-compact .hsync-sidebar-brand {width:48px;height:44px;}
+ html #root .future-sidebar.is-compact .hsync-sidebar-brand .hsync-wordmark {display:none;}
+ html #root .future-sidebar.is-compact .hsync-sidebar-brand .hsync-compact-mark {display:block;width:48px;height:44px;object-fit:contain;background:white;padding:4px;border-radius:8px;}
+}
+/* The selected-project panel is dark in both themes. Global heading rules
+   previously replaced its inherited white title with the light-page ink. */
+html #root .future-shell main .lead-project-detail h2,
+html #root .future-shell main .lead-project-detail h3 {color:#f8fafc!important;}

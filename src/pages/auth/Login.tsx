@@ -74,8 +74,8 @@ function Login() {
             {/* Logo */}
             <Link to="/" className="w-fit flex items-center gap-3.5 transition hover:opacity-95">
               <img
-                src="/hatsoff-brand.svg"
-                alt="Hatsoff Media"
+                src="/hsync-wordmark.svg"
+                alt="Hsync"
                 className="h-12 w-auto object-contain"
               />
               <div>
@@ -162,8 +162,8 @@ function Login() {
               <div className="mb-4 flex items-center justify-between">
                 <Link to="/" className="inline-flex items-center gap-3">
                   <img
-                    src="/hatsoff-brand.svg"
-                    alt="Hatsoff Media"
+                    src="/hsync-wordmark.svg"
+                    alt="Hsync"
                     className="h-12 w-auto object-contain"
                   />
                   <div>
