@@ -898,20 +898,6 @@ function Tasks() {
           }
         />
 
-        <StatCard
-          label="Estimated Hours"
-          value={`${stats.estimatedHours.toFixed(
-            1,
-          )}h`}
-          description={`${stats.actualHours.toFixed(
-            1,
-          )}h actual`}
-          icon={
-            <Clock3
-              size={20}
-            />
-          }
-        />
       </div>
 
       {/* =================================================

@@ -1,3 +1,4 @@
+import CommitmentCountdown from '../commitments/CommitmentCountdown';
 import {
   CheckCircle2,
   Clock3,
@@ -442,7 +443,7 @@ function MobileWorkCard({
       <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
         <div>
           <p className="text-slate-400">
-            Completion (IST)
+            Committed Time (IST)
           </p>
 
           <p
@@ -464,33 +465,7 @@ function MobileWorkCard({
           )}
         </div>
 
-        <div>
-          <p className="text-slate-400">
-            Estimated
-          </p>
-
-          <p className="mt-0.5 font-semibold text-slate-700">
-            {Number(
-              item.estimated_hours ??
-                0,
-            ).toFixed(1)}
-            h
-          </p>
-        </div>
-
-        <div>
-          <p className="text-slate-400">
-            Actual
-          </p>
-
-          <p className="mt-0.5 font-semibold text-slate-700">
-            {Number(
-              item.actual_hours ??
-                0,
-            ).toFixed(1)}
-            h
-          </p>
-        </div>
+        <div><p className="text-slate-400">Time remaining</p><CommitmentCountdown deadline={item.due_date} status={item.assignment_status} completedAt={item.completed_at}/></div>
 
         <div>
           <p className="text-slate-400">
@@ -620,11 +595,11 @@ function MyWorkTable({
                 </th>
 
                 <th className="px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  Completion (IST)
+                  Committed Time (IST)
                 </th>
 
                 <th className="px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  Hours
+                  Time remaining
                 </th>
 
                 <th className="px-5 py-4 text-right text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -640,29 +615,6 @@ function MyWorkTable({
                     isOverdue(
                       item,
                     );
-
-                  const estimated =
-                    Number(
-                      item.estimated_hours ??
-                        0,
-                    );
-
-                  const actual =
-                    Number(
-                      item.actual_hours ??
-                        0,
-                    );
-
-                  const progress =
-                    estimated >
-                    0
-                      ? Math.min(
-                          100,
-                          (actual /
-                            estimated) *
-                            100,
-                        )
-                      : 0;
 
                   return (
                     <tr
@@ -798,37 +750,7 @@ function MyWorkTable({
                         </div>
                       </td>
 
-                      {/* HOURS */}
-
-                      <td className="px-4 py-4">
-                        <div className="w-[105px]">
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-semibold text-slate-700">
-                              {actual.toFixed(
-                                1,
-                              )}
-                              h
-                            </span>
-
-                            <span className="text-slate-400">
-                              /
-                              {estimated.toFixed(
-                                1,
-                              )}
-                              h
-                            </span>
-                          </div>
-
-                          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
-                            <div
-                              className="h-full rounded-full bg-slate-700 transition-all"
-                              style={{
-                                width: `${progress}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </td>
+                      <td className="px-4 py-4"><CommitmentCountdown deadline={item.due_date} status={item.assignment_status} completedAt={item.completed_at}/></td>
 
                       {/* ACTIONS */}
 

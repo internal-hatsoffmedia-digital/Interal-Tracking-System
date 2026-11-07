@@ -1,3 +1,4 @@
+import CommitmentReminders from '../commitments/CommitmentReminders';
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
@@ -30,6 +31,7 @@ function AppShell() {
         <div className="radium-ball radium-ball-4" />
       </div>
 
+      <CommitmentReminders/>
       {/* Desktop sidebar / mobile drawer */}
       <a className="future-skip-link" href="#main-content">Skip to content</a>
       <Sidebar />

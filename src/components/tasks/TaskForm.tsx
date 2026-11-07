@@ -1592,42 +1592,6 @@ function TaskForm({
                 </div>
 
                 {assignedEmployeeId&&<label className="col-span-full flex items-start gap-3 rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-sm text-black"><input type="checkbox" checked={commitmentConfirmed} onChange={e=>setCommitmentConfirmed(e.target.checked)}/>I confirm the artist and agreed completion time above, including any correction to a previous date.</label>}
-                {/* ESTIMATED */}
-
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                    Estimated Effort (hours)
-                  </label>
-
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={
-                      estimatedHours
-                    }
-                    onChange={(
-                      event,
-                    ) =>
-                      setEstimatedHours(
-                        event.target
-                          .value,
-                      )
-                    }
-                    disabled={
-                      loading
-                    }
-                    className={
-                      inputClass
-                    }
-                  />
-                </div>
-
-                {isEdit && <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Recorded task hours</label>
-                  <input type="number" value={actualHours} readOnly className={inputClass} />
-                  <p className="mt-1 text-xs text-slate-500">Daily Total Hours is calculated from recorded work entries.</p>
-                </div>}
               </div>
             </section>
 
@@ -1635,7 +1599,7 @@ function TaskForm({
                 ASSETS & NOTES
             ============================================== */}
 
-            <p className="rounded-xl bg-[#fff7cc] p-3 text-sm text-black">Start Time, End Time and Total Hours are recorded when the artist works on the task; they are not entered during task creation.</p>
+            <p className="rounded-xl bg-[#fff7cc] p-3 text-sm text-black">The countdown uses the agreed committed time. Reminders appear at one hour, ten minutes and when the time ends.</p>
             <section>
               <SectionHeader
                 icon={

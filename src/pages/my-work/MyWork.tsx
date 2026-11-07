@@ -389,6 +389,7 @@ function MyWork() {
                 },
               ),
           );
+          window.dispatchEvent(new Event("commitment-work-updated"));
         } catch (err) {
           console.error(
             "Unable to update assignment:",
@@ -575,7 +576,7 @@ function MyWork() {
           STATS
       ================================================== */}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard
           label="Total Tasks"
           value={stats.total}
@@ -605,18 +606,7 @@ function MyWork() {
           description={`${stats.overdue} overdue`}
         />
 
-        <StatCard
-          label="Hours"
-          value={`${stats.actualHours.toFixed(
-            1,
-          )}h`}
-          icon={
-            <Timer size={20} />
-          }
-          description={`of ${stats.estimatedHours.toFixed(
-            1,
-          )}h estimated`}
-        />
+
       </div>
 
       <MyProjectSubmissions/><ProjectArtistWork/>
