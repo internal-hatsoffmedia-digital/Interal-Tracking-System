@@ -1,11 +1,11 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {ArrowDownLeft,ArrowUpRight,BarChart3,Download,RefreshCw,Wallet} from 'lucide-react';
+import {ArrowDownLeft,ArrowUpRight,Download,RefreshCw,Wallet} from 'lucide-react';
 import {useSalesCreditDirectory} from '../../hooks/useSalesCreditDirectory';
 import RevenueBreakdown from './RevenueBreakdown';
 import ProjectRates from './ProjectRates';
 import {useAuth} from '../../context/AuthContext';
 import {loadProjectFinance,saveProjectFinanceItem} from '../../services/sales/projectFinance.service';
-import {financeMoney,financeMonth,financeBookingMonth,financeSummary,financeForTeam,isFinanceMonth,financeClients} from '../../lib/projectFinanceMetrics';
+import {financeMoney,financeMonth,financeBookingMonth,financeSummary,financeForTeam,isFinanceMonth,financeClients,isActiveFinanceProject} from '../../lib/projectFinanceMetrics';
 import {csvCell} from '../../lib/projectMetrics';
 import {displayTime} from '../../components/tracker/trackerData';
 import type {FinanceInput,FinanceItem,FinanceProject,ProjectFinanceData} from '../../types/projectFinance';
@@ -37,48 +37,56 @@ export default function ProjectFinanceDashboard({mode='sales',onProjectDetails,o
     finally{if(n===requests.current)setLoading(false);}
   },[userId,mode]);
   useEffect(()=>{const counter=requests;const t=window.setTimeout(()=>void load(),0);const refresh=()=>void load();window.addEventListener('focus',refresh);const timer=window.setInterval(refresh,60000);return()=>{window.clearTimeout(t);window.clearInterval(timer);window.removeEventListener('focus',refresh);counter.current++;};},[load,profile?.id]);
-  const [applied,setApplied]=useState<string|null>(null);
-  const filterKey=JSON.stringify([userId,month,teamFilter,client,project]);
-  const showCompany=mode==='costs'||applied===filterKey;
-  const summary=financeSummary(data,month,client,project);
+  const [view,setView]=useState<'overview'|'employees'|'projects'|'entries'>('overview');
+  const activeProjects=data.projects.filter(isActiveFinanceProject);
   const clients=financeClients(data);
-  const openingPeriod=!client&&!project?data.opening_periods?.find(p=>p.month.slice(0,7)===month):undefined;
-  const byClient=clients.filter(([id])=>!client||id===client).map(([id,name])=>({id,name,...financeSummary(data,month,id,project)}));
-  const editable=data.projects.filter(p=>p.can_edit);
+  const selectedClient=clients.some(([id])=>id===client)?client:'';
+  const visibleProjects=activeProjects.filter(p=>!selectedClient||p.client_id===selectedClient);
+  const selectedProject=visibleProjects.some(p=>p.id===project)?project:'';
+  const filterKey=JSON.stringify([userId,month,teamFilter,selectedClient,selectedProject]);
+  const showCompany=mode==='costs'||view==='overview';
+  const summary=financeSummary(data,month,selectedClient,selectedProject);
+  const openingPeriod=!selectedClient&&!selectedProject?data.opening_periods?.find(p=>p.month.slice(0,7)===month):undefined;
+  const byClient=clients.filter(([id])=>!selectedClient||id===selectedClient).map(([id,name])=>({id,name,...financeSummary(data,month,id,selectedProject)}));
+  const editable=activeProjects.filter(p=>p.can_edit);
+  const formProjectId=form.id?form.project_id:(editable.some(p=>p.id===form.project_id)?form.project_id:'');
+  const ratePool=data.projects.filter(p=>(!selectedClient||p.client_id===selectedClient)&&(!selectedProject||p.id===selectedProject));
   const value=(n:number)=>loading||error?'—':financeMoney(n);
   function edit(item:FinanceItem){setForm({...item,amount:Number(item.amount)});setNotice('');document.getElementById('finance-entry')?.scrollIntoView({behavior:'smooth',block:'start'});}
   async function save(event:React.FormEvent){
     event.preventDefault();setSaving(true);setNotice('');
-    try{await saveProjectFinanceItem(form);setForm(blank(month));await load();setNotice('Saved. Sales now uses this project entry automatically.');}
+    try{await saveProjectFinanceItem({...form,project_id:formProjectId});setForm(blank(month));await load();setNotice('Saved. Sales now uses this project entry automatically.');}
     catch(e){setNotice(e instanceof Error?e.message:'Unable to save entry.');}
     finally{setSaving(false);}
   }
   async function exportCsv(){
     try{
-      const fresh=await loadProjectFinance(mode);const filtered=financeSummary(financeForTeam(fresh,teamFilter),month,client,project);
+      const fresh=await loadProjectFinance(mode);const filtered=financeSummary(financeForTeam(fresh,teamFilter),month,selectedClient,selectedProject);
       const lines=[['Month','Client','Project ID','Project','Type','Label','Amount (INR)'],
         ...filtered.projects.filter(p=>financeBookingMonth(p)===month).map(p=>[month,p.client_name,p.project_code,p.name,'Project rate','Base project rate',p.rate??'Not set']),
         ...filtered.openingSales.map(s=>[month,'Unallocated','','','Opening sales',s.category+' · Unattributed',s.amount]),
-        ...filtered.items.map(i=>{const p=fresh.projects.find(p=>p.id===i.project_id)!;return[month,p.client_name,p.project_code,p.name,i.kind,i.label,i.amount];})];
+        ...filtered.items.map(i=>{const p=filtered.projects.find(p=>p.id===i.project_id)!;return[month,p.client_name,p.project_code,p.name,i.kind,i.label,i.amount];})];
       const url=URL.createObjectURL(new Blob(['\uFEFF'+lines.map(r=>r.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));
       const a=document.createElement('a');a.href=url;a.download=`project-sales-${month}.csv`;a.click();URL.revokeObjectURL(url);
     }catch(e){setNotice(e instanceof Error?e.message:'Export failed.');}
   }
   if(mode==='sales'&&(!profile?.is_active||!['admin','director','manager','associate_lead','team_lead'].includes(profile.role)))return <section className="finance-card" role="alert"><h1>Sales access restricted</h1><p>Sales is available to Admin, Directors, Managers and the Project Coordinator team’s Associate Lead. Project coordinators can manage their assigned project charges and costs from Projects.</p></section>;
   return <div className="finance-page">
-    {mode==='sales'&&<header className="finance-hero"><div><p className="finance-eyebrow">STUDIO FINANCE · INR</p><h1>Work into revenue.</h1><p>Every client. Every project. One clear view.</p></div><div className="finance-hero-icon"><BarChart3 size={36}/></div></header>}
+    {mode==='sales'&&<header className="finance-compact-header"><div><h1>Sales</h1><p>Monthly revenue and project sales · INR</p></div></header>}
+    {mode==='sales'&&<nav className="finance-view-tabs" aria-label="Sales views">{([
+      ['overview','Overview'],['employees','Employee sales'],['projects','Projects'],['entries','Charges & expenses'],
+    ] as const).map(([id,label])=><button key={id} type="button" aria-pressed={view===id} onClick={()=>setView(id)}>{label}</button>)}</nav>}
     <div className="finance-toolbar"><div className="finance-filters">
-      <label>Reporting month<input type="month" value={month} onChange={e=>{if(isFinanceMonth(e.target.value)){setMonth(e.target.value);setApplied(null);}}}/></label>
-      {mode==='sales'&&<label>Team<select value={teamFilter} onChange={e=>{setApplied(null);setTeamFilter(e.target.value);setClient('');setProject('');}}><option value="">All teams</option>{rawData.teams?.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label>}
-      <label>Client<select value={client} onChange={e=>{setApplied(null);setClient(e.target.value);setProject('');}}><option value="">All clients</option>{clients.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
-      <label>Project<select value={project} onChange={e=>{setApplied(null);setProject(e.target.value);}}><option value="">All projects</option>{data.projects.filter(p=>!client||p.client_id===client).map(p=><option key={p.id} value={p.id}>{p.project_code} · {p.name}</option>)}</select></label>
+      <label>Reporting month<input type="month" value={month} onChange={e=>{if(isFinanceMonth(e.target.value)){setMonth(e.target.value);}}}/></label>
+      {mode==='sales'&&<label>Team<select value={teamFilter} onChange={e=>{setTeamFilter(e.target.value);setClient('');setProject('');}}><option value="">All teams</option>{rawData.teams?.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label>}
+      <label>Client<select value={selectedClient} onChange={e=>{setClient(e.target.value);setProject('');}}><option value="">All clients</option>{clients.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
+      <label>Project<select value={selectedProject} onChange={e=>{setProject(e.target.value);}}><option value="">All projects</option>{visibleProjects.map(p=><option key={p.id} value={p.id}>{p.project_code} · {p.name}</option>)}</select></label>
     </div><div className="finance-actions"><button disabled={loading||saving} onClick={()=>void load()}><RefreshCw size={15}/>Refresh</button><button disabled={loading||!!error||!showCompany} onClick={()=>void exportCsv()}><Download size={15}/>Export</button></div></div>
-    {mode==='sales'&&<div className="finance-actions"><button disabled={loading||!!error} className="finance-primary-button" onClick={()=>setApplied(showCompany?null:filterKey)}>{showCompany?'Hide company results':'Show company results'}</button>{!showCompany&&<p className="finance-chart-note">Set the month, team, client or project above, then show company results.</p>}</div>}
     {error&&<p role="alert" className="finance-message">{error} <button onClick={()=>void load()}>Retry</button></p>}
     {notice&&<p role="status" className="finance-message">{notice}</p>}
     {loading&&<p role="status">Loading project finances…</p>}
-    {mode==='sales'&&loaded?.userId===userId&&<EmployeeSalesReport key={'employee:'+filterKey} projects={summary.projects} month={month} directory={creditDirectory.data} loading={creditDirectory.loading} error={creditDirectory.error}/>}
-    {mode==='sales'&&<h2 className="finance-company-heading">Company revenue · {month}</h2>}
+    {mode==='sales'&&view==='employees'&&loaded?.userId===userId&&<EmployeeSalesReport key={'employee:'+filterKey} projects={summary.projects} month={month} directory={creditDirectory.data} loading={creditDirectory.loading} error={creditDirectory.error}/>}
+    {mode==='sales'&&showCompany&&<h2 className="finance-company-heading">Company revenue · {month}</h2>}
     {showCompany&&<div className="finance-stats">{[
       {label:'Completed sales',amount:summary.revenue,icon:ArrowUpRight,note:'Opening sales + completed project rates + eligible charges'},
       {label:'Company expenses',amount:summary.expenses,icon:ArrowDownLeft,note:'One-time and monthly costs'},
@@ -91,12 +99,12 @@ export default function ProjectFinanceDashboard({mode='sales',onProjectDetails,o
       <p className="finance-chart-note">Opening sales count once in October. They are excluded from client/project filters until their details are confirmed.</p>
     </section>}
     {showCompany&&!loading&&!error&&summary.unpriced>0&&<p className="finance-message">{summary.unpriced} project(s) completed this month have no rate. Their revenue is not yet included. Add the rate through Edit project.</p>}
-    {showCompany&&mode==='sales'&&!loading&&!error&&<ProjectFinanceCharts data={data} month={month} client={client} project={project}/>}
-    {mode==='sales'&&!loading&&!error&&<RevenueBreakdown key={'revenue:'+filterKey} data={{...data,projects:summary.projects,clients:data.clients?.filter(c=>!client||c.id===client),teams:data.teams?.filter(t=>!teamFilter||t.id===teamFilter)}} month={month} directory={creditDirectory.data} loading={creditDirectory.loading} error={creditDirectory.error}/>}
-    <p className="finance-explanation">Team filters show whole amounts for linked projects; shared projects can appear in multiple teams. The base project rate counts once, in its completion month (IST). Additional charges increase revenue; expenses reduce net. Monthly entries apply from the start month through the optional end month, inclusive. Sales require the coordinator to mark the project Completed. Sales do not confirm payment collection. Task counts never multiply revenue.</p>
+    {showCompany&&mode==='sales'&&!loading&&!error&&<details className="finance-disclosure"><summary>Revenue charts</summary><ProjectFinanceCharts data={data} month={month} client={selectedClient} project={selectedProject}/></details>}
+    {mode==='sales'&&view==='overview'&&!loading&&!error&&<details className="finance-disclosure"><summary>Detailed revenue breakdown</summary><RevenueBreakdown key={'revenue:'+filterKey} data={{...data,projects:summary.projects,clients:data.clients?.filter(c=>!selectedClient||c.id===selectedClient),teams:data.teams?.filter(t=>!teamFilter||t.id===teamFilter)}} month={month} directory={creditDirectory.data} loading={creditDirectory.loading} error={creditDirectory.error}/></details>}
+    <p className="finance-explanation">Sales use the project's booking month. Expenses reduce net revenue. Sales are not payment receipts.</p>
     {mode==='costs'&&editable.length>0&&<section className="finance-card" id="finance-entry"><div className="finance-card-heading"><div><h2>{form.id?'Edit financial entry':'Assign project charges & costs'}</h2><p>Keep the base rate on the project. Enter only additional charges or expenses here.</p></div></div>
       <form onSubmit={e=>void save(e)} className="finance-entry-form"><fieldset disabled={saving||loading}>
-        <label>Project<select required value={form.project_id} disabled={!!form.id} onChange={e=>setForm({...form,project_id:e.target.value})}><option value="">Choose a project</option>{editable.map(p=><option key={p.id} value={p.id}>{p.project_code} · {p.name}</option>)}</select></label>
+        <label>Project<select required value={formProjectId} disabled={!!form.id} onChange={e=>setForm({...form,project_id:e.target.value})}><option value="">Choose a project</option>{editable.map(p=><option key={p.id} value={p.id}>{p.project_code} · {p.name}</option>)}</select></label>
         <label>Service / cost name<input required maxLength={120} placeholder="Shoot Actuals, Social Media…" value={form.label} onChange={e=>setForm({...form,label:e.target.value})}/></label>
         <label>Type<select value={form.kind} onChange={e=>setForm({...form,kind:e.target.value as FinanceInput['kind']})}><option value="charge">Client charge · adds revenue</option><option value="expense">Company expense · reduces net</option></select></label>
         <label>Amount (INR)<input required type="number" min="0" max="9999999999.99" step="0.01" value={Number.isFinite(form.amount)?form.amount:""} onChange={e=>setForm({...form,amount:e.target.value===''?Number.NaN:Number(e.target.value)})}/></label>
@@ -108,9 +116,9 @@ export default function ProjectFinanceDashboard({mode='sales',onProjectDetails,o
     </section>}
     {mode==='costs'&&!loading&&!error&&!editable.length&&<p className="finance-message">Create a project first, or ask for coordinator access to an existing project. Sales accounts can view finance data; only authorized project managers can change costs.</p>}
     {!loading&&!error&&<>
-    <section className="finance-card"><div className="finance-card-heading"><h2>Client summary</h2><span>Selected month</span></div><SalesResults key={filterKey} filterKey={filterKey} requireApply={mode==='sales'} count={byClient.length} label="Show client summary">{limit=><div className="finance-table-scroll"><table><thead><tr>{['Client','Base project rates','Additional charges','Revenue','Expenses','Net'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{byClient.slice(0,limit).map(c=><tr key={c.id}><td>{c.name}</td><td>{financeMoney(c.projectRevenue)}</td><td>{financeMoney(c.charges)}</td><td>{financeMoney(c.revenue)}</td><td>{financeMoney(c.expenses)}</td><td>{financeMoney(c.net)}</td></tr>)}</tbody></table>{!byClient.length&&<p className="finance-table-empty">No client projects yet.</p>}</div>}</SalesResults></section>
-    {mode==='sales'&&<EmployeeSalesCredits teams={data.teams} key={'credits:'+filterKey} projects={summary.projects} directory={creditDirectory.data}/>}
-    <ProjectRates activeWorkOnly={mode==='costs'} onOpenProject={onProjectDetails} onDeleteProject={mode==='costs'?onProjectDelete:undefined} key={'rates:'+filterKey} data={{...data,projects:summary.projects}} directory={creditDirectory.data} showEmployees={mode==='sales'} loading={creditDirectory.loading} error={creditDirectory.error}/>
-    <section className="finance-card"><div className="finance-card-heading"><h2>Charges & expenses</h2><span>Selected month</span></div><SalesResults key={filterKey} filterKey={filterKey} requireApply={mode==='sales'} count={summary.items.length} label="Show charges & expenses">{limit=><div className="finance-table-scroll"><table><thead><tr>{['Project ID','Service / cost','Type','Amount','Frequency','Period','Created by / time',''].map((h,i)=><th key={i}>{h}</th>)}</tr></thead><tbody>{summary.items.slice(0,limit).map(i=>{const p=data.projects.find(p=>p.id===i.project_id)!;return<tr key={i.id}><td className="finance-code">{p.project_code}</td><td>{i.label}<small>{i.notes}</small></td><td><span className="finance-kind">{i.kind==='charge'?'Client charge':'Expense'}</span></td><td>{financeMoney(Number(i.amount))}</td><td>{i.frequency==='once'?'One time':'Monthly'}</td><td>{i.start_month.slice(0,7)}{i.frequency==='monthly'?` → ${i.end_month?.slice(0,7)??'ongoing'}`:''}</td><td>{i.creator_name}<small>{displayTime(i.created_at)}</small></td><td>{mode==='costs'&&p.can_edit&&<button onClick={()=>edit(i)}>Edit</button>}</td></tr>;})}</tbody></table>{!summary.items.length&&<p className="finance-table-empty">No additional charges or expenses for this month.</p>}</div>}</SalesResults></section></>}
+    {showCompany&&<section className="finance-card"><div className="finance-card-heading"><h2>Client summary</h2><span>Selected month</span></div><SalesResults key={filterKey} filterKey={filterKey} requireApply={mode==='sales'} count={byClient.length} label="Show client summary">{limit=><div className="finance-table-scroll"><table><thead><tr>{['Client','Base project rates','Additional charges','Revenue','Expenses','Net'].map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{byClient.slice(0,limit).map(c=><tr key={c.id}><td>{c.name}</td><td>{financeMoney(c.projectRevenue)}</td><td>{financeMoney(c.charges)}</td><td>{financeMoney(c.revenue)}</td><td>{financeMoney(c.expenses)}</td><td>{financeMoney(c.net)}</td></tr>)}</tbody></table>{!byClient.length&&<p className="finance-table-empty">No client projects yet.</p>}</div>}</SalesResults></section>}
+    {mode==='sales'&&view==='employees'&&<details className="finance-disclosure"><summary>Manage employee credit allocations</summary><EmployeeSalesCredits teams={data.teams} key={'credits:'+filterKey} projects={summary.projects} directory={creditDirectory.data}/></details>}
+    {(mode==='costs'||view==='projects')&&<ProjectRates activeWorkOnly={mode==='costs'} onOpenProject={onProjectDetails} onDeleteProject={mode==='costs'?onProjectDelete:undefined} key={'rates:'+filterKey} data={{...data,projects:ratePool}} directory={creditDirectory.data} showEmployees={mode==='sales'} loading={creditDirectory.loading} error={creditDirectory.error}/>}
+    {(mode==='costs'||view==='entries')&&<section className="finance-card"><div className="finance-card-heading"><h2>Charges & expenses</h2><span>Selected month</span></div><SalesResults key={filterKey} filterKey={filterKey} requireApply={mode==='sales'} count={summary.items.length} label="Show charges & expenses">{limit=><div className="finance-table-scroll"><table><thead><tr>{['Project ID','Service / cost','Type','Amount','Frequency','Period','Created by / time',''].map((h,i)=><th key={i}>{h}</th>)}</tr></thead><tbody>{summary.items.slice(0,limit).map(i=>{const p=summary.projects.find(p=>p.id===i.project_id)!;return<tr key={i.id}><td className="finance-code">{p.project_code}</td><td>{i.label}<small>{i.notes}</small></td><td><span className="finance-kind">{i.kind==='charge'?'Client charge':'Expense'}</span></td><td>{financeMoney(Number(i.amount))}</td><td>{i.frequency==='once'?'One time':'Monthly'}</td><td>{i.start_month.slice(0,7)}{i.frequency==='monthly'?` → ${i.end_month?.slice(0,7)??'ongoing'}`:''}</td><td>{i.creator_name}<small>{displayTime(i.created_at)}</small></td><td>{mode==='costs'&&p.can_edit&&<button onClick={()=>edit(i)}>Edit</button>}</td></tr>;})}</tbody></table>{!summary.items.length&&<p className="finance-table-empty">No additional charges or expenses for this month.</p>}</div>}</SalesResults></section>}</>}
   </div>;
 }
