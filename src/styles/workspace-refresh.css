@@ -1,0 +1,128 @@
+/* Page-only refresh. Every selector is gated; Dashboard, Team PC and the
+   shared navigation/topbar are intentionally outside this design layer. */
+html #root .future-shell [data-workspace-refresh=true] {
+ --surface:#fff;--canvas:#f5f7fa;--ink:#19202d;--body:#465166;
+ --line:#e3e7ee;--light-line:#eef1f6;--muted:#657187;--future-muted:#657187;
+ --accent:#ffcc00;--desk-line:#e3e7ee;
+ --refresh-soft:#f8fafc;--refresh-hover:#fffbea;--refresh-shadow:0 3px 16px #19202d05;
+ color:var(--body);font-size:14px;line-height:1.55;
+}
+html[data-theme=dark] #root .future-shell [data-workspace-refresh=true] {
+ --surface:#1b1e27;--canvas:#12151d;--ink:#f1f4fa;--body:#d1d8e5;
+ --line:#333a48;--light-line:#29303d;--muted:#a8b3c7;--future-muted:#a8b3c7;
+ --desk-line:#333a48;--refresh-soft:#222735;--refresh-hover:#302c1b;
+ --refresh-shadow:0 3px 16px #00000012;
+}
+html #root .future-shell main:has(> [data-workspace-refresh=true]) {background:#f5f7fa!important;}
+html[data-theme=dark] #root .future-shell main:has(> [data-workspace-refresh=true]) {background:#12151d!important;}
+html #root .future-shell [data-workspace-refresh=true] :is(h1,h2,h3) {text-wrap:balance;}
+html #root .future-shell [data-workspace-refresh=true] h1 {font-size:clamp(26px,2.3vw,34px);font-weight:750;letter-spacing:-.04em;line-height:1.2;}
+html #root .future-shell [data-workspace-refresh=true] h2 {font-size:18px;font-weight:700;letter-spacing:-.025em;line-height:1.4;}
+html #root .future-shell [data-workspace-refresh=true] :is(.desk-card,.finance-card,.project-workspace,.my-work-timer,[class~="rounded-2xl"][class~="border"]) {
+ border-color:var(--line);border-radius:18px!important;box-shadow:var(--refresh-shadow);
+}
+html #root .future-shell [data-workspace-refresh=true] .desk-card {background:var(--surface)!important;color:var(--body);}
+html #root .future-shell [data-workspace-refresh=true] :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea) {
+ min-height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:13px;box-shadow:0 1px 2px #19202d03;
+}
+html #root .future-shell [data-workspace-refresh=true] :is(input,select,textarea):focus-visible {outline:2px solid #b58d00;outline-offset:2px;box-shadow:0 0 0 4px #ffcc0020;}
+html #root .future-shell [data-workspace-refresh=true] :is(button,a):focus-visible {outline:2px solid #b58d00;outline-offset:3px;}
+html #root .future-shell [data-workspace-refresh=true] :is(button,input,select,textarea):disabled {cursor:not-allowed;}
+html #root .future-shell [data-workspace-refresh=true] input::placeholder {color:var(--muted);opacity:.9;}
+html #root .future-shell [data-workspace-refresh=true] table {width:100%;border-collapse:separate;border-spacing:0;font-size:13px;}
+html #root .future-shell [data-workspace-refresh=true] table th {
+ background:var(--refresh-soft)!important;color:var(--muted)!important;border-bottom:1px solid var(--line);
+ font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.065em;padding-top:14px;padding-bottom:14px;
+}
+html #root .future-shell [data-workspace-refresh=true] table td {border-color:var(--light-line);padding-top:15px;padding-bottom:15px;line-height:1.55;}
+html #root .future-shell [data-workspace-refresh=true] table tbody tr:nth-child(even) {background:color-mix(in srgb,var(--refresh-soft) 48%,transparent);}
+html #root .future-shell [data-workspace-refresh=true] table tbody tr:hover {background:var(--refresh-hover);color:var(--ink);}
+html #root .future-shell [data-workspace-refresh=true] table th:first-child {border-top-left-radius:10px;}
+html #root .future-shell [data-workspace-refresh=true] table th:last-child {border-top-right-radius:10px;}
+html #root .future-shell [data-workspace-refresh=true] :is(.finance-view-tabs,.insight-tabs) {
+ display:flex;align-items:center;gap:5px;width:fit-content;max-width:100%;padding:5px;
+ border:1px solid var(--line);border-radius:13px;background:var(--surface);box-shadow:0 1px 3px #19202d03;
+}
+html #root .future-shell [data-workspace-refresh=true] :is(.finance-view-tabs,.insight-tabs)>button {
+ border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:12px;font-weight:650;min-height:38px;padding:9px 16px;
+}
+html #root .future-shell [data-workspace-refresh=true] :is(.finance-view-tabs,.insight-tabs)>button[aria-pressed=true] {background:#ffcc00;color:#171717;box-shadow:0 2px 5px #9b7a0018;}
+html #root .future-shell [data-workspace-refresh=true] :is(.project-filters,.finance-toolbar,.insight-filters) {border-radius:16px;border-color:var(--line);background:var(--surface);}
+html #root .future-shell [data-workspace-refresh=true] .finance-toolbar {padding:18px;border:1px solid var(--line);}
+html #root .future-shell [data-workspace-refresh=true] :is(.finance-filters,.insight-filters) label {color:var(--muted);font-size:11px;font-weight:650;gap:7px;}
+html #root .future-shell [data-workspace-refresh=true] .finance-company-heading {margin:0;font-size:17px;}
+html #root .future-shell [data-workspace-refresh=true] .finance-page {gap:20px;}
+html #root .future-shell [data-workspace-refresh=true] .project-stats {gap:12px;}
+html #root .future-shell [data-workspace-refresh=true] .project-stats>div {border-radius:14px!important;box-shadow:none;}
+
+/* Reports and Performance share the same content-rich layout. */
+html #root .future-shell [data-workspace-refresh=true] .work-insights {display:grid;gap:20px;min-width:0;}
+html #root .future-shell [data-workspace-refresh=true] .work-insights>header {
+ position:relative;display:flex;justify-content:space-between;align-items:center;gap:24px;
+ margin:0;padding:26px 28px;border:1px solid var(--line);border-radius:20px;
+ background:linear-gradient(110deg,var(--surface) 50%,color-mix(in srgb,var(--surface) 70%,#fff1ac));
+ box-shadow:var(--refresh-shadow);
+}
+html #root .future-shell [data-workspace-refresh=true] .work-insights>header .future-eyebrow {
+ display:inline-block;margin:0 0 9px;font-size:10px;letter-spacing:.13em;font-weight:700;color:var(--muted);
+}
+html #root .future-shell [data-workspace-refresh=true] .work-insights>header h1 {margin:0 0 9px;}
+html #root .future-shell [data-workspace-refresh=true] .work-insights>header p {margin:0;font-size:13px;max-width:620px;line-height:1.65;}
+html #root .future-shell [data-workspace-refresh=true] .insight-actions {gap:8px;flex-shrink:0;}
+html #root .future-shell [data-workspace-refresh=true] .insight-actions button {font-size:12px;border-radius:10px;min-height:42px;}
+html #root .future-shell [data-workspace-refresh=true] .insight-actions button:last-child:not(:disabled) {background:#19202d;color:#fff;border-color:#19202d;}
+html #root .future-shell [data-workspace-refresh=true] .insight-filters {
+ display:grid;grid-template-columns:repeat(2,minmax(125px,1fr)) repeat(3,minmax(145px,1.2fr));
+ gap:16px;margin:0;padding:20px 22px;
+}
+html #root .future-shell [data-workspace-refresh=true] .insight-filters label {min-width:0;}
+html #root .future-shell [data-workspace-refresh=true] .insight-presets {grid-column:1/-1;gap:7px;padding-top:13px;border-top:1px solid var(--light-line);}
+html #root .future-shell [data-workspace-refresh=true] .insight-presets button {min-height:32px;padding:6px 12px;font-size:11px;border-radius:8px;background:var(--refresh-soft);}
+html #root .future-shell [data-workspace-refresh=true] .insight-stats {grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;}
+html #root .future-shell [data-workspace-refresh=true] .insight-stats article {position:relative;padding:19px 18px;border-radius:15px!important;overflow:hidden;min-width:0;}
+html #root .future-shell [data-workspace-refresh=true] .insight-stats article>span {font-size:11px;font-weight:600;color:var(--muted);gap:8px;}
+html #root .future-shell [data-workspace-refresh=true] .insight-stats article>strong {margin-top:16px;font-size:32px;font-weight:750;letter-spacing:-.045em;line-height:1.1;font-variant-numeric:tabular-nums;}
+html #root .future-shell [data-workspace-refresh=true] .insight-stats article:has(.result-on_time) {border-top:3px solid #2b9b70;}
+html #root .future-shell [data-workspace-refresh=true] .insight-stats article:has(.result-late) {border-top:3px solid #e56a78;}
+html #root .future-shell [data-workspace-refresh=true] .insight-stats article:has(.result-hold) {border-top:3px solid #ddab4b;}
+html #root .future-shell [data-workspace-refresh=true] .insight-legend {padding:0 2px;gap:9px 20px;font-size:11px;}
+html #root .future-shell [data-workspace-refresh=true] .insight-tabs {margin:0;}
+html #root .future-shell [data-workspace-refresh=true] .insight-table {padding:22px;min-width:0;overflow-x:auto;}
+html #root .future-shell [data-workspace-refresh=true] .insight-table>h2 {margin:0 0 22px;font-size:17px;}
+html #root .future-shell [data-workspace-refresh=true] .insight-bars {padding:17px;background:var(--refresh-soft);border:1px solid var(--light-line);border-radius:12px;gap:13px;margin-bottom:22px;}
+html #root .future-shell [data-workspace-refresh=true] .insight-bars>div {grid-template-columns:155px minmax(90px,1fr) minmax(125px,190px);gap:16px;}
+html #root .future-shell [data-workspace-refresh=true] .insight-bars small {font-size:11px;}
+html #root .future-shell [data-workspace-refresh=true] .insight-bar-track {height:6px;background:var(--line);}
+html #root .future-shell [data-workspace-refresh=true] .insight-badge {border:0;padding:5px 10px;border-radius:7px;font-weight:600;background:var(--refresh-soft);}
+html #root .future-shell [data-workspace-refresh=true] .insight-badge.result-on_time {background:#e8f5ee;}
+html #root .future-shell [data-workspace-refresh=true] .insight-badge.result-late {background:#fff0f2;}
+html #root .future-shell [data-workspace-refresh=true] .insight-badge.result-hold {background:#fff5df;}
+html[data-theme=dark] #root .future-shell [data-workspace-refresh=true] .insight-badge.result-on_time {background:#18362d;}
+html[data-theme=dark] #root .future-shell [data-workspace-refresh=true] .insight-badge.result-late {background:#3b2531;}
+html[data-theme=dark] #root .future-shell [data-workspace-refresh=true] .insight-badge.result-hold {background:#3b311f;}
+html #root .future-shell [data-workspace-refresh=true] .work-insights>.desk-muted {font-size:11px;color:var(--muted);line-height:1.8;padding:0 4px;max-width:1100px;}
+
+@media(min-width:1024px) {
+ html #root .future-shell [data-workspace-refresh=true].future-content {padding:28px 18px 56px;}
+}
+@media(max-width:1100px) {
+ html #root .future-shell [data-workspace-refresh=true] .insight-filters {grid-template-columns:repeat(2,minmax(0,1fr));}
+ html #root .future-shell [data-workspace-refresh=true] .insight-filters label:last-of-type {grid-column:1/-1;}
+ html #root .future-shell [data-workspace-refresh=true] .insight-stats {grid-template-columns:repeat(3,minmax(0,1fr));}
+ html #root .future-shell [data-workspace-refresh=true] .insight-bars>div {grid-template-columns:130px minmax(90px,1fr);}
+ html #root .future-shell [data-workspace-refresh=true] .insight-bars small {grid-column:2;}
+}
+@media(max-width:640px) {
+ html #root .future-shell [data-workspace-refresh=true].future-content {padding:20px 14px 36px;}
+ html #root .future-shell [data-workspace-refresh=true] .work-insights {gap:16px;}
+ html #root .future-shell [data-workspace-refresh=true] .work-insights>header {align-items:flex-start;flex-direction:column;padding:22px 20px;gap:18px;border-radius:16px;}
+ html #root .future-shell [data-workspace-refresh=true] .insight-actions {width:100%;}
+ html #root .future-shell [data-workspace-refresh=true] .insight-actions button {flex:1;}
+ html #root .future-shell [data-workspace-refresh=true] .insight-filters {padding:17px;gap:13px;}
+ html #root .future-shell [data-workspace-refresh=true] .insight-stats {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+ html #root .future-shell [data-workspace-refresh=true] .insight-stats article {padding:16px 14px;}
+ html #root .future-shell [data-workspace-refresh=true] .insight-stats article>strong {font-size:28px;}
+ html #root .future-shell [data-workspace-refresh=true] :is(.insight-tabs,.finance-view-tabs) {width:100%;flex-wrap:wrap;}
+ html #root .future-shell [data-workspace-refresh=true] :is(.insight-tabs,.finance-view-tabs)>button {flex:1;min-width:85px;padding:9px 10px;}
+ html #root .future-shell [data-workspace-refresh=true] .insight-table {padding:16px;}
+}

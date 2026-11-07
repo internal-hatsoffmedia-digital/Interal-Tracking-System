@@ -1,3 +1,4 @@
+import {isRefreshedWorkspacePage} from '../../lib/workspacePresentation';
 import CommitmentReminders from '../commitments/CommitmentReminders';
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
@@ -41,7 +42,7 @@ function AppShell() {
         <Topbar />
 
         <main id="main-content" className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto">
-          <div className="future-content">
+          <div className="future-content" data-workspace-refresh={isRefreshedWorkspacePage(location.pathname) ? "true" : undefined}>
             <PageGate />
           </div>
         </main>
